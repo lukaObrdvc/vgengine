@@ -11,6 +11,7 @@ int WinMain(
     int i = 5;
     
     int j = _Generic(1.0, int : 2, double : 3);
+    int k = _Generic(1.0, int : 2, double : 3);
     
     MessageBoxA(
                 0,
