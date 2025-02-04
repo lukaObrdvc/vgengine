@@ -4,7 +4,6 @@
 (global-set-key (kbd "M-h") 'describe-function)
 (global-set-key (kbd "M-H") 'describe-variable)
 ;;C-h k to see command for key sequence...
-;;hotkey for opening this init.el in home/.emacs.d directory...
 
 (global-set-key (kbd "M-s") 'save-buffer) 
 (global-set-key (kbd "M-f") 'find-file)
@@ -25,7 +24,7 @@
 (global-set-key (kbd "C-M-f") 'project-find-file)
 
 ;;rectangle-mark-mode
-;;zoomin/zoomout
+;;zoomin/zoomout (can do it with C-mousewheel)
 
 (setq inhibit-splash-screen t)
 (setq visible-bell t)
@@ -46,11 +45,9 @@
 ;;(setq-default left-margin-width 1)
 ;;(set-window-margins nil 1)
 
-
 (setq dabbrev-case-replace t)
 (setq dabbrev-case-fold-search t)
 (setq dabbrev-upcase-means-case-search t)
-
 
 (require 'ido)
 (ido-mode t)
@@ -58,10 +55,7 @@
 (fido-mode t)
 	
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
-;;(load-theme 'naysayer t)
 (load-theme 'material t) ;; 536b75
-;;(load-theme 'vscode-dark-plus t)
-;;(load-theme 'noctilux t)
 
 (set-face-attribute 'default nil :font "Hack-12")
 ;;(set-face-attribute 'default nil :font "Hack-30")
@@ -78,8 +72,8 @@
 (defun luka-grep (arg1)
   (interactive "sgrep findstr: ")
   (if (= (count-windows) 1) (split-window-right))
-  (cd "w:/cardcrafter")
-  (grep (format "findstr -s -n -i -r \"%s\" *.h *.cpp" arg1))
+  (cd "w:/vgengine")
+  (grep (format "findstr -s -n -i -r \"%s\" *.h *.c" arg1))
   (cd (file-name-directory buffer-file-name))
   )
 ;; how to ignore .cpp~ and stuff??
@@ -89,7 +83,7 @@
 (defun luka-compile ()
   (interactive)
   (if (= (count-windows) 1) (split-window-right))
-  (cd "w:/cardcrafter/code")
+  (cd "w:/vgengine/code")
   (compile "build")
   (cd (file-name-directory buffer-file-name))
   )
@@ -118,7 +112,6 @@
 
 (global-set-key (kbd "C-<down>") 'luka-bigmove-down)
 
-
 (defun luka-hugemove-up ()
   (interactive)
   (luka-bigmove-up)
@@ -139,10 +132,19 @@
 
 (global-set-key (kbd "C-S-<down>") 'luka-hugemove-down)
 
-
 (defun _splitr ()
   (interactive)
   (split-window-right)
+  )
+
+(defun _quickcalc ()
+  (interactive)
+  (quick-calc)
+  )
+
+(defun _config ()
+  (interactive)
+  (find-file "c:/Users/user/.emacs.d/init.el")
   )
 
 ;;(global-set-key (kbd "M-$") 'scroll-down)
