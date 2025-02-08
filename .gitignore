@@ -3,8 +3,10 @@ exe/
 *.el#
 *.exe
 *.h~
+*.h#
 *.cpp~
 *.c~
+*.c#
 *.bat~
 *.el~
 *.map
