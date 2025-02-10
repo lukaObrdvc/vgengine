@@ -89,12 +89,19 @@ typedef struct platform_Provides
 
 global_variable platform_provides* memory_base;
 
-typedef struct game_State
+#define DBG_READ_FILE memory_base->dbg_read_file
+#define DBG_WRITE_FILE memory_base->dbg_write_file
+
+// @Note I don't know if this pack is working....
+#pragma pack(push, 1)
+typedef struct
 {
     b32 inited;
 
+    b32 tested_once;
     s32 wndbuffer_width;
     s32 wndbuffer_height;
+    v2  cursor;
     s32 dbg_render_x_offset;
     s32 dbg_render_y_offset;
     s32 square_length;
@@ -104,17 +111,15 @@ typedef struct game_State
     s32 concentric_count;
     s32 concentric_spread_x;
     s32 concentric_spread_y;
-    //...
-
+    
 } game_state;
+#pragma pack(pop)
 
-// @TODO do I make inline functions instead??
-#define Gamestate ((game_state*)(memory_base->perm_mem))
-
-#define wnd_width (((game_state*)(memory_base->perm_mem))->wndbuffer_width)
+#define Gamestate  ((game_state*)(memory_base->perm_mem))                    
+#define wnd_width  (((game_state*)(memory_base->perm_mem))->wndbuffer_width) 
 #define wnd_height (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
-#define wnd_bytpp (memory_base->bytpp)
-#define wnd_pitch (wnd_width*wnd_bytpp)
+#define wnd_bytpp  (memory_base->bytpp)                                      
+#define wnd_pitch  (wnd_width*wnd_bytpp)                               
 #define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) + sizeof(game_state)))
 
 /* inline void* dbg_alloc(u32 size) */

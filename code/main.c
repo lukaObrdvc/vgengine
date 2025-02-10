@@ -4,7 +4,6 @@
 #include "pixel.h"
 #include "renderer.h"
 #include "main.h"
-#include "test.h"
 
 // @TODO put void into functions that actually do not get passed anything
 
@@ -103,6 +102,78 @@
 /*         } */
 /* } */
 
+/* void draw_line() */
+/* { */
+/*     u32 pitch = wndbuffer.width*wndbuffer.bytpp; */
+/*     u32 offset = (s32)centeredcs.origin.x*wndbuffer.bytpp; */
+/*     pxl* pixel = (pxl*)(wndbuffer.memory + pitch*(s32)centeredcs.origin.y + offset); */
+
+/*     s32 dX = (s32)icomponent(line.B).x; */
+/*     s32 dY = -(s32)jcomponent(line.B).y; */
+/*     s32 movebyX = 0; */
+/*     s32 movebyY = 0; */
+/*     u32 len = (s32)edist(line.A, line.B); */
+/*     r32 whenX = ((r32)len) / dX; */
+/*     r32 whenY = ((r32)len) / dY; */
+
+/*     for (u32 i = 1; i <= len; i++) */
+/*         { */
+/*             movebyX = floor32i(i/whenX); */
+/*             movebyY = floor32i(i/whenY); */
+
+/*             // 20 50.50 */
+/*             // 54.3 */
+/*             // 2.7 1.075 */
+
+/*             pixel = (pxl*)(wndbuffer.memory + pitch*((s32)centeredcs.origin.y+movebyY) + ((s32)centeredcs.origin.x+movebyX)*wndbuffer.bytpp);// + movebyX*wndbuffer.bytpp + pitch*movebyY); */
+
+/*             pixel->set(0, 0, 0, 255); */
+/*         } */
+
+/*     u32 len = (s32)edist(line.A, line.B); */
+/*     for (u32 i = 0; i < len; i++) */
+/*         { */
+/*             pixel->set(0, 0, 0, 255); */
+/*             pixel++; */
+/*             } */
+/* } */
+
+/* void draw_line() */
+/* { */
+/*     u32 pitch = wndbuffer.width*wndbuffer.bytpp; */
+/*     u32 offset = (s32)centeredcs.origin.x*wndbuffer.bytpp; */
+/*     pxl* pixel = (pxl*)(wndbuffer.memory + pitch*(s32)centeredcs.origin.y + offset); */
+
+/*     s32 dX = (s32)icomponent(line.B).x; */
+/*     s32 dY = -(s32)jcomponent(line.B).y; */
+/*     s32 movebyX = 0; */
+/*     s32 movebyY = 0; */
+/*     u32 len = (s32)edist(line.A, line.B); */
+/*     r32 whenX = ((r32)len) / dX; */
+/*     r32 whenY = ((r32)len) / dY; */
+
+/*     for (u32 i = 1; i <= len; i++) */
+/*         { */
+/*             movebyX = floor32i(i/whenX); */
+/*             movebyY = floor32i(i/whenY); */
+
+/*             // 20 50.50 */
+/*             // 54.3 */
+/*             // 2.7 1.075 */
+
+/*             pixel = (pxl*)(wndbuffer.memory + pitch*((s32)centeredcs.origin.y+movebyY) + ((s32)centeredcs.origin.x+movebyX)*wndbuffer.bytpp);// + movebyX*wndbuffer.bytpp + pitch*movebyY); */
+
+/*             pixel->set(0, 0, 0, 255); */
+/*         } */
+
+/*     u32 len = (s32)edist(line.A, line.B); */
+/*     for (u32 i = 0; i < len; i++) */
+/*         { */
+/*             pixel->set(0, 0, 0, 255); */
+/*             pixel++; */
+/*             } */
+/* } */
+
 void draw_clamped_wndrect(wndrect rectangle, pxl color)
 {
     u32 offset = wnd_pitch*round32(rectangle.topleft.y) +
@@ -151,42 +222,6 @@ void clamp_wndrect(wndrect* rectangle)
         }    
 }
 
-/* void draw_line() */
-/* { */
-/*     u32 pitch = wndbuffer.width*wndbuffer.bytpp; */
-/*     u32 offset = (s32)centeredcs.origin.x*wndbuffer.bytpp; */
-/*     pxl* pixel = (pxl*)(wndbuffer.memory + pitch*(s32)centeredcs.origin.y + offset); */
-
-/*     s32 dX = (s32)icomponent(line.B).x; */
-/*     s32 dY = -(s32)jcomponent(line.B).y; */
-/*     s32 movebyX = 0; */
-/*     s32 movebyY = 0; */
-/*     u32 len = (s32)edist(line.A, line.B); */
-/*     r32 whenX = ((r32)len) / dX; */
-/*     r32 whenY = ((r32)len) / dY; */
-
-/*     for (u32 i = 1; i <= len; i++) */
-/*         { */
-/*             movebyX = floor32i(i/whenX); */
-/*             movebyY = floor32i(i/whenY); */
-
-/*             // 20 50.50 */
-/*             // 54.3 */
-/*             // 2.7 1.075 */
-
-/*             pixel = (pxl*)(wndbuffer.memory + pitch*((s32)centeredcs.origin.y+movebyY) + ((s32)centeredcs.origin.x+movebyX)*wndbuffer.bytpp);// + movebyX*wndbuffer.bytpp + pitch*movebyY); */
-
-/*             pixel->set(0, 0, 0, 255); */
-/*         } */
-
-/*     u32 len = (s32)edist(line.A, line.B); */
-/*     for (u32 i = 0; i < len; i++) */
-/*         { */
-/*             pixel->set(0, 0, 0, 255); */
-/*             pixel++; */
-/*             } */
-/* } */
-
 void fill_background()
 {
     s32 pitch = wnd_width*wnd_bytpp;
@@ -202,85 +237,41 @@ void fill_background()
         }    
 }
 
-/* void draw_rectangle(s32 top, s32 left, s32 width, s32 height) */
-/* { */
-/*     s32 old_top = 0; */
-/*     s32 old_left = 0; */
-/*     if (top < 0) */
-/*         { */
-/*             old_top = -top; */
-/*             top = 0; */
-/*         } */
-/*     if (left < 0) */
-/*         { */
-/*             old_left = -left; */
-/*             left = 0; */
-/*         } */
-/*     if (top+height > (s32)wndbuffer.height) */
-/*         { */
-/*             height = wndbuffer.height - top;             */
-/*             old_top = 0; */
-/*         } */
-/*     if (left+width > (s32)wndbuffer.width) */
-/*         { */
-/*             width = wndbuffer.width - left; */
-/*             old_left = 0; */
-/*         } */
-    
-/*     u32 pitch = wndbuffer.width*wndbuffer.bytpp; */
-/*     u32 offset = left*wndbuffer.bytpp; */
-/*     for (s32 i = 0; i < height-old_top; i++) */
-/*         { */
-/*             u32* row = (u32*)(wndbuffer.memory + (top+i)*pitch + offset); */
-/*             for (s32 j = 0; j < width-old_left; j++) */
-/*                 { */
-/*                     u8 R = 0; */
-/*                     u8 G = 0; */
-/*                     u8 B = 0; */
-/*                     u8 a = 255; */
+void dbg_render(s8 x_offset, s8 y_offset)
+{
+    s32 pitch = wnd_width*wnd_bytpp;
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            pxl* row = (pxl*)(wnd_buffer + i*pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    u8 g = j + Gamestate->dbg_render_x_offset;
+                    u8 b = i + Gamestate->dbg_render_y_offset;
 
-/*                     *row = (a << 24) | (R << 16) | (G << 8) | B; */
-/*                     row++; */
-/*                 } */
-/*         } */
-/* } */
+                    *row = literal(pxl) {.R=0, .G=g, .B=b, .A=255};
+                    row++;
+                }
+        }    
+}
 
-/* void dbg_render(s8 x_offset, s8 y_offset) */
-/* { */
-/*     s32 height_px = wndbuffer.height; */
-/*     s32 width_px = wndbuffer.width; */
-/*     u8 bpp = wndbuffer.bytpp; */
-/*     u8* buffer = (u8*)wndbuffer.memory; */
-
-/*     for (s32 y = 0; y<height_px; y++) */
-/*         { */
-/*             u32* row = (u32*)(buffer+y*(bpp*width_px)); */
-
-/*             for(s32 x = 0; x<width_px; x++) */
-/*                 { */
-/*                     u8 R = 0; */
-/*                     u8 G = (u8)x + x_offset; */
-/*                     u8 B = (u8)y + y_offset; */
-/*                     u8 X = 0; */
-
-/*                     *row = (X << 24) | (R << 16) | (G << 8) | B; */
-/*                     row++; */
-/*                 } */
-/*          } */
-/* } */
-
-/* void dbg_draw_square_around_cursor(u8 square_length) */
-/* { */
-/*     s32 top = cursor_.y - (square_length/2); */
-/*     s32 left = cursor_.x - (square_length/2); */
-/*     u32 width = square_length; */
-/*     u32 height = square_length; */
-/*     draw_rectangle(top, left, width, height); */
-/* } */
+void dbg_draw_square_around_cursor(u8 square_length)
+{
+    pxl color = {.R=0, .G=0, .B=0, .A=255};
+    r32 top = Gamestate->cursor.y - (((r32)square_length)/2.0f);
+    r32 left = Gamestate->cursor.x - (((r32)square_length)/2.0f);
+    r32 width = (r32)square_length;
+    r32 height = (r32)square_length;
+    wndrect rect = {
+        .topleft = literal(v2) {.x = left, .y = top},
+        .width = width,
+        .height = height };
+    clamp_wndrect(&rect);
+    draw_clamped_wndrect(rect, color);
+}
 
 void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)
 {
-    pxl color = {0, 0, 0, 255};
+    pxl color = {.R=0, .G=0, .B=0, .A=255};
     s32 origin_x = Gamestate->wnd_center_x;
     s32 origin_y = Gamestate->wnd_center_y;
     for (u32 i=1; i<=count; i++)
@@ -290,6 +281,7 @@ void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread
             u32 width = i*2*(spread_x+thickness);
             u32 height = i*2*(spread_y+thickness);
 
+            // @TODO write this in a cleaner way....
             wndrect wup, wleft, wdown, wright;
             
             wup.topleft.y = top;
@@ -320,13 +312,7 @@ void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread
             draw_clamped_wndrect(wup, color);
             draw_clamped_wndrect(wleft, color);
             draw_clamped_wndrect(wright, color);
-            draw_clamped_wndrect(wdown, color);
-            
-            /* draw_rectangle(top, left, width, thickness); */
-            /* draw_rectangle(top, left, thickness, height); */
-            /* draw_rectangle(top+height-thickness, left, width, thickness); */
-            /* draw_rectangle(top, left+width-thickness, thickness, height); */
-            
+            draw_clamped_wndrect(wdown, color);            
         }
 }
 
@@ -336,7 +322,6 @@ void process_frame_input(key curr_frame_key,
                          mouse curr_frame_mouse,
                          b32 used_mouse)
 {
-    
     if (used_key)
         {
             switch(curr_frame_key.code)
@@ -380,8 +365,10 @@ void process_frame_input(key curr_frame_key,
                     Gamestate->concentric_spread_x-=10;
                     Gamestate->concentric_spread_y-=4;
                 }
+            Gamestate->cursor = curr_frame_mouse.cursor;
         }
-    
+
+    // @TODO do I need to invalidate think about it...
     // @Fail is this invalidation desirable    
     /* frame_key.code = KEY_NONE; */
     /* mouse_frame_key.code = M_NONE; */
@@ -389,61 +376,29 @@ void process_frame_input(key curr_frame_key,
     /* mouse_frame_key.mouse_moved = false;     */
 }
 
-/* void init_once() */
-/* { */
-/*     if (!inited) */
-/*         { */
-
-/*             /\* origin_x = 1280/2; *\/ */
-/*             /\* origin_y = 720/2; *\/ */
-
-/*             /\* memory.size = 1280*720*wndbuffer.bytpp; *\/ */
-/*             /\* wndbuffer.memory = memory.base; *\/ */
-/*             /\* wndbuffer.width = 1280; *\/ */
-/*             /\* wndbuffer.height = 720; *\/ */
-                        
-/*             /\* centeredcs.offset = 0; *\/ */
-
-/*             /\* offsetedcs.origin = centeredcs.origin; *\/ */
-/*             /\* offsetedcs.offset = 0; *\/ */
-
-/*             //wndpitch = wndbuffer.width*wndbuffer.bytpp; */
-/*             /\* */
-/*             v2 lx; */
-/*             v2 ly; */
-
-/*             v2 a; */
-/*             v2 b; */
-/*             v2 c; */
-/*             v2 d; */
-
-/*             *\/ */
-/*             //inited = true; */
-/*         } */
-/*     else */
-/*         { */
-/*             //\*result = false; */
-/*         } */
-/* } */
-
 void platform_init_memory_base(void* memory_base_ptr)
 {    
     memory_base = (platform_provides*) memory_base_ptr;
+}
 
-    if (!((game_state*)(memory_base->perm_mem))->inited)
+void init_game_state()
+{
+    if (!Gamestate->inited)
         {
             Assert(sizeof(game_state) <= memory_base->perm_mem_cap);
             
-            *((game_state*)memory_base->perm_mem) = literal(game_state) {
+            *(Gamestate) = literal(game_state) {
                 .inited = true,
 
+                .tested_once = 0,
                 .wndbuffer_width = 1280,
                 .wndbuffer_height = 720,
+                .cursor = literal(v2) {.x = 640, .y = 360},
                 .dbg_render_x_offset = 0, 
                 .dbg_render_y_offset = 0, 
                 .square_length = 10,       
-                .wnd_center_x = 1280/2,        
-                .wnd_center_y = 720/2,        
+                .wnd_center_x = 640,        
+                .wnd_center_y = 360,        
                 .concentric_thickness = 5,
                 .concentric_count = 10,    
                 .concentric_spread_x = 50, 
@@ -451,65 +406,12 @@ void platform_init_memory_base(void* memory_base_ptr)
         }
 }
 
+// @TODO declare in header instead
+#include "test.h"
+
 void update_and_render()
-{
-    /* s32* result = (s32*)((u8*)memory.base + (s64)gigabytes(2)); */
-    /* s32* temp = result; */
-    /* *temp = true; */
-    /* temp++; */
-    /* *((void**)temp) = memory.base; */
-    /* temp++; */
-    /* *temp = 1280; */
-    /* temp++; */
-    /* *temp = 720; */
-
-    
-    //init_once();
-    test();
-    
-    //dbg_render(x_offset, y_offset);
-    //dbg_draw_square_around_cursor(square_length);
-    
-    fill_background();
-
-    Gamestate->concentric_count = 10;
-
-    u32 thickness = Gamestate->concentric_thickness;
-    u32 spread_x = Gamestate->concentric_spread_x;
-    u32 spread_y = Gamestate->concentric_spread_y;
-    u32 count = Gamestate->concentric_count;
-    
-    concentric_rectangles_around_origin(thickness, spread_x, spread_y, count);
-    //draw_line();
-    //if (linex == 0) a+= PI/8;
-    //linex++;
-    //offsetedcs.offset = a;
-    //wndrect outline;
-    //outline = obtain_wndrect(grect);
-    //clamp_wndrect(&outline);
-    //draw_rotated_rect(outline);
-    
-    //a+= PI/(megabytes(1));
-    //linex++;
-    //liney++;
-    //liney++;
-    //v2 ll;
-    
-    /*if (counter <= 300)
-        {
-            s-= 5.0f/megabytes(1);
-        }
-    else
-        {
-            s+= 5.0f/megabytes(1);
-        }
-    counter++;
-    if (counter == 600)
-        {
-            s = 0;
-            counter = 0;
-            }*/
-
-    //return result;
+{    
+    init_game_state();
+    test();    
 }
 

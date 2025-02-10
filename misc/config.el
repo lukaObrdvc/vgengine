@@ -14,12 +14,13 @@
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 (load-theme 'material t) ;; 536b75  ;; language-specific syn.highl. ....
 
-(set-face-attribute 'default nil :font "Hack-12")
-(set-face-attribute 'default nil :font "Courier New-12")
+;;(set-face-attribute 'default nil :font "Hack-12")
+(set-face-attribute 'default nil :font "Courier New-11")
 ;;(set-face-attribute 'default nil :font "Consolas-13")
 
 (setq inhibit-splash-screen t)
 (setq visible-bell t)
+(set-default 'truncate-lines t)
 
 (setq-default tab-width 4)
 (setq-default indent-tabs-mode nil)

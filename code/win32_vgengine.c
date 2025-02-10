@@ -283,6 +283,9 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
         case WM_LBUTTONDOWN:
             //case WM_LBUTTONUP:
             {
+                curr_frame_mouse.cursor = literal(v2) { .x =lParam & 0x0000FFFF,
+                                                        .y =(lParam & 0xFFFF0000) >> 16 };
+
                 curr_frame_mouse.code = M1;
                 curr_frame_mouse.is_down = true;
 
@@ -346,14 +349,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     u64 temp_memory_capacity = total_memory_capacity - perm_memory_capacity;
     void* base_ptr = VirtualAlloc(0, total_memory_capacity, MEM_COMMIT, PAGE_READWRITE);
 
-#define memory_base ((platform_provides*)base_ptr)    
+    #define memory_base ((platform_provides*)base_ptr)    
     
     platform_provides provides = {
         .perm_mem = (u8*)base_ptr + sizeof(platform_provides),
         .perm_mem_cap = perm_memory_capacity,
         .temp_mem = (u8*)base_ptr + sizeof(platform_provides) + perm_memory_capacity,
         .temp_mem_cap = temp_memory_capacity,
-        .bytpp = bytes_per_pixel,
+         .bytpp = bytes_per_pixel,
         .dbg_read_file = dbg_read_entire_file,
         .dbg_write_file = dbg_write_entire_file };
 
@@ -397,13 +400,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
-    
-    /* window_rect_dims rect = get_window_rect_dims(window); */
-    /* realloc_window_bitmap_buffer(rect.width, rect.height); */
-    
+        
     while (running)
         {
-
+#if HOTLOAD
             if (dll_reload_counter >= 30)
                 {
                     unload_game(dll);
@@ -411,18 +411,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                     dll_reload_counter = 0;
 
                     init_memory_base(base_ptr);
-
-                    // @TODO do you have to reinit every time???
-
-                    // no you just have a header interface which you
-                    // initialize for the game (with inline function)
-                    // then on every reload you just pass a pointer
-                    // to the base memory address
-
-                    // and hold everything into one struct (this is
-                    // what an arena is (at least for now))
                 }
-            
+#endif         
             u64 begin_cycle_count = __rdtsc();
 
             LARGE_INTEGER begin_time_count;
@@ -439,42 +429,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             TranslateMessage(&message);
             DispatchMessage(&message);
 
-            // @TODO figure out if I need to have two different types of
-            // resizing, one that resizes the buffer, and the other
-            // that resizes the window rect, and then if not the same
-            // it will stretch
-
-            // @Note do I actually check for bool or do I assume I
-            // do it by default every frame??
-            /* int* resize_window_info = (int*)update_and_render(); */
-            /* if (*resize_window_info) */
-            /*     { */
-            /*         // @TODO cache first when reading resize_window_info */
-            /*         // @Failure this works assuming pointers are 32bit */
-            /*         resize_window_info++; */
-            /*         //window_buffer_memory = *((void**)resize_window_info); */
-            /*         resize_window_info++; */
-            /*         window_buffer_info.bmiHeader.biWidth = (int)*resize_window_info; */
-            /*         resize_window_info++; */
-            /*         window_buffer_info.bmiHeader.biHeight = -(int)*resize_window_info; */
-
-            /*         RECT new_window_rect; */
-            /*         new_window_rect.left = window_offset_x; */
-            /*         new_window_rect.top = window_offset_y; */
-            /*         new_window_rect.right = window_buffer_info.bmiHeader.biWidth; */
-            /*         new_window_rect.bottom = -window_buffer_info.bmiHeader.biHeight; */
-
-            /*         /\* AdjustWindowRect(&new_window_rect, *\/ */
-            /*         /\*                  0, *\/ */
-            /*         /\*                  0); *\/ */
-            /*     } */
-
             update_and_render();
             
             window_buffer_info.bmiHeader.biWidth = wnd_width;
             window_buffer_info.bmiHeader.biHeight = -wnd_height;
-
-            // @TODO resize window rect???
+            
+            // @TODO figure out if I need to have two different types of
+            // resizing, one that resizes the buffer, and the other
+            // that resizes the window rect, and then if not the same
+            // it will stretch
+            // @TODO resize window rect??? (AjdustWindowRect)
             
             HDC dc = GetDC(window);
             window_rect_dims rect = get_window_rect_dims(window);

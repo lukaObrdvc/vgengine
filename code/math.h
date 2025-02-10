@@ -69,6 +69,7 @@ typedef r32 rad;
 #define signof32(n) (s32)(!signbit((r32)(n))*2-1)
 #define signof64(n) (s64)(!signbit((r64)(n))*2-1)
 
+// @Note potentially same name used from <math.h>
 #define sqr(n) ((n)*(n))
 
 // @Note cannot use % with real numbers ??
