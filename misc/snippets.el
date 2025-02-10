@@ -8,6 +8,11 @@
 
 ;; you could also just set the mark where you move next...
 
+;; (defun snippet-c-brackets ()
+;;   (interactive)
+  
+;;   )
+
 (defun cut-snippet-tag ()
   (cua-set-mark)
   (move-beginning-of-line nil)

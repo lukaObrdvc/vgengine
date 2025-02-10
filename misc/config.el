@@ -15,7 +15,7 @@
 (load-theme 'material t) ;; 536b75  ;; language-specific syn.highl. ....
 
 (set-face-attribute 'default nil :font "Hack-12")
-;;(set-face-attribute 'default nil :font "Courier New-12")
+(set-face-attribute 'default nil :font "Courier New-12")
 ;;(set-face-attribute 'default nil :font "Consolas-13")
 
 (setq inhibit-splash-screen t)

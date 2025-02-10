@@ -14,20 +14,11 @@ global_variable b32 running = true;
 global_variable b32 valid_dll = false;
 
 
-void init_game_stub(void* memory_base,
-                    u64 memory_capacity,
-                    u8 bytpp,
-                    fp_dbg_read_file read_file,
-                    fp_dbg_write_file write_file)
+void init_memory_base_stub(void* memory_base)
 {
-    return;
 }
-typedef void (*fp_init_game) (void* memory_base,
-                              u64 memory_capacity,
-                              u8 bytpp,
-                              fp_dbg_read_file read_file,
-                              fp_dbg_write_file write_file);
-fp_init_game init_game = init_game_stub;
+typedef void (*fp_init_memory_base) (void* memory_base);
+fp_init_memory_base init_memory_base = init_memory_base_stub;
 
 void* update_and_render_stub()
 {
@@ -38,7 +29,6 @@ fp_update_and_render update_and_render = update_and_render_stub;
 
 void process_frame_input_stub(key k, b32 tk, mouse m, b32 tm)
 {
-    return;
 }
 typedef void (*fp_process_frame_input) (key k, b32 tk, mouse m, b32 tm);
 fp_process_frame_input process_frame_input = process_frame_input_stub;
@@ -51,22 +41,22 @@ HMODULE load_game()
     if (dll)
         {
             valid_dll = true;
-            init_game = (fp_init_game) GetProcAddress(dll, "platform_init_game");
+            init_memory_base = (fp_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
             update_and_render = (fp_update_and_render) GetProcAddress(dll, "update_and_render");
             process_frame_input = (fp_process_frame_input) GetProcAddress(dll, "process_frame_input");
         }
     else
         {
             valid_dll = false;
-            init_game = init_game_stub;
+            init_memory_base = init_memory_base_stub;
             update_and_render = update_and_render_stub;
             process_frame_input = process_frame_input_stub;
         }
 
-    if (!init_game)
+    if (!init_memory_base)
         {
             valid_dll = false;
-            init_game = init_game_stub;
+            init_memory_base = init_memory_base_stub;
         }
     if (!update_and_render)
         {
@@ -86,7 +76,7 @@ void unload_game(HMODULE dll)
 {
     FreeLibrary(dll);
     valid_dll = false;
-    init_game = init_game_stub;
+    init_memory_base = init_memory_base_stub;
     update_and_render = update_and_render_stub;
     process_frame_input = process_frame_input_stub;
 }
@@ -348,10 +338,31 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
     HMODULE dll = load_game();
     int dll_reload_counter = 0;
-    
-    u64 memory_capacity = gigabytes(4);
-    void* memory_base = VirtualAlloc(0, memory_capacity, MEM_COMMIT, PAGE_READWRITE);
 
+    int bytes_per_pixel = 4;
+    
+    u64 total_memory_capacity = gigabytes(4);
+    u64 perm_memory_capacity = megabytes(64);
+    u64 temp_memory_capacity = total_memory_capacity - perm_memory_capacity;
+    void* base_ptr = VirtualAlloc(0, total_memory_capacity, MEM_COMMIT, PAGE_READWRITE);
+
+#define memory_base ((platform_provides*)base_ptr)    
+    
+    platform_provides provides = {
+        .perm_mem = (u8*)base_ptr + sizeof(platform_provides),
+        .perm_mem_cap = perm_memory_capacity,
+        .temp_mem = (u8*)base_ptr + sizeof(platform_provides) + perm_memory_capacity,
+        .temp_mem_cap = temp_memory_capacity,
+        .bytpp = bytes_per_pixel,
+        .dbg_read_file = dbg_read_entire_file,
+        .dbg_write_file = dbg_write_entire_file };
+
+    *((platform_provides*)base_ptr) = provides;
+
+    init_memory_base(base_ptr);
+
+    void* window_buffer_memory = (void*)wnd_buffer;
+    
     int window_offset_x = 50;
     int window_offset_y = 50;
     
@@ -376,22 +387,13 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                hInstance,
                                0
                                );
-
-    void* window_buffer_memory = memory_base;
-    u8 bytpp = 4*8;
+    
     // default resolution is 1087x584, UL=(0,0)
     BITMAPINFO window_buffer_info = {
         .bmiHeader.biSize = sizeof(window_buffer_info.bmiHeader),
         .bmiHeader.biPlanes = 1,
-        .bmiHeader.biBitCount = bytpp,
+        .bmiHeader.biBitCount = bytes_per_pixel*8,
         .bmiHeader.biCompression = BI_RGB };
-
-    init_game(memory_base,
-              memory_capacity,
-              bytpp,
-              dbg_read_entire_file,
-              dbg_write_entire_file
-              );
     
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
@@ -408,13 +410,17 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                     dll = load_game();
                     dll_reload_counter = 0;
 
+                    init_memory_base(base_ptr);
+
                     // @TODO do you have to reinit every time???
-                    init_game(memory_base,
-                              0,
-                              bytpp,
-                              dbg_read_entire_file,
-                              dbg_write_entire_file
-                              );
+
+                    // no you just have a header interface which you
+                    // initialize for the game (with inline function)
+                    // then on every reload you just pass a pointer
+                    // to the base memory address
+
+                    // and hold everything into one struct (this is
+                    // what an arena is (at least for now))
                 }
             
             u64 begin_cycle_count = __rdtsc();
@@ -440,28 +446,35 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
             // @Note do I actually check for bool or do I assume I
             // do it by default every frame??
-            int* resize_window_info = (int*)update_and_render();
-            if (*resize_window_info)
-                {
-                    // @TODO cache first when reading resize_window_info
-                    // @Failure this works assuming pointers are 32bit
-                    resize_window_info++;
-                    //window_buffer_memory = *((void**)resize_window_info);
-                    resize_window_info++;
-                    window_buffer_info.bmiHeader.biWidth = (int)*resize_window_info;
-                    resize_window_info++;
-                    window_buffer_info.bmiHeader.biHeight = -(int)*resize_window_info;
+            /* int* resize_window_info = (int*)update_and_render(); */
+            /* if (*resize_window_info) */
+            /*     { */
+            /*         // @TODO cache first when reading resize_window_info */
+            /*         // @Failure this works assuming pointers are 32bit */
+            /*         resize_window_info++; */
+            /*         //window_buffer_memory = *((void**)resize_window_info); */
+            /*         resize_window_info++; */
+            /*         window_buffer_info.bmiHeader.biWidth = (int)*resize_window_info; */
+            /*         resize_window_info++; */
+            /*         window_buffer_info.bmiHeader.biHeight = -(int)*resize_window_info; */
 
-                    RECT new_window_rect;
-                    new_window_rect.left = window_offset_x;
-                    new_window_rect.top = window_offset_y;
-                    new_window_rect.right = window_buffer_info.bmiHeader.biWidth;
-                    new_window_rect.bottom = -window_buffer_info.bmiHeader.biHeight;
+            /*         RECT new_window_rect; */
+            /*         new_window_rect.left = window_offset_x; */
+            /*         new_window_rect.top = window_offset_y; */
+            /*         new_window_rect.right = window_buffer_info.bmiHeader.biWidth; */
+            /*         new_window_rect.bottom = -window_buffer_info.bmiHeader.biHeight; */
 
-                    /* AdjustWindowRect(&new_window_rect, */
-                    /*                  0, */
-                    /*                  0); */
-                }
+            /*         /\* AdjustWindowRect(&new_window_rect, *\/ */
+            /*         /\*                  0, *\/ */
+            /*         /\*                  0); *\/ */
+            /*     } */
+
+            update_and_render();
+            
+            window_buffer_info.bmiHeader.biWidth = wnd_width;
+            window_buffer_info.bmiHeader.biHeight = -wnd_height;
+
+            // @TODO resize window rect???
             
             HDC dc = GetDC(window);
             window_rect_dims rect = get_window_rect_dims(window);

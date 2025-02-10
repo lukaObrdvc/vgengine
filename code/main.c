@@ -14,13 +14,7 @@
 // @IMPORTANT -wd4013 I'm getting for sqr probably something to do with including <math.h> orsmth......???
 
                       // using
-global_variable b32 inited = false; // @IMPORTANT this shite here will also resize the window on dll reload (because static)
-global_variable s32 origin_x = 0; // using
-global_variable s32 origin_y = 0; // using
-global_variable u32 thickness = 2;
-global_variable u32 count = 15;
-global_variable u32 spread_x = 10; // using
-global_variable u32 spread_y = 10; // using
+//global_variable b32 inited = false; // @IMPORTANT this shite here will also resize the window on dll reload (because static)
 //global_variable coordsys2 centeredcs;
 //global_variable coordsys2 offsetedcs;
 /* global_variable line2 line; */
@@ -111,11 +105,11 @@ global_variable u32 spread_y = 10; // using
 
 void draw_clamped_wndrect(wndrect rectangle, pxl color)
 {
-    u32 offset = wndpitch*round32(rectangle.topleft.y)/8 +
-        round32(rectangle.topleft.x)*wndbuffer.bytpp/8;
+    u32 offset = wnd_pitch*round32(rectangle.topleft.y) +
+        round32(rectangle.topleft.x)*wnd_bytpp;
     for (s32 i = 0; i < rectangle.height; i++)
         {
-            pxl* row = (pxl*)(wndbuffer.memory + wndpitch*i/8 + offset);
+            pxl* row = (pxl*)(wnd_buffer + wnd_pitch*i + offset);
             for (s32 j = 0; j < rectangle.width; j++)
                 {
                     *row = color;
@@ -131,29 +125,29 @@ void clamp_wndrect(wndrect* rectangle)
             rectangle->width += rectangle->topleft.x;
             rectangle->topleft.x = 0;
         }
-    else if (rectangle->topleft.x > wndbuffer.width)
+    else if (rectangle->topleft.x > wnd_width)
         {
             rectangle->width = 0;
-            rectangle->topleft.x = (r32)wndbuffer.width;
+            rectangle->topleft.x = (r32)wnd_width;
         }
     if (rectangle->topleft.y < 0)
         {
             rectangle->height += rectangle->topleft.y;
             rectangle->topleft.y = 0;            
         }
-    else if (rectangle->topleft.y > wndbuffer.height)
+    else if (rectangle->topleft.y > wnd_height)
         {
             rectangle->height = 0;
-            rectangle->topleft.y = (r32)wndbuffer.height;
+            rectangle->topleft.y = (r32)wnd_height;
         }
     
-    if (rectangle->topleft.x + rectangle->width > wndbuffer.width)
+    if (rectangle->topleft.x + rectangle->width > wnd_width)
         {
-            rectangle->width = wndbuffer.width - rectangle->topleft.x;
+            rectangle->width = wnd_width - rectangle->topleft.x;
         }
-    if (rectangle->topleft.y + rectangle->height > wndbuffer.height)
+    if (rectangle->topleft.y + rectangle->height > wnd_height)
         {
-            rectangle->height = wndbuffer.height - rectangle->topleft.y;
+            rectangle->height = wnd_height - rectangle->topleft.y;
         }    
 }
 
@@ -195,11 +189,11 @@ void clamp_wndrect(wndrect* rectangle)
 
 void fill_background()
 {
-    u32 pitch = wndbuffer.width*wndbuffer.bytpp/8;
-    for (u32 i = 0; i < wndbuffer.height; i++)
+    s32 pitch = wnd_width*wnd_bytpp;
+    for (s32 i = 0; i < wnd_height; i++)
         {
-            pxl* row = (pxl*)(wndbuffer.memory + i*pitch);
-            for (u32 j = 0; j < wndbuffer.width; j++)
+            pxl* row = (pxl*)(wnd_buffer + i*pitch);
+            for (s32 j = 0; j < wnd_width; j++)
                 {
                     *row = literal(pxl) {120, 0, 120, 255}; // in struct is r,g,b,a ..?
                     //*row = (a << 24) | (R << 16) | (G << 8) | B;
@@ -287,6 +281,8 @@ void fill_background()
 void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)
 {
     pxl color = {0, 0, 0, 255};
+    s32 origin_x = Gamestate->wnd_center_x;
+    s32 origin_y = Gamestate->wnd_center_y;
     for (u32 i=1; i<=count; i++)
         {
             s32 top = origin_y-i*(spread_y+thickness);
@@ -347,23 +343,23 @@ void process_frame_input(key curr_frame_key,
                 {            
                 case KEY_UP:
                     {
-                        origin_y-= 10;
-                        y_offset-= 10;
+                        Gamestate->wnd_center_y-= 10;
+                        Gamestate->dbg_render_y_offset-= 10;
                     } break;
                 case KEY_DOWN:
                     {
-                        origin_y+= 10;
-                        y_offset+= 10;
+                        Gamestate->wnd_center_y+= 10;
+                        Gamestate->dbg_render_y_offset+= 10;
                     } break;
                 case KEY_LEFT:
                     {
-                        origin_x-= 10;
-                        x_offset-= 10;
+                        Gamestate->wnd_center_x-= 10;
+                        Gamestate->dbg_render_x_offset-= 10;
                     } break;
                 case KEY_RIGHT:
                     {
-                        origin_x+= 10;
-                        x_offset+= 10;
+                        Gamestate->wnd_center_x+= 10;
+                        Gamestate->dbg_render_x_offset+= 10;
                     } break;
                 default:
                     {}
@@ -374,15 +370,15 @@ void process_frame_input(key curr_frame_key,
         {
             if (curr_frame_mouse.code == M1 && curr_frame_mouse.is_down)
                 {
-                    square_length += 50;
-                    spread_x+=10;
-                    spread_y+=4;
+                    Gamestate->square_length += 50;
+                    Gamestate->concentric_spread_x+=10;
+                    Gamestate->concentric_spread_y+=4;
                 }
             if (curr_frame_mouse.code == M2 && curr_frame_mouse.is_down)
                 {
-                    square_length -= 50;
-                    spread_x-=10;
-                    spread_y-=4;
+                    Gamestate->square_length -= 50;
+                    Gamestate->concentric_spread_x-=10;
+                    Gamestate->concentric_spread_y-=4;
                 }
         }
     
@@ -393,64 +389,96 @@ void process_frame_input(key curr_frame_key,
     /* mouse_frame_key.mouse_moved = false;     */
 }
 
-void init_once(int* result)
-{
-    if (!inited)
-        {
+/* void init_once() */
+/* { */
+/*     if (!inited) */
+/*         { */
 
-            origin_x = 1280/2;
-            origin_y = 720/2;
+/*             /\* origin_x = 1280/2; *\/ */
+/*             /\* origin_y = 720/2; *\/ */
 
-            memory.size = 1280*720*wndbuffer.bytpp;
-            wndbuffer.memory = memory.base;
-            wndbuffer.width = 1280;
-            wndbuffer.height = 720;
+/*             /\* memory.size = 1280*720*wndbuffer.bytpp; *\/ */
+/*             /\* wndbuffer.memory = memory.base; *\/ */
+/*             /\* wndbuffer.width = 1280; *\/ */
+/*             /\* wndbuffer.height = 720; *\/ */
                         
-            /* centeredcs.offset = 0; */
+/*             /\* centeredcs.offset = 0; *\/ */
 
-            /* offsetedcs.origin = centeredcs.origin; */
-            /* offsetedcs.offset = 0; */
+/*             /\* offsetedcs.origin = centeredcs.origin; *\/ */
+/*             /\* offsetedcs.offset = 0; *\/ */
 
-            wndpitch = wndbuffer.width*wndbuffer.bytpp;
-            /*
-            v2 lx;
-            v2 ly;
+/*             //wndpitch = wndbuffer.width*wndbuffer.bytpp; */
+/*             /\* */
+/*             v2 lx; */
+/*             v2 ly; */
 
-            v2 a;
-            v2 b;
-            v2 c;
-            v2 d;
+/*             v2 a; */
+/*             v2 b; */
+/*             v2 c; */
+/*             v2 d; */
 
-            */
-            inited = true;
-        }
-    else
+/*             *\/ */
+/*             //inited = true; */
+/*         } */
+/*     else */
+/*         { */
+/*             //\*result = false; */
+/*         } */
+/* } */
+
+void platform_init_memory_base(void* memory_base_ptr)
+{    
+    memory_base = (platform_provides*) memory_base_ptr;
+
+    if (!((game_state*)(memory_base->perm_mem))->inited)
         {
-            *result = false;
+            Assert(sizeof(game_state) <= memory_base->perm_mem_cap);
+            
+            *((game_state*)memory_base->perm_mem) = literal(game_state) {
+                .inited = true,
+
+                .wndbuffer_width = 1280,
+                .wndbuffer_height = 720,
+                .dbg_render_x_offset = 0, 
+                .dbg_render_y_offset = 0, 
+                .square_length = 10,       
+                .wnd_center_x = 1280/2,        
+                .wnd_center_y = 720/2,        
+                .concentric_thickness = 5,
+                .concentric_count = 10,    
+                .concentric_spread_x = 50, 
+                .concentric_spread_y = 50 };
         }
 }
 
-
-void* update_and_render()
+void update_and_render()
 {
-    s32* result = (s32*)((u8*)memory.base + (s64)gigabytes(2));
-    s32* temp = result;
-    *temp = true;
-    temp++;
-    *((void**)temp) = memory.base;
-    temp++;
-    *temp = 1280;
-    temp++;
-    *temp = 720;
+    /* s32* result = (s32*)((u8*)memory.base + (s64)gigabytes(2)); */
+    /* s32* temp = result; */
+    /* *temp = true; */
+    /* temp++; */
+    /* *((void**)temp) = memory.base; */
+    /* temp++; */
+    /* *temp = 1280; */
+    /* temp++; */
+    /* *temp = 720; */
 
     
-    init_once(result);
+    //init_once();
     test();
     
     //dbg_render(x_offset, y_offset);
     //dbg_draw_square_around_cursor(square_length);
     
     fill_background();
+
+    Gamestate->concentric_count = 10;
+
+    u32 thickness = Gamestate->concentric_thickness;
+    u32 spread_x = Gamestate->concentric_spread_x;
+    u32 spread_y = Gamestate->concentric_spread_y;
+    u32 count = Gamestate->concentric_count;
+    
     concentric_rectangles_around_origin(thickness, spread_x, spread_y, count);
     //draw_line();
     //if (linex == 0) a+= PI/8;
@@ -482,6 +510,6 @@ void* update_and_render()
             counter = 0;
             }*/
 
-    return result;
+    //return result;
 }
 

@@ -12,11 +12,11 @@ void file_test()
 {
     if (filetest)
         {
-            u32 readsize;            
-            dbg_read_file((u8*)"W:\\cardcrafter\\data\\readtest.txt", (u8*)memory.base+memory.size, &readsize);
-            memory.size += readsize;
-            dbg_write_file((u8*)"W:\\cardcrafter\\data\\writetest.txt", (u8*)memory.base+memory.size, readsize);
-            filetest = false;
+        /*     u32 readsize;             */
+        /*     dbg_read_file((u8*)"W:\\cardcrafter\\data\\readtest.txt", (u8*)memory.base+memory.size, &readsize); */
+        /*     memory.size += readsize; */
+        /*     dbg_write_file((u8*)"W:\\cardcrafter\\data\\writetest.txt", (u8*)memory.base+memory.size, readsize); */
+        /*     filetest = false; */
         }
 }
 /*

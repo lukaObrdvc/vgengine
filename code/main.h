@@ -17,14 +17,6 @@ typedef struct platform_resized_window_Buffer
     u32 height;
 } platform_resized_window_buffer;
 
-typedef struct Window_buffer
-{
-    u8* memory;
-    u32 width;
-    u32 height;
-    u8 bytpp;
-} window_buffer;
-
 // @Note do I want a v2 here?
 typedef struct Wndrect
 {
@@ -78,68 +70,62 @@ typedef struct Keyboard_key
 /*     key key; */
 /* } input; */
 
-/* typedef struct Game_memory */
+
+// @TODO how do I keep track of sizes of memories??
+typedef struct platform_Provides
+{
+    void* perm_mem;
+    u64 perm_mem_cap;
+    void* temp_mem;
+    u64 temp_mem_cap;
+
+    s32 bytpp;
+    // @TODO do I want stubs for these (and then
+    // the question is does the platform or game
+    // set the stub, and in what circumstances etc....)
+    fp_dbg_read_file dbg_read_file;
+    fp_dbg_write_file dbg_write_file;
+} platform_provides;
+
+global_variable platform_provides* memory_base;
+
+typedef struct game_State
+{
+    b32 inited;
+
+    s32 wndbuffer_width;
+    s32 wndbuffer_height;
+    s32 dbg_render_x_offset;
+    s32 dbg_render_y_offset;
+    s32 square_length;
+    s32 wnd_center_x;
+    s32 wnd_center_y;
+    s32 concentric_thickness;
+    s32 concentric_count;
+    s32 concentric_spread_x;
+    s32 concentric_spread_y;
+    //...
+
+} game_state;
+
+// @TODO do I make inline functions instead??
+#define Gamestate ((game_state*)(memory_base->perm_mem))
+
+#define wnd_width (((game_state*)(memory_base->perm_mem))->wndbuffer_width)
+#define wnd_height (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
+#define wnd_bytpp (memory_base->bytpp)
+#define wnd_pitch (wnd_width*wnd_bytpp)
+#define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) + sizeof(game_state)))
+
+/* inline void* dbg_alloc(u32 size) */
 /* { */
-/*     void* base; */
-/*     u64 size;        // @Note should be in bytes */
-/*     u64 capacity; */
-/* } game_memory; */
-
-
-void dbg_render (s8 x_offset, s8 y_offset);
-void dbg_draw_square(u8 square_length);
-
-
-b32 dbg_read_file_stub (u8* filename, void* buffer, u32* buffer_size)
-{
-    return false;
-}
-
-b32 dbg_write_file_stub (u8* filename, void* buffer, u32 buffer_size)
-{
-    return false;
-}
-
-global_variable fp_dbg_read_file dbg_read_file = dbg_read_file_stub;
-global_variable fp_dbg_write_file dbg_write_file = dbg_write_file_stub;
-
-
-global_variable window_buffer wndbuffer = {};        // now this has to be allocated
-//global_variable cursor cursor_ = {};
-//global_variable mouse_key mouse_frame_key = {};
-//global_variable keyboard_key frame_key = {};
-global_variable s8 x_offset = 0; // using
-global_variable s8 y_offset = 0; // using
-global_variable u8 square_length = 10; // using
-global_variable void* memory_base;
-global_variable u32 wndpitch = 0;                   // and this
-
-inline void* dbg_alloc(u32 size)
-{
-    void* result;
-    result = (u8*)memory_base+ *((u64)memory_base);
-    *((u64)memory_base) += size;
-    return result;
-}
+/*     void* result; */
+/*     result = (u8*)memory_base+ *((u64)memory_base); */
+/*     *((u64)memory_base) += size; */
+/*     return result; */
+/* } */
 
 // @IMPORTANT you cannot inline if you want to export with DLL ???
-void platform_init_game(void* memory_base_ptr,
-                        u64 memory_capacity,
-                        u8 bytpp,
-                        fp_dbg_read_file read_file_proc,
-                        fp_dbg_write_file write_file_proc)
-{
-    
-    memory_base = memory_base_ptr;
-    if (memory_capacity)
-        {
-            dbg_read_file = read_file_proc;
-            dbg_write_file = write_file_proc;
-            *((u64)memory_base) = 16; // memory_size
-            *((u64)memory_base + 1) = memory_capacity;
-            wndbuffer.bytpp = bytpp;
-        }
-}
 
 
 #endif
