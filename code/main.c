@@ -6,32 +6,37 @@
 #include "main.h"
 #include "test.h"
 
+// @TODO put void into functions that actually do not get passed anything
+
 // @Failure IMPORTANT, avoid unsigned when you are subtracting because when you go past 0 you will overflow
 // @Note LITERALLY DO NOT USE unsigned int (especially when you subtract and operate with signed int) unless you know it's fine to use....
 
-global_variable b32 inited = false;
-global_variable s32 origin_x = 0;
-global_variable s32 origin_y = 0;
-global_variable u32 thickness = 5;
-global_variable u32 count = 10;
-global_variable u32 spread_x = 10;
-global_variable u32 spread_y = 10;
+// @IMPORTANT -wd4013 I'm getting for sqr probably something to do with including <math.h> orsmth......???
+
+                      // using
+global_variable b32 inited = false; // @IMPORTANT this shite here will also resize the window on dll reload (because static)
+global_variable s32 origin_x = 0; // using
+global_variable s32 origin_y = 0; // using
+global_variable u32 thickness = 2;
+global_variable u32 count = 15;
+global_variable u32 spread_x = 10; // using
+global_variable u32 spread_y = 10; // using
 //global_variable coordsys2 centeredcs;
 //global_variable coordsys2 offsetedcs;
-global_variable line2 line;
-global_variable s8 linex = 0;
-global_variable s8 liney = 0;
-global_variable rad a = 0;
-global_variable r32 s = 1;
-global_variable s32 counter = 0;
-global_variable rect2 grect;
+/* global_variable line2 line; */
+/* global_variable s8 linex = 0; */
+/* global_variable s8 liney = 0; */
+/* global_variable rad a = 0; */
+/* global_variable r32 s = 1; */
+/* global_variable s32 counter = 0; */
+/* global_variable rect2 grect; */
 
-global_variable pxl my;
-global_variable mouse_key_code mykey;
+//global_variable pxl my;
+//global_variable mouse_key_code mykey;
 
 
-#define GRECT_WIDTH 50
-#define GRECT_HEIGHT 50
+/* #define GRECT_WIDTH 50 */
+/* #define GRECT_HEIGHT 50 */
 
 /* wndrect obtain_wndrect(rect2 rectangle) */
 /* { */
@@ -106,11 +111,11 @@ global_variable mouse_key_code mykey;
 
 void draw_clamped_wndrect(wndrect rectangle, pxl color)
 {
-    u32 offset = wndpitch*round32(rectangle.topleft.y) +
-        round32(rectangle.topleft.x)*wndbuffer.bytpp;
+    u32 offset = wndpitch*round32(rectangle.topleft.y)/8 +
+        round32(rectangle.topleft.x)*wndbuffer.bytpp/8;
     for (s32 i = 0; i < rectangle.height; i++)
         {
-            pxl* row = (pxl*)(wndbuffer.memory + wndpitch*i + offset);
+            pxl* row = (pxl*)(wndbuffer.memory + wndpitch*i/8 + offset);
             for (s32 j = 0; j < rectangle.width; j++)
                 {
                     *row = color;
@@ -190,7 +195,7 @@ void clamp_wndrect(wndrect* rectangle)
 
 void fill_background()
 {
-    u32 pitch = wndbuffer.width*wndbuffer.bytpp;
+    u32 pitch = wndbuffer.width*wndbuffer.bytpp/8;
     for (u32 i = 0; i < wndbuffer.height; i++)
         {
             pxl* row = (pxl*)(wndbuffer.memory + i*pitch);
@@ -316,7 +321,7 @@ void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread
             clamp_wndrect(&wright);
             clamp_wndrect(&wdown);
 
-            draw_clamped_wndrect(wup,color);
+            draw_clamped_wndrect(wup, color);
             draw_clamped_wndrect(wleft, color);
             draw_clamped_wndrect(wright, color);
             draw_clamped_wndrect(wdown, color);
@@ -329,56 +334,78 @@ void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread
         }
 }
 
-void invalidate_player_input()
-{
-    frame_key.code = KEY_NONE;
-    mouse_frame_key.code = M_NONE;
-    mouse_frame_key.is_down = false;
-    mouse_frame_key.mouse_moved = false;
-}
-
 // @TODO make this work when multiple keys are down at the same time ??
-void process_player_input()
+void process_frame_input(key curr_frame_key,
+                         b32 used_key,
+                         mouse curr_frame_mouse,
+                         b32 used_mouse)
 {
-    switch(frame_key.code)
-        {            
-        case KEY_UP:
-            {
-                origin_y-= 10;
-                y_offset-= 10;
-            } break;
-        case KEY_DOWN:
-            {
-                origin_y+= 10;
-                y_offset+= 10;
-            } break;
-        case KEY_LEFT:
-            {
-                origin_x-= 10;
-                x_offset-= 10;
-            } break;
-        case KEY_RIGHT:
-            {
-                origin_x+= 10;
-                x_offset+= 10;
-            } break;
-        default:
-            {}
-        }
-
-    if (mouse_frame_key.code == M1 && mouse_frame_key.is_down)
+    
+    if (used_key)
         {
-            square_length += 50;
-            spread_x+=10;
-            spread_y+=4;
+            switch(curr_frame_key.code)
+                {            
+                case KEY_UP:
+                    {
+                        origin_y-= 10;
+                        y_offset-= 10;
+                    } break;
+                case KEY_DOWN:
+                    {
+                        origin_y+= 10;
+                        y_offset+= 10;
+                    } break;
+                case KEY_LEFT:
+                    {
+                        origin_x-= 10;
+                        x_offset-= 10;
+                    } break;
+                case KEY_RIGHT:
+                    {
+                        origin_x+= 10;
+                        x_offset+= 10;
+                    } break;
+                default:
+                    {}
+                }
         }
+    
+    if (used_mouse)
+        {
+            if (curr_frame_mouse.code == M1 && curr_frame_mouse.is_down)
+                {
+                    square_length += 50;
+                    spread_x+=10;
+                    spread_y+=4;
+                }
+            if (curr_frame_mouse.code == M2 && curr_frame_mouse.is_down)
+                {
+                    square_length -= 50;
+                    spread_x-=10;
+                    spread_y-=4;
+                }
+        }
+    
+    // @Fail is this invalidation desirable    
+    /* frame_key.code = KEY_NONE; */
+    /* mouse_frame_key.code = M_NONE; */
+    /* mouse_frame_key.is_down = false; */
+    /* mouse_frame_key.mouse_moved = false;     */
 }
 
-void init_once()
+void init_once(int* result)
 {
     if (!inited)
         {
-            
+
+            origin_x = 1280/2;
+            origin_y = 720/2;
+
+            memory.size = 1280*720*wndbuffer.bytpp;
+            wndbuffer.memory = memory.base;
+            wndbuffer.width = 1280;
+            wndbuffer.height = 720;
+                        
             /* centeredcs.offset = 0; */
 
             /* offsetedcs.origin = centeredcs.origin; */
@@ -397,16 +424,29 @@ void init_once()
             */
             inited = true;
         }
+    else
+        {
+            *result = false;
+        }
 }
 
-void update_and_render()
+
+void* update_and_render()
 {
-    test();
-    init_once();
+    s32* result = (s32*)((u8*)memory.base + (s64)gigabytes(2));
+    s32* temp = result;
+    *temp = true;
+    temp++;
+    *((void**)temp) = memory.base;
+    temp++;
+    *temp = 1280;
+    temp++;
+    *temp = 720;
+
     
-    // @Fail is this invalidation desirable
-    process_player_input();
-    invalidate_player_input();
+    init_once(result);
+    test();
+    
     //dbg_render(x_offset, y_offset);
     //dbg_draw_square_around_cursor(square_length);
     
@@ -441,5 +481,7 @@ void update_and_render()
             s = 0;
             counter = 0;
             }*/
+
+    return result;
 }
 

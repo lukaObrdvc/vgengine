@@ -113,6 +113,8 @@
   (call-interactively 'string-insert-rectangle)
   )
 
+;; can do this from emacs' shell
+;; also git....
 (defun _devenv ()
   (interactive)
   (luka-save-all)

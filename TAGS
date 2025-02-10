@@ -1,7 +1,58 @@
 
 code/build.bat,0
 
-code/cardcrafter.h,2516
+code/linalg.h,569
+#define LINALG_HLINALG_H2,18
+typedef struct V2V25,40
+    r32 x;x7,62
+    r32 y;y8,74
+} v2;v29,86
+typedef struct V3V311,95
+    r32 x;x13,117
+    r32 y;y14,129
+    r32 z;z15,141
+} v3;v316,153
+typedef struct V4V418,162
+    r32 x;x20,184
+    r32 y;y21,196
+    r32 z;z22,208
+    r32 a;a23,220
+} v4;v424,232
+inline r32 edist2(v2 vec1, v2 vec2)edist2188,3057
+inline r32 edist3(v3 vec1, v3 vec2)edist3194,3187
+inline v2 perp2(v2 vec)perp2247,4346
+inline v2 scale2(v2 v, r32 s)scale2255,4462
+inline v3 scale3(v3 v, r32 s)scale3264,4614
+
+code/main.c,1356
+global_variable b32 inited = false;inited12,394
+global_variable s32 origin_x = 0;origin_x13,431
+global_variable s32 origin_y = 0;origin_y14,466
+global_variable u32 thickness = 5;thickness15,501
+global_variable u32 count = 10;count16,537
+global_variable u32 spread_x = 10;spread_x17,570
+global_variable u32 spread_y = 10;spread_y18,606
+global_variable line2 line;line21,724
+global_variable s8 linex = 0;linex22,753
+global_variable s8 liney = 0;liney23,784
+global_variable rad a = 0;a24,815
+global_variable r32 s = 1;s25,843
+global_variable s32 counter = 0;counter26,871
+global_variable rect2 grect;grect27,905
+global_variable pxl my;my29,937
+global_variable mouse_key_code mykey;mykey30,962
+#define GRECT_WIDTH GRECT_WIDTH33,1005
+#define GRECT_HEIGHT GRECT_HEIGHT34,1029
+void draw_clamped_wndrect(wndrect rectangle, pxl color)draw_clamped_wndrect107,3779
+void clamp_wndrect(wndrect* rectangle)clamp_wndrect122,4255
+void fill_background()fill_background191,6550
+void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)concentric_rectangles_around_origin282,9518
+void invalidate_player_input()invalidate_player_input332,11272
+void process_player_input()process_player_input341,11533
+void init_once()init_once377,12340
+void update_and_render()update_and_render402,12803
+
+code/main.h,2675
 #define CARDCRAFTER_HCARDCRAFTER_H2,23
 typedef b32 (*dbg_read_file) (u8* filename, void* buffer, u32* buffer_size);dbg_read_file6,84
 typedef b32 (*dbg_write_file) (u8* filename, void* buffer, u32 buffer_size);dbg_write_file7,162
@@ -9,282 +60,165 @@ typedef struct Window_bufferWindow_buffer11,342
     u8* memory;memory13,375
     u32 width;width14,392
     u32 height;height15,408
-    u8 bytes_per_pixel;bytes_per_pixel16,425
-} window_buffer;window_buffer17,450
-typedef struct WndrectWndrect19,470
-    v2 topleft;topleft21,497
-    r32 width;width22,514
-    r32 height;height23,530
-} wndrect;wndrect24,547
-typedef struct CursorCursor26,561
-    u32 x;x28,587
-    u32 y;y29,599
-} cursor;cursor30,611
-typedef enum Mouse_key_codeMouse_key_code32,624
-        M_NONE,M_NONE34,660
-        M1,M135,677
-        M2,M236,690
-        M3M337,703
-    } mouse_key_code;mouse_key_code38,715
-typedef struct Mouse_keyMouse_key40,740
-    b32 mouse_moved;mouse_moved42,769
-    b32 is_down;is_down43,791
-    mouse_key_code code;code44,809
-} mouse_key;mouse_key45,835
-typedef struct MouseMouse47,851
-    cursor cursor;cursor49,876
-    mouse_key key;key50,896
-} mouse;mouse51,916
-typedef enum Key_codeKey_code53,928
-        KEY_NONE,KEY_NONE55,958
-        KEY_UP,KEY_UP56,977
-        KEY_RIGHT,KEY_RIGHT57,994
-        KEY_DOWN,KEY_DOWN58,1014
-        KEY_LEFTKEY_LEFT59,1033
-    } key_code;key_code60,1051
-typedef struct Keyboard_keyKeyboard_key63,1112
-    key_code code;code65,1144
-    b32 is_down;is_down66,1164
-    b32 was_down;was_down67,1182
-} keyboard_key;keyboard_key68,1201
-typedef struct Game_memoryGame_memory70,1220
-    void* base;base72,1251
-    u64 size;size73,1268
-    u64 capacity;capacity74,1283
-} game_memory;game_memory75,1302
-b32 dbg_readfile_stub (u8* filename, void* buffer, u32* buffer_size)dbg_readfile_stub84,1500
-b32 dbg_writefile_stub (u8* filename, void* buffer, u32 buffer_size)dbg_writefile_stub89,1597
-dbg_read_file dbg_readfile = dbg_readfile_stub;dbg_readfile94,1694
-dbg_write_file dbg_writefile = dbg_writefile_stub;dbg_writefile95,1743
-window_buffer wndbuffer = {};wndbuffer99,1899
-cursor cursor_ = {};cursor_100,1930
-mouse_key mouse_frame_key = {};mouse_frame_key101,1952
-keyboard_key frame_key = {};frame_key102,1985
-s8 x_offset = 0;x_offset103,2015
-s8 y_offset = 0;y_offset104,2033
-u8 square_length = 10;square_length105,2051
-game_memory memory = {};memory106,2075
-u32 wndpitch = 0;wndpitch107,2101
+    u8 bytpp;bytpp16,425
+} window_buffer;window_buffer17,440
+typedef struct WndrectWndrect20,491
+    v2 topleft;topleft22,518
+    r32 width;width23,535
+    r32 height;height24,551
+} wndrect;wndrect25,568
+typedef struct CursorCursor28,620
+    u32 x;x30,646
+    u32 y;y31,658
+} cursor;cursor32,670
+typedef enum Mouse_key_codeMouse_key_code34,683
+        M_NONE,M_NONE36,719
+        M1,M137,736
+        M2,M238,749
+        M3M339,762
+    } mouse_key_code;mouse_key_code40,774
+typedef struct Mouse_keyMouse_key42,799
+    b32 mouse_moved;mouse_moved44,828
+    b32 is_down;is_down45,850
+    mouse_key_code code;code46,868
+} mouse_key;mouse_key47,894
+typedef struct MouseMouse49,910
+    cursor cursor;cursor51,935
+    mouse_key key;key52,955
+} mouse;mouse53,975
+typedef enum Key_codeKey_code55,987
+        KEY_NONE,KEY_NONE57,1017
+        KEY_UP,KEY_UP58,1036
+        KEY_RIGHT,KEY_RIGHT59,1053
+        KEY_DOWN,KEY_DOWN60,1073
+        KEY_LEFTKEY_LEFT61,1092
+    } key_code;key_code62,1110
+typedef struct Keyboard_keyKeyboard_key65,1171
+    key_code code;code67,1203
+    b32 is_down;is_down68,1223
+    b32 was_down;was_down69,1241
+} keyboard_key;keyboard_key70,1260
+typedef struct Game_memoryGame_memory72,1279
+    void* base;base74,1310
+    u64 size;size75,1327
+    u64 capacity;capacity76,1342
+} game_memory;game_memory77,1361
+b32 dbg_readfile_stub (u8* filename, void* buffer, u32* buffer_size)dbg_readfile_stub86,1559
+b32 dbg_writefile_stub (u8* filename, void* buffer, u32 buffer_size)dbg_writefile_stub91,1656
+global_variable dbg_read_file dbg_readfile = dbg_readfile_stub;dbg_readfile96,1753
+global_variable dbg_write_file dbg_writefile = dbg_writefile_stub;dbg_writefile97,1818
+global_variable window_buffer wndbuffer = {};wndbuffer99,1888
+global_variable cursor cursor_ = {};cursor_100,1935
+global_variable mouse_key mouse_frame_key = {};mouse_frame_key101,1973
+global_variable keyboard_key frame_key = {};frame_key102,2022
+global_variable s8 x_offset = 0;x_offset103,2068
+global_variable s8 y_offset = 0;y_offset104,2102
+global_variable u8 square_length = 10;square_length105,2136
+global_variable game_memory memory = {};memory106,2176
+global_variable u32 wndpitch = 0;wndpitch107,2218
 
-code/cardgame.c,2072
-global_variable b32 inited = false;inited22,570
-global_variable s32 origin_x = 0;origin_x23,607
-global_variable s32 origin_y = 0;origin_y24,642
-global_variable u32 thickness = 5;thickness25,677
-global_variable u32 count = 10;count26,713
-global_variable u32 spread_x = 10;spread_x27,746
-global_variable u32 spread_y = 10;spread_y28,782
-global_variable coordsys2 centeredcs;centeredcs29,818
-global_variable coordsys2 offsetedcs;offsetedcs30,857
-global_variable line2 line;line31,896
-global_variable s8 linex = 0;linex32,925
-global_variable s8 liney = 0;liney33,956
-global_variable rad a = 0;a34,987
-global_variable r32 s = 1;s35,1015
-global_variable s32 counter = 0;counter36,1043
-global_variable rect2 grect;grect37,1077
-global_variable pxl my;my39,1109
-global_variable Mouse_key_code mykey;mykey40,1134
-#define GRECT_WIDTH GRECT_WIDTH43,1177
-#define GRECT_HEIGHT GRECT_HEIGHT44,1201
-void fill_background()fill_background207,6294
-void invalidate_player_input()invalidate_player_input359,10923
-global_variable b32 inited = false;inited22,570
-global_variable s32 origin_x = 0;origin_x23,607
-global_variable s32 origin_y = 0;origin_y24,642
-global_variable u32 thickness = 5;thickness25,677
-global_variable u32 count = 10;count26,713
-global_variable u32 spread_x = 10;spread_x27,746
-global_variable u32 spread_y = 10;spread_y28,782
-global_variable coordsys2 centeredcs;centeredcs29,818
-global_variable coordsys2 offsetedcs;offsetedcs30,857
-global_variable line2 line;line31,896
-global_variable s8 linex = 0;linex32,925
-global_variable s8 liney = 0;liney33,956
-global_variable rad a = 0;a34,987
-global_variable r32 s = 1;s35,1015
-global_variable s32 counter = 0;counter36,1043
-global_variable rect2 grect;grect37,1077
-global_variable pxl my;my39,1109
-global_variable Mouse_key_code mykey;mykey40,1134
-#define GRECT_WIDTH GRECT_WIDTH43,1177
-#define GRECT_HEIGHT GRECT_HEIGHT44,1201
-void fill_background()fill_background207,6294
-void invalidate_player_input()invalidate_player_input359,10923
-
-code/linalg.c,757
-inline r32 elen(origin2 orgn, v2 vec)elen3,23
-inline r32 elen3(origin3 orgn, v3 vec)elen310,176
-inline r32 elenv(v2 vec)elenv17,348
-inline r32 elenv3(v3 vec)elenv324,474
-inline r32 edist(v2 vec1, v2 vec2)edist32,635
-inline r32 edist3(v3 vec1, v3 vec2)edist338,764
-inline v2 icomponent(v2 vec)icomponent45,936
-inline v2 jcomponent(v2 vec)jcomponent53,1052
-inline v3 icomponent3(v3 vec)icomponent361,1168
-inline v3 jcomponent3(v3 vec)jcomponent370,1304
-inline v3 kcomponent3(v3 vec)kcomponent379,1440
-inline v2 perp(v2 vec)perp88,1576
-inline v2 scale(v2 v, r32 s)scale96,1691
-inline v3 scale3(v3 v, r32 s)scale3105,1842
-inline v2 rotate_d(v2 vec, degree angle)rotate_d125,2453
-inline v2 rotate(v2 vec, rad angle)rotate138,2828
-
-code/linalg.h,665
-#define LINALG_HLINALG_H2,18
-typedef struct V2V210,236
-    r32 x;x12,258
-    r32 y;y13,270
-} v2;v222,497
-typedef struct V3V324,506
-    r32 x;x26,528
-    r32 y;y27,540
-    r32 z;z28,552
-} v3;v337,784
-typedef struct V4V439,793
-    r32 x;x41,815
-    r32 y;y42,827
-    r32 z;z43,839
-    r32 a;a44,851
-} v4;v453,1088
-typedef v2 origin2;origin266,1361
-typedef v3 origin3;origin367,1382
-typedef struct Coordsys2Coordsys271,1476
-    origin2 origin;origin73,1505
-    rad offset;offset74,1526
-} coordsys2;coordsys275,1543
-typedef struct Coordsys3Coordsys378,1618
-    origin3 origin;origin80,1647
-} coordsys3;coordsys381,1668
-
-code/math.c,504
-inline s32 signofr32(r32 n)signofr329,238
-inline s32 signofs32(s32 n)signofs3214,304
-inline r32 sqr(r32 n)sqr19,375
-inline r32 normalize(r32 n, r32 max)normalize24,423
-inline r32 renormalize(r32 n, r32 max)renormalize29,488
-inline degree normalize_d(degree angle)normalize_d34,555
-inline rad normalizerad(rad angle)normalizerad39,667
-inline degree to_degree(rad angle)to_degree44,788
-inline rad to_rad(degree angle)to_rad50,920
-inline r32 lerp(r32 low, r32 high, r32 step)lerp56,1048
-
-code/math.h,724
+code/math.h,907
 #define MATH_HMATH_H2,16
-#define floor32r(floor32r10,206
-#define floor64r(floor64r11,243
-#define floor32i(floor32i12,280
-#define floor64i(floor64i13,312
-#define ceil32r(ceil32r16,396
-#define ceil64r(ceil64r17,432
-#define ceil32i(ceil32i18,468
-#define ceil64i(ceil64i19,504
-#define round32r(round32r22,593
-#define round64r(round64r23,632
-#define round32i(round32i24,671
-#define round64i(round64i25,710
-#define decimal32(decimal3228,793
-#define decimal64(decimal6429,830
-#define abs(abs31,869
-const r32 PI = (r32)3.14159;PI35,933
-const r32 RAD_MAX = 2*(r32)3.14159;RAD_MAX36,963
-const s32 DEGREE_MAX = 360;DEGREE_MAX37,1000
-typedef r32 degree;degree39,1031
-typedef r32 rad;rad40,1052
+inline s32 floor32(r32 n)floor3215,365
+inline s64 floor64(r64 n)floor6420,422
+inline s32 ceil32(r32 n)ceil3226,529
+inline s64 ceil64(r64 n)ceil6431,587
+inline s32 round32(r32 n)round3237,697
+inline s64 round64(r64 n)round6442,758
+inline r32 decimal32(r32 n)decimal3247,819
+inline r64 decimal64(r64 n)decimal6452,878
+#define abs(abs57,937
+#define PI PI59,981
+#define RAD_MAX RAD_MAX60,1001
+#define DEGREE_MAX DEGREE_MAX61,1028
+typedef r32 degree;degree64,1080
+typedef r32 rad;rad65,1101
+#define signof32(signof3269,1227
+#define signof64(signof6470,1278
+#define sqr(sqr72,1331
+inline degree moduo_degree(degree angle)moduo_degree81,1579
+inline rad moduo_rad(rad angle)moduo_rad86,1692
+inline degree to_degree(rad angle)to_degree92,1885
+inline rad to_rad(degree angle)to_rad97,1969
+inline r32 lerp(r32 low, r32 high, r32 step)lerp103,2134
 
-code/pixel.c,1103
-inline alpha normalizeau8(alpha_u8 a)normalizeau83,22
-inline clr_n normalizeclr(clr c)normalizeclr8,103
-inline pxl_na normalizepxl(pxl p)normalizepxl19,324
-inline pxl_na normalizepxln(pxl_n p)normalizepxln31,584
-inline alpha_u8 renormalizea(alpha a)renormalizea41,816
-inline clr renormalizeclrn(clr_n c)renormalizeclrn46,903
-inline pxl_n renormalizepxlna(pxl_na p)renormalizepxlna67,1492
-inline alpha_u8 resulting_alphau8(alpha_u8 src_a, alpha_u8 dest_a)resulting_alphau877,1744
-inline alpha resulting_alpha(alpha src_a, alpha dest_a)resulting_alpha86,2075
-inline clr ablenda(clr src, clr dest, alpha src_a)ablenda93,2264
-inline clr ablendau8(clr src, clr dest, alpha_u8 src_a)ablendau8102,2535
-inline clr_n ablendclrnu(clr_n src, clr_n dest, alpha src_a)ablendclrnu112,2863
-inline clr_n ablendclrnu8(clr_n src, clr_n dest, alpha_u8 src_a)ablendclrnu8121,3104
-inline pxl ablend2pxl(pxl foreground, pxl background)ablend2pxl133,3502
-inline pxl_n ablend2pxln(pxl_n src, pxl_n dest)ablend2pxln144,3931
-inline pxl_na ablend2pxlna(pxl_na src, pxl_na dest)ablend2pxlna154,4249
-
-code/pixel.h,729
+code/pixel.h,1436
 #define PIXEL_HPIXEL_H2,17
-typedef struct ClrClr13,250
-    u8 B;B15,273
-    u8 G;G16,284
-    u8 R;R17,295
-} clr;clr24,457
-typedef struct Clr_nClr_n26,467
-    r32 B;B28,492
-    r32 G;G29,504
-    r32 R;R30,516
-} clr_n;clr_n36,676
-typedef u8 alpha_u8;alpha_u838,688
-typedef r32 alpha;alpha40,771
-typedef struct PxlPxl42,793
-    u8 B;B44,816
-    u8 G;G45,827
-    u8 R;R46,838
-    u8 a;a47,849
-} pxl;pxl54,1029
-typedef struct Pxl_nPxl_n57,1041
-    u8 B;B59,1066
-    u8 G;G60,1077
-    u8 R;R61,1088
-    r32 a;a62,1099
-} pxl_n;pxl_n69,1281
-typedef struct Pxl_naPxl_na71,1293
-    r32 B;B73,1319
-    r32 G;G74,1331
-    r32 R;R75,1343
-    r32 a;a76,1355
-} pxl_na;pxl_na83,1543
+typedef struct ClrClr6,113
+    u8 B;B8,136
+    u8 G;G9,147
+    u8 R;R10,158
+} clr;clr11,169
+typedef struct Clr_nClr_n13,179
+    r32 B;B15,204
+    r32 G;G16,216
+    r32 R;R17,228
+} clr_n;clr_n18,240
+typedef u8 alpha_u8;alpha_u821,280
+typedef r32 alpha;alpha22,302
+typedef struct PxlPxl24,324
+    u8 B;B26,347
+    u8 G;G27,358
+    u8 R;R28,369
+    u8 A;A29,380
+} pxl;pxl30,391
+typedef struct Pxl_nPxl_n33,403
+    u8 B;B35,428
+    u8 G;G36,439
+    u8 R;R37,450
+    r32 A;A38,461
+} pxl_n;pxl_n39,473
+typedef struct Pxl_naPxl_na41,485
+    r32 B;B43,511
+    r32 G;G44,523
+    r32 R;R45,535
+    r32 A;A46,547
+} pxl_na;pxl_na47,559
+inline alpha_u8 resulting_alphau8(alpha_u8 src_a, alpha_u8 dest_a)resulting_alphau854,684
+inline alpha resulting_alpha(alpha src_a, alpha dest_a)resulting_alpha65,1127
+inline clr clr_ablend(clr src, clr dest, alpha src_a)clr_ablend70,1232
+inline clr clr_ablend_u8(clr src, clr dest, alpha_u8 src_a)clr_ablend_u879,1503
+inline clr_n clr_n_ablend(clr_n src, clr_n dest, alpha src_a)clr_n_ablend89,1839
+inline clr_n clr_n_ablend_u8(clr_n src, clr_n dest, alpha_u8 src_a)clr_n_ablend_u898,2081
+inline pxl pxl_ablend(pxl foreground, pxl background)pxl_ablend110,2489
+inline pxl_n pxl_n_ablend(pxl_n src, pxl_n dest)pxl_n_ablend121,2922
+inline pxl_na pxl_na_ablend(pxl_na src, pxl_na dest)pxl_na_ablend131,3238
 
-code/renderer.c,98
-inline v2 rect_dims(rect2 rect)rect_dims4,27
-inline v2 rect_dims3(rect3 rect)rect_dims312,182
-
-code/renderer.h,487
+code/renderer.h,582
 #define RENDERER_HRENDERER_H2,20
-typedef struct Line2Line29,150
-    v2 A;A11,175
-    v2 B;B12,186
-} line2;line215,237
-typedef struct Line3Line317,249
-    v3 A;A19,274
-    v3 B;B20,285
-} line3;line323,336
-typedef struct Rect2Rect226,402
-    v2 A;A28,427
-    v2 B;B29,438
-    v2 C;C30,449
-    v2 D;D31,460
-} rect2;rect236,617
-typedef struct Rect3Rect338,629
-    v3 A;A40,654
-    v3 B;B41,665
-    v3 C;C42,676
-    v3 D;D43,687
-} rect3;rect351,1059
+typedef struct Line2Line25,88
+    v2 A;A7,113
+    v2 B;B8,124
+} line2;line29,135
+typedef struct Line3Line311,147
+    v3 A;A13,172
+    v3 B;B14,183
+} line3;line315,194
+typedef struct Rect2Rect218,260
+    v2 A;A20,285
+    v2 B;B21,296
+    v2 C;C22,307
+    v2 D;D23,318
+} rect2;rect224,329
+typedef struct Rect3Rect326,341
+    v3 A;A28,366
+    v3 B;B29,377
+    v3 C;C30,388
+    v3 D;D31,399
+} rect3;rect332,410
+inline v2 rect_dims(rect2 rect)rect_dims35,424
+inline v2 rect_dims3(rect3 rect)rect_dims343,581
 
-code/test.h,421
+code/test.h,298
 #define CURRENTLY_TESTING CURRENTLY_TESTING1,0
 global_variable b32 filetest = true;filetest3,41
 global_variable b32 mathtest = true;mathtest4,79
 global_variable b32 emacstest = true;emacstest5,117
-void none_test()none_test10,164
-typedef struct WkmeoiqweWkmeoiqwe13,188
-} wkmeoiqwe;wkmeoiqwe16,223
-void emacs_config_test()emacs_config_test18,239
-void file_test()file_test27,343
-void test()test177,4820
+void none_test()none_test8,160
+void file_test()file_test11,184
+void test()test161,4661
 
-code/utils.c,0
-
-code/utils.h,1468
+code/utils.h,1558
 #define UTILS_HUTILS_H2,17
 typedef int8_t s8;s86,59
 typedef int16_t s16;s167,79
@@ -296,58 +230,60 @@ typedef uint32_t u32;u3213,191
 typedef uint64_t u64;u6414,214
 typedef float r32;r3216,239
 typedef double r64;r6417,259
-typedef s32 b32;b3219,282
-#define true true24,357
-#define false false25,374
-#define global_variable global_variable27,394
-#define local_persist local_persist28,427
-#define internal internal29,458
-#define Assert(Assert32,500
-#define Assert(Assert34,566
-#define InvalidCodePath InvalidCodePath37,598
-#define InvalidDefaultCase InvalidDefaultCase38,633
-#define MIN_U MIN_U43,710
-#define MAX_U8 MAX_U844,727
-#define MAX_U16 MAX_U1645,747
-#define MAX_U32 MAX_U3246,770
-#define MAX_U64 MAX_U6447,798
-#define MIN_S8 MIN_S848,837
-#define MIN_S16 MIN_S1649,858
-#define MIN_S32 MIN_S3250,883
-#define MIN_S64 MIN_S6451,912
-#define MAX_S8 MAX_S852,950
-#define MAX_S16 MAX_S1653,970
-#define MAX_S32 MAX_S3254,994
-#define MAX_S64 MAX_S6455,1022
-#define MIN_R32 MIN_R3257,1090
-#define MAX_R32 MAX_R3258,1120
-#define MIN_R64 MIN_R6459,1150
-#define MAX_R64 MAX_R6460,1180
-inline u64 kilobytes(u32 n)kilobytes62,1212
-inline u64 megabytes(u32 n)megabytes67,1276
-inline u64 gigabytes(u32 n)gigabytes72,1345
-#define arr_count(arr_count77,1419
-inline u32 trunc_u32(u64 n)trunc_u3280,1519
+typedef s32 b32; // lower value than 32?b3219,282
+#define literal(literal24,430
+#define literal(literal26,459
+#define true true29,493
+#define false false30,509
+#define global_variableglobal_variable32,528
+#define local_persist local_persist33,553
+#define internal internal34,583
+#define Assert(Assert37,624
+#define Assert(Assert39,690
+#define InvalidCodePath InvalidCodePath42,722
+#define InvalidDefaultCase InvalidDefaultCase43,757
+#define MIN_U MIN_U45,797
+#define MAX_U8 MAX_U846,814
+#define MAX_U16 MAX_U1647,834
+#define MAX_U32 MAX_U3248,857
+#define MAX_U64 MAX_U6449,885
+#define MIN_S8 MIN_S850,924
+#define MIN_S16 MIN_S1651,945
+#define MIN_S32 MIN_S3252,970
+#define MIN_S64 MIN_S6453,999
+#define MAX_S8 MAX_S854,1037
+#define MAX_S16 MAX_S1655,1057
+#define MAX_S32 MAX_S3256,1081
+#define MAX_S64 MAX_S6457,1109
+#define MIN_R32 MIN_R3259,1177
+#define MAX_R32 MAX_R3260,1207
+#define MIN_R64 MIN_R6461,1237
+#define MAX_R64 MAX_R6462,1267
+inline u64 kilobytes(u32 n)kilobytes64,1299
+inline u64 megabytes(u32 n)megabytes69,1363
+inline u64 gigabytes(u32 n)gigabytes74,1432
+#define arr_count(arr_count79,1506
+inline u32 trunc_u32(u64 n)trunc_u3282,1606
 
-code/win32_vgengine.c,1438
-global_variable BITMAPINFO window_buffer_info;window_buffer_info38,611
-global_variable b32 running = true;running39,659
-HRESULT directsound_create_stub(LPGUID p1, LPDIRECTSOUND* p2, LPUNKNOWN p3)directsound_create_stub41,698
-typedef HRESULT (*directsound_create_fp) (LPGUID, LPDIRECTSOUND*, LPUNKNOWN);directsound_create_fp45,809
-directsound_create_fp directsound_create  = directsound_create_stub;directsound_create46,888
-typedef struct Window_rect_dimsWindow_rect_dims53,1110
-    s32 width;width55,1146
-    s32 height;height56,1162
-} window_rect_dims;window_rect_dims57,1179
-inline window_rect_dims get_window_rect_dims(HWND window)get_window_rect_dims59,1202
-HANDLE dbg_open_file(u8* filename)dbg_open_file78,1713
-b32 dbg_read_entire_file(u8* filename, void* buffer, u32* buffer_size)dbg_read_entire_file84,1930
-b32 dbg_write_entire_file(u8* filename, void* buffer, u32 buffer_size)dbg_write_entire_file112,2650
-void load_directsound()load_directsound133,3192
-void realloc_window_bitmap_buffer(int new_width, int new_height)realloc_window_bitmap_buffer143,3409
-void resize_and_draw_window_bitmap(HDC dc, int window_width, int window_height)resize_and_draw_window_bitmap164,3957
-LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)window_procedure179,4533
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int nShowCmd)WinMain279,7822
+code/win32_vgengine.c,1430
+global_variable BITMAPINFO window_buffer_info;window_buffer_info11,179
+global_variable b32 running = true;running12,227
+HRESULT directsound_create_stub(LPGUID p1, LPDIRECTSOUND* p2, LPUNKNOWN p3)directsound_create_stub14,266
+typedef HRESULT (*directsound_create_fp) (LPGUID, LPDIRECTSOUND*, LPUNKNOWN);directsound_create_fp18,377
+directsound_create_fp directsound_create  = directsound_create_stub;directsound_create19,456
+typedef struct Window_rect_dimsWindow_rect_dims21,528
+    s32 width;width23,564
+    s32 height;height24,580
+} window_rect_dims;window_rect_dims25,597
+inline window_rect_dims get_window_rect_dims(HWND window)get_window_rect_dims27,620
+HANDLE dbg_open_file(u8* filename)dbg_open_file37,916
+b32 dbg_read_entire_file(u8* filename, void* buffer, u32* buffer_size)dbg_read_entire_file45,1253
+b32 dbg_write_entire_file(u8* filename, void* buffer, u32 buffer_size)dbg_write_entire_file73,1973
+void load_directsound()load_directsound94,2515
+void realloc_window_bitmap_buffer(int new_width, int new_height)realloc_window_bitmap_buffer104,2732
+void resize_and_draw_window_bitmap(HDC dc, int window_width, int window_height)resize_and_draw_window_bitmap126,3367
+LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)window_procedure142,3979
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int nShowCmd)WinMain241,7230
 
 devenv19.bat,0
 
@@ -360,6 +296,14 @@ exe/.vs/win32_vgengine/v16/Browse.VC.db,0
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/1e697b2ea718a67c/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/234c41c622a1be9e/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/30ec6a69f2b2a0b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/32d623ca5e7247f3/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/560bf95e31ae5953/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/b1f8be5b6981528b/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c8d28971c2fc634e/WIN32_VGENGINE.ipch,0
 
@@ -378,17 +322,20 @@ misc/config.el,42
 
 misc/info.el,0
 
-misc/init.el,444
-(defun _splitr ()_splitr83,2484
-(defun _calc ()_calc88,2551
-(defun _config ()_config93,2608
-(defun _rectselect ()_rectselect98,2699
-(defun luka-grep (arg1)luka-grep103,2771
-(defun luka-compile ()luka-compile112,3060
-(defun luka-bigmove-up ()luka-bigmove-up121,3298
-(defun luka-bigmove-down ()luka-bigmove-down131,3494
-(defun luka-hugemove-up ()luka-hugemove-up141,3676
-(defun luka-hugemove-down ()luka-hugemove-down150,3865
+misc/init.el,558
+(defun _splitr ()_splitr86,2742
+(defun _splitd ()_splitd91,2809
+(defun _calc ()_calc96,2876
+(defun _config ()_config101,2933
+(defun _rectselect ()_rectselect106,3024
+(defun _rectinsert ()_rectinsert111,3096
+(defun _devenv ()_devenv118,3243
+(defun luka-grep (arg1)luka-grep126,3404
+(defun luka-compile ()luka-compile136,3712
+(defun luka-bigmove-up ()luka-bigmove-up146,3969
+(defun luka-bigmove-down ()luka-bigmove-down156,4165
+(defun luka-hugemove-up ()luka-hugemove-up166,4347
+(defun luka-hugemove-down ()luka-hugemove-down175,4536
 
 misc/shell.bat,54
 set path=w:\vgengine\misc;C:\msys64;%path%path3,112
