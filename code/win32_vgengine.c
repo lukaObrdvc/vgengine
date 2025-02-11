@@ -483,7 +483,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             //OutputDebugStringA(debug_str);
 
             dll_reload_counter++;
+
             
+            //Sleep(200);
         }
 
     return 0;

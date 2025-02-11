@@ -12,138 +12,44 @@
 
 // @IMPORTANT -wd4013 I'm getting for sqr probably something to do with including <math.h> orsmth......???
 
-                      // using
-//global_variable b32 inited = false; // @IMPORTANT this shite here will also resize the window on dll reload (because static)
-//global_variable coordsys2 centeredcs;
-//global_variable coordsys2 offsetedcs;
-/* global_variable line2 line; */
-/* global_variable s8 linex = 0; */
-/* global_variable s8 liney = 0; */
-/* global_variable rad a = 0; */
-/* global_variable r32 s = 1; */
-/* global_variable s32 counter = 0; */
-/* global_variable rect2 grect; */
+wndrect obtain_wndrect(rect2 rectangle, v2 origin)
+{
+    wndrect result;
+    r32 min_x = rectangle.A.x;
+    r32 min_y = rectangle.A.y;
+    r32 max_x = rectangle.A.x;
+    r32 max_y = rectangle.A.y;
 
-//global_variable pxl my;
-//global_variable mouse_key_code mykey;
-
-
-/* #define GRECT_WIDTH 50 */
-/* #define GRECT_HEIGHT 50 */
-
-/* wndrect obtain_wndrect(rect2 rectangle) */
-/* { */
-/*     wndrect result; */
-/*     r32 min_x = rectangle.A.x; */
-/*     r32 min_y = rectangle.A.y; */
-/*     r32 max_x = rectangle.A.x; */
-/*     r32 max_y = rectangle.A.y; */
-
-/*     if (rectangle.B.x < min_x) min_x = rectangle.B.x; */
-/*     if (rectangle.C.x < min_x) min_x = rectangle.B.x; */
-/*     if (rectangle.D.x < min_x) min_x = rectangle.B.x; */
+    if (rectangle.B.x < min_x) min_x = rectangle.B.x;
+    if (rectangle.C.x < min_x) min_x = rectangle.C.x;
+    if (rectangle.D.x < min_x) min_x = rectangle.D.x;
     
-/*     if (rectangle.B.x > max_x) max_x = rectangle.B.x; */
-/*     if (rectangle.C.x > max_x) max_x = rectangle.C.x; */
-/*     if (rectangle.D.x > max_x) max_x = rectangle.D.x; */
+    if (rectangle.B.x > max_x) max_x = rectangle.B.x;
+    if (rectangle.C.x > max_x) max_x = rectangle.C.x;
+    if (rectangle.D.x > max_x) max_x = rectangle.D.x;
 
-/*     if (rectangle.B.y < min_y) min_y = rectangle.B.y; */
-/*     if (rectangle.C.y < min_y) min_y = rectangle.C.y; */
-/*     if (rectangle.D.y < min_y) min_y = rectangle.D.y; */
+    if (rectangle.B.y < min_y) min_y = rectangle.B.y;
+    if (rectangle.C.y < min_y) min_y = rectangle.C.y;
+    if (rectangle.D.y < min_y) min_y = rectangle.D.y;
 
-/*     if (rectangle.B.y > max_y) max_y = rectangle.B.y; */
-/*     if (rectangle.C.y > max_y) max_y = rectangle.C.y; */
-/*     if (rectangle.D.y > max_y) max_y = rectangle.D.y; */
+    if (rectangle.B.y > max_y) max_y = rectangle.B.y;
+    if (rectangle.C.y > max_y) max_y = rectangle.C.y;
+    if (rectangle.D.y > max_y) max_y = rectangle.D.y;
     
-/*     result.topleft = literal(v2) { */
-/*         .x = min_x + offsetedcs.origin.x, */
-/*         .y = -max_y + offsetedcs.origin.y }; */
-/*     result.width = max_x - min_x; */
-/*     result.height = max_y - min_y; */
-/*     return result; */
-/* } */
+    result.width = max_x - min_x;
+    result.height = max_y - min_y;
+        result.topleft = literal(v2) {
+        .x = min_x + origin.x,
+        .y = -min_y + origin.y - result.height };
+    return result;
+}
 
-/* void draw_rotated_rect(wndrect outline) */
-/* { */
-/*     pxl color = {0, 0, 0, 255}; */
-
-/*     coordsys2 from; */
-/*     from.origin.x = (r32)outline.topleft.x;  */
-/*     from.origin.y = (r32)outline.topleft.y + outline.height;  */
-/*     from.offset = 0; */
-/*     coordsys2 to; */
-/*     to.origin = offsetedcs.origin; */
-/*     to.offset = offsetedcs.offset; */
-                    
-/*     u32 offset = round32(outline.topleft.x)*wndbuffer.bytpp; */
-/*     for (s32 i = 0; i < outline.height; i++) */
-/*         { */
-/*             pxl* row = (pxl*)(wndbuffer.memory + wndpitch*(round32(outline.topleft.y) + i) + offset); */
-/*             for (s32 j = 0; j < outline.width; j++) */
-/*                 { */
-/*                     v2 curr; */
-/*                     curr.x = (r32)j; */
-/*                     curr.y = (r32)i; */
-
-/*                     b32 inside_grect = false; */
-/*                     transpose(&curr, from, to); */
-
-/*                     if ((curr.x >= 0 && curr.x <= GRECT_WIDTH) && (curr.y >= 0 && curr.y <= GRECT_HEIGHT)) */
-/*                         { */
-/*                             inside_grect = true; */
-/*                         } */
-                    
-/*                     if (inside_grect) */
-/*                         { */
-/*                             *row = color; */
-/*                         } */
-/*                     row++; */
-/*                 } */
-/*         } */
-/* } */
-
-/* void draw_line() */
-/* { */
-/*     u32 pitch = wndbuffer.width*wndbuffer.bytpp; */
-/*     u32 offset = (s32)centeredcs.origin.x*wndbuffer.bytpp; */
-/*     pxl* pixel = (pxl*)(wndbuffer.memory + pitch*(s32)centeredcs.origin.y + offset); */
-
-/*     s32 dX = (s32)icomponent(line.B).x; */
-/*     s32 dY = -(s32)jcomponent(line.B).y; */
-/*     s32 movebyX = 0; */
-/*     s32 movebyY = 0; */
-/*     u32 len = (s32)edist(line.A, line.B); */
-/*     r32 whenX = ((r32)len) / dX; */
-/*     r32 whenY = ((r32)len) / dY; */
-
-/*     for (u32 i = 1; i <= len; i++) */
-/*         { */
-/*             movebyX = floor32i(i/whenX); */
-/*             movebyY = floor32i(i/whenY); */
-
-/*             // 20 50.50 */
-/*             // 54.3 */
-/*             // 2.7 1.075 */
-
-/*             pixel = (pxl*)(wndbuffer.memory + pitch*((s32)centeredcs.origin.y+movebyY) + ((s32)centeredcs.origin.x+movebyX)*wndbuffer.bytpp);// + movebyX*wndbuffer.bytpp + pitch*movebyY); */
-
-/*             pixel->set(0, 0, 0, 255); */
-/*         } */
-
-/*     u32 len = (s32)edist(line.A, line.B); */
-/*     for (u32 i = 0; i < len; i++) */
-/*         { */
-/*             pixel->set(0, 0, 0, 255); */
-/*             pixel++; */
-/*             } */
-/* } */
-
-v2 scale2(v2 vec, r32 scalar)
+v2 transpose2(v2 vec, v2 origin)
 {
     v2 result;
 
-    result.x = vec.x * scalar;
-    result.y = vec.y * scalar;
+    result.x = vec.x - origin.x;
+    result.y = vec.y - origin.y;
     
     return result;
 }
@@ -158,6 +64,129 @@ v2 rotate2(v2 vec, r32 angle)
     return result;
 }
 
+v2 clamp_point(v2 point)
+{
+    v2 result = { .x = point.x , .y = point.y };
+
+    if (point.x < 0)
+        {
+            result.x = 0;
+        }
+    else if (point.x > wnd_width)
+        {
+            result.x = wnd_width;
+        }
+    
+    if (point.y < 0)
+        {
+            result.y = 0;
+        }
+    else if (point.y > wnd_height)
+        {
+            result.y = wnd_height;
+        }
+    
+    return result;
+}
+
+v2 scale2(v2 vec, r32 scalar)
+{
+    v2 result;
+
+    result.x = vec.x * scalar;
+    result.y = vec.y * scalar;
+    
+    return result;
+}
+
+void draw_rotated_rect_2(rect2 rect, v2 origin, pxl color)
+{
+    // @Note round instead??
+    // @Note there are holes at certain times, due to numerical inaccuracy...
+    s32 width = floor32(edist2(rect.A, rect.B));
+    s32 height = floor32(edist2(rect.A, rect.D));
+    for (s32 i = 0; i < height; i++)
+        {
+            for (s32 j = 0; j < width; j++)
+                {
+                    v2 pxl_point = {
+                        .x = j,
+                        .y =  - height + i };
+                    pxl_point = rotate2(pxl_point, -Gamestate->rect_angle);
+                    pxl_point.x = floor32(pxl_point.x) + origin.x;
+                    pxl_point.y = floor32(pxl_point.y) + origin.y;
+                    pxl_point = clamp_point(pxl_point);
+                    pxl* draw_point = (pxl*)(wnd_buffer +
+                                             wnd_pitch*(s32)pxl_point.y +
+                                             wnd_bytpp*(s32)pxl_point.x);                    
+                    *draw_point = color;
+                }
+        }       
+}
+
+v2 obtain_leftmost(rect2 rect)
+{
+    r32 min_x = rect.A.x;
+
+    if (rect.B.x < min_x) min_x = rect.B.x;
+    if (rect.C.x < min_x) min_x = rect.C.x;
+    if (rect.D.x < min_x) min_x = rect.D.x;
+
+    if (rect.A.x == min_x) return rect.A;
+    if (rect.B.x == min_x) return rect.B;
+    if (rect.C.x == min_x) return rect.C;
+    if (rect.D.x == min_x) return rect.D;
+}
+
+void draw_rotated_rect(rect2 rect, wndrect outline, pxl color)
+{    
+    u32 offset = wnd_pitch*round32(outline.topleft.y) +
+        round32(outline.topleft.x)*wnd_bytpp;
+    for (s32 i = 0; i < outline.height; i++)
+        {
+            pxl* row = (pxl*)(wnd_buffer + wnd_pitch*i + offset);
+            for (s32 j = 0; j < outline.width; j++)
+                {                    
+                    b32 inside = true;
+
+                    v2 pixel_to_outline = { .x=j, .y=round32(outline.height)-i };
+                    v2 rect_leftmost = obtain_leftmost(rect);
+                    /* v2 rect_origin = {.x=0, */
+                    /*                   .y=outline.height - (rect_leftmost.y - outline.topleft.y) }; */
+                    v2 rect_origin = {.x=0,
+                                      .y=round32(abs(rect_leftmost.y)) };
+
+
+                    //pixel_to_outline = transpose2(pixel_to_outline, rect_origin);
+                    pixel_to_outline = rotate2(pixel_to_outline, -PI/2 +Gamestate->rect_angle);
+                    pixel_to_outline = transpose2(pixel_to_outline, rect_origin);
+                    
+                    if (pixel_to_outline.x < 0)
+                        {
+                            row++;
+                            continue;
+                        }
+                    if (pixel_to_outline.y < 0)
+                        {
+                            row++;
+                            continue;
+                        }
+                    if (pixel_to_outline.x > edist2(rect.A, rect.B))
+                        {
+                            row++;
+                            continue;
+                        }
+                    if (pixel_to_outline.y > edist2(rect.C, rect.B))
+                        {
+                            row++;
+                            continue;
+                        }
+                    *row = color;
+                    row++;
+                }
+        }       
+}
+
 void draw_line(v2 origin, v2 point, pxl color)
 {
     u8* offset = wnd_buffer + wnd_pitch*round32(origin.y) + wnd_bytpp*round32(origin.x);
@@ -168,15 +197,16 @@ void draw_line(v2 origin, v2 point, pxl color)
     s32 movebyX = 0;
     s32 movebyY = 0;
     r32 len = edist2(origin, point);
-    r32 whenX = len / dX;
+    r32 whenX = len / dX; // @Note divide by zero here??
     r32 whenY = len / dY;
 
+    
     for (s32 i = 1; i <= floor32(len); i++)
         {
             movebyX = floor32(i/whenX);
             movebyY = floor32(i/whenY);
             drawing_point = offset + wnd_pitch*movebyY + wnd_bytpp*movebyX;
-            *((pxl*)drawing_point) = color;
+                *((pxl*)drawing_point) = color;
         }
 }
 
@@ -236,7 +266,8 @@ void fill_background()
             pxl* row = (pxl*)(wnd_buffer + i*pitch);
             for (s32 j = 0; j < wnd_width; j++)
                 {
-                    *row = literal(pxl) {120, 0, 120, 255}; // in struct is r,g,b,a ..?
+                    *row = literal(pxl) {120, 0, 120, 255};
+                    // in struct is r,g,b,a ..?
                     //*row = (a << 24) | (R << 16) | (G << 8) | B;
                     row++;
                 }
@@ -365,6 +396,7 @@ void process_frame_input(key curr_frame_key,
                     Gamestate->concentric_spread_x+=10;
                     Gamestate->concentric_spread_y+=4;
                     Gamestate->line_scaling_factor += 0.1f;
+                    Gamestate->rect_scaling_factor += 0.1f;
                 }
             if (curr_frame_mouse.code == M2 && curr_frame_mouse.is_down)
                 {
@@ -372,6 +404,7 @@ void process_frame_input(key curr_frame_key,
                     Gamestate->concentric_spread_x-=10;
                     Gamestate->concentric_spread_y-=4;
                     Gamestate->line_scaling_factor -= 0.1f;
+                    Gamestate->rect_scaling_factor -= 0.1f;
                 }
             Gamestate->cursor = curr_frame_mouse.cursor;
         }
@@ -412,7 +445,9 @@ void init_game_state()
                 .concentric_spread_x = 50, 
                 .concentric_spread_y = 50,
                 .line_angle = 0,
-                .line_scaling_factor = 1 };
+                .line_scaling_factor = 1,
+                .rect_angle = 0,
+                .rect_scaling_factor = 1 };
         }
 }
 
