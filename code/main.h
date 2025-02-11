@@ -111,6 +111,8 @@ typedef struct
     s32 concentric_count;
     s32 concentric_spread_x;
     s32 concentric_spread_y;
+    r32 line_angle;
+    r32 line_scaling_factor;
     
 } game_state;
 #pragma pack(pop)

@@ -1,5 +1,10 @@
 
-code/build.bat,0
+code/build.bat,569
+set WarningFlags=-W4 -WX -wd4100 -wd4091 -wd4459 -wd4996 -wd4189 -wd4201 -wd4804 -wd4244 -wd4013WarningFlags4,56
+set CompilerFlags=/std:c17 /Zc:preprocessor /TC -DDEBUG=1 -DHOTLOAD=0 -Oi -Zi -MT -GR -EHa -noloCompilerFlags5,154
+set LinkerFlags= -incremental:no -opt:ref user32.lib gdi32.lib kernel32.lib winmm.libLinkerFlags6,254
+set DLLExports=/EXPORT:update_and_render /EXPORT:platform_init_memory_base /EXPORT:process_frameDLLExports7,341
+REM set UniquePDBperDLL=/PDB:main_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%tUniquePDBperDLL8,445
 
 code/linalg.h,569
 #define LINALG_HLINALG_H2,18
@@ -24,98 +29,94 @@ inline v2 perp2(v2 vec)perp2247,4346
 inline v2 scale2(v2 v, r32 s)scale2255,4462
 inline v3 scale3(v3 v, r32 s)scale3264,4614
 
-code/main.c,1356
-global_variable b32 inited = false;inited12,394
-global_variable s32 origin_x = 0;origin_x13,431
-global_variable s32 origin_y = 0;origin_y14,466
-global_variable u32 thickness = 5;thickness15,501
-global_variable u32 count = 10;count16,537
-global_variable u32 spread_x = 10;spread_x17,570
-global_variable u32 spread_y = 10;spread_y18,606
-global_variable line2 line;line21,724
-global_variable s8 linex = 0;linex22,753
-global_variable s8 liney = 0;liney23,784
-global_variable rad a = 0;a24,815
-global_variable r32 s = 1;s25,843
-global_variable s32 counter = 0;counter26,871
-global_variable rect2 grect;grect27,905
-global_variable pxl my;my29,937
-global_variable mouse_key_code mykey;mykey30,962
-#define GRECT_WIDTH GRECT_WIDTH33,1005
-#define GRECT_HEIGHT GRECT_HEIGHT34,1029
-void draw_clamped_wndrect(wndrect rectangle, pxl color)draw_clamped_wndrect107,3779
-void clamp_wndrect(wndrect* rectangle)clamp_wndrect122,4255
-void fill_background()fill_background191,6550
-void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)concentric_rectangles_around_origin282,9518
-void invalidate_player_input()invalidate_player_input332,11272
-void process_player_input()process_player_input341,11533
-void init_once()init_once377,12340
-void update_and_render()update_and_render402,12803
+code/main.c,870
+v2 rotate2(v2 vec, r32 angle)rotate2141,5170
+void draw_line(v2 origin, v2 point, pxl color)draw_line151,5359
+void draw_clamped_wndrect(wndrect rectangle, pxl color)draw_clamped_wndrect173,5991
+void clamp_wndrect(wndrect* rectangle)clamp_wndrect188,6457
+void fill_background()fill_background221,7451
+void dbg_render(s8 x_offset, s8 y_offset)dbg_render236,7915
+void dbg_draw_square_around_cursor(u8 square_length)dbg_draw_square_around_cursor253,8440
+void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)concentric_rectangles_around_origin268,8953
+void process_frame_input(key curr_frame_key,process_frame_input316,10630
+void platform_init_memory_base(void* memory_base_ptr)platform_init_memory_base375,12751
+void init_game_state()init_game_state380,12875
+void update_and_render()update_and_render409,13803
 
-code/main.h,2675
+code/main.h,3081
 #define CARDCRAFTER_HCARDCRAFTER_H2,23
-typedef b32 (*dbg_read_file) (u8* filename, void* buffer, u32* buffer_size);dbg_read_file6,84
-typedef b32 (*dbg_write_file) (u8* filename, void* buffer, u32 buffer_size);dbg_write_file7,162
-typedef struct Window_bufferWindow_buffer11,342
-    u8* memory;memory13,375
-    u32 width;width14,392
-    u32 height;height15,408
-    u8 bytpp;bytpp16,425
-} window_buffer;window_buffer17,440
-typedef struct WndrectWndrect20,491
-    v2 topleft;topleft22,518
-    r32 width;width23,535
-    r32 height;height24,551
-} wndrect;wndrect25,568
-typedef struct CursorCursor28,620
-    u32 x;x30,646
-    u32 y;y31,658
-} cursor;cursor32,670
-typedef enum Mouse_key_codeMouse_key_code34,683
-        M_NONE,M_NONE36,719
-        M1,M137,736
-        M2,M238,749
-        M3M339,762
-    } mouse_key_code;mouse_key_code40,774
-typedef struct Mouse_keyMouse_key42,799
-    b32 mouse_moved;mouse_moved44,828
-    b32 is_down;is_down45,850
-    mouse_key_code code;code46,868
-} mouse_key;mouse_key47,894
-typedef struct MouseMouse49,910
-    cursor cursor;cursor51,935
-    mouse_key key;key52,955
-} mouse;mouse53,975
-typedef enum Key_codeKey_code55,987
-        KEY_NONE,KEY_NONE57,1017
-        KEY_UP,KEY_UP58,1036
-        KEY_RIGHT,KEY_RIGHT59,1053
-        KEY_DOWN,KEY_DOWN60,1073
-        KEY_LEFTKEY_LEFT61,1092
-    } key_code;key_code62,1110
-typedef struct Keyboard_keyKeyboard_key65,1171
-    key_code code;code67,1203
-    b32 is_down;is_down68,1223
-    b32 was_down;was_down69,1241
-} keyboard_key;keyboard_key70,1260
-typedef struct Game_memoryGame_memory72,1279
-    void* base;base74,1310
-    u64 size;size75,1327
-    u64 capacity;capacity76,1342
-} game_memory;game_memory77,1361
-b32 dbg_readfile_stub (u8* filename, void* buffer, u32* buffer_size)dbg_readfile_stub86,1559
-b32 dbg_writefile_stub (u8* filename, void* buffer, u32 buffer_size)dbg_writefile_stub91,1656
-global_variable dbg_read_file dbg_readfile = dbg_readfile_stub;dbg_readfile96,1753
-global_variable dbg_write_file dbg_writefile = dbg_writefile_stub;dbg_writefile97,1818
-global_variable window_buffer wndbuffer = {};wndbuffer99,1888
-global_variable cursor cursor_ = {};cursor_100,1935
-global_variable mouse_key mouse_frame_key = {};mouse_frame_key101,1973
-global_variable keyboard_key frame_key = {};frame_key102,2022
-global_variable s8 x_offset = 0;x_offset103,2068
-global_variable s8 y_offset = 0;y_offset104,2102
-global_variable u8 square_length = 10;square_length105,2136
-global_variable game_memory memory = {};memory106,2176
-global_variable u32 wndpitch = 0;wndpitch107,2218
+typedef b32 (*fp_dbg_read_file) (u8* filename, void* buffer, u32* buffer_size);fp_dbg_read_file7,105
+typedef b32 (*fp_dbg_write_file) (u8* filename, void* buffer, u32 buffer_size);fp_dbg_write_file8,186
+typedef struct platform_resized_window_Bufferplatform_resized_window_Buffer12,369
+    b32 to_resize;to_resize14,419
+    u8* memory_base;memory_base15,439
+    u32 width;width16,461
+    u32 height;height17,477
+} platform_resized_window_buffer;platform_resized_window_buffer18,494
+typedef struct WndrectWndrect21,562
+    v2 topleft;topleft23,589
+    r32 width;width24,606
+    r32 height;height25,622
+} wndrect;wndrect26,639
+typedef enum Mouse_key_codeMouse_key_code35,790
+        M_NONE,M_NONE37,826
+        M1,M138,843
+        M2,M239,856
+        M3M340,869
+    } mouse_key_code;mouse_key_code41,881
+typedef struct MouseMouse43,906
+    v2 cursor;cursor45,931
+    b32 mouse_moved;mouse_moved46,947
+    b32 is_down;is_down47,969
+    mouse_key_code code;code48,987
+} mouse;mouse49,1013
+typedef enum Key_codeKey_code51,1025
+        KEY_NONE,KEY_NONE53,1055
+        KEY_UP,KEY_UP54,1074
+        KEY_RIGHT,KEY_RIGHT55,1091
+        KEY_DOWN,KEY_DOWN56,1111
+        KEY_LEFTKEY_LEFT57,1130
+    } key_code;key_code58,1148
+typedef struct Keyboard_keyKeyboard_key60,1167
+    key_code code;code62,1199
+    b32 is_down;is_down63,1219
+    b32 was_down;was_down64,1237
+} key;key65,1256
+typedef struct platform_Providesplatform_Provides75,1420
+    void* perm_mem;perm_mem77,1457
+    u64 perm_mem_cap;perm_mem_cap78,1478
+    void* temp_mem;temp_mem79,1501
+    u64 temp_mem_cap;temp_mem_cap80,1522
+    s32 bytpp;bytpp82,1547
+    fp_dbg_read_file dbg_read_file;dbg_read_file86,1720
+    fp_dbg_write_file dbg_write_file;dbg_write_file87,1757
+} platform_provides;platform_provides88,1796
+global_variable platform_provides* memory_base;memory_base90,1820
+#define DBG_READ_FILE DBG_READ_FILE92,1871
+#define DBG_WRITE_FILE DBG_WRITE_FILE93,1921
+{__anon1cb8196a010898,2065
+    b32 inited;inited99,2068
+    b32 tested_once;tested_once101,2087
+    s32 wndbuffer_width;wndbuffer_width102,2109
+    s32 wndbuffer_height;wndbuffer_height103,2135
+    v2  cursor;cursor104,2162
+    s32 dbg_render_x_offset;dbg_render_x_offset105,2179
+    s32 dbg_render_y_offset;dbg_render_y_offset106,2209
+    s32 square_length;square_length107,2239
+    s32 wnd_center_x;wnd_center_x108,2263
+    s32 wnd_center_y;wnd_center_y109,2286
+    s32 concentric_thickness;concentric_thickness110,2309
+    s32 concentric_count;concentric_count111,2340
+    s32 concentric_spread_x;concentric_spread_x112,2367
+    s32 concentric_spread_y;concentric_spread_y113,2397
+    r32 line_angle;line_angle114,2427
+} game_state;game_state116,2454
+#define Gamestate Gamestate119,2490
+#define wnd_width wnd_width120,2569
+#define wnd_height wnd_height121,2648
+#define wnd_bytpp wnd_bytpp122,2727
+#define wnd_pitch wnd_pitch123,2806
+#define wnd_buffer wnd_buffer124,2879
 
 code/math.h,907
 #define MATH_HMATH_H2,16
@@ -129,18 +130,18 @@ inline r32 decimal32(r32 n)decimal3247,819
 inline r64 decimal64(r64 n)decimal6452,878
 #define abs(abs57,937
 #define PI PI59,981
-#define RAD_MAX RAD_MAX60,1001
-#define DEGREE_MAX DEGREE_MAX61,1028
-typedef r32 degree;degree64,1080
-typedef r32 rad;rad65,1101
-#define signof32(signof3269,1227
-#define signof64(signof6470,1278
-#define sqr(sqr72,1331
-inline degree moduo_degree(degree angle)moduo_degree81,1579
-inline rad moduo_rad(rad angle)moduo_rad86,1692
-inline degree to_degree(rad angle)to_degree92,1885
-inline rad to_rad(degree angle)to_rad97,1969
-inline r32 lerp(r32 low, r32 high, r32 step)lerp103,2134
+#define RAD_MAX RAD_MAX60,1009
+#define DEGREE_MAX DEGREE_MAX61,1044
+typedef r32 degree;degree64,1096
+typedef r32 rad;rad65,1117
+#define signof32(signof3269,1243
+#define signof64(signof6470,1294
+#define sqr(sqr73,1398
+inline degree moduo_degree(degree angle)moduo_degree82,1646
+inline rad moduo_rad(rad angle)moduo_rad87,1759
+inline degree to_degree(rad angle)to_degree93,1952
+inline rad to_rad(degree angle)to_rad98,2036
+inline r32 lerp(r32 low, r32 high, r32 step)lerp104,2201
 
 code/pixel.h,1436
 #define PIXEL_HPIXEL_H2,17
@@ -209,14 +210,17 @@ typedef struct Rect3Rect326,341
 inline v2 rect_dims(rect2 rect)rect_dims35,424
 inline v2 rect_dims3(rect3 rect)rect_dims343,581
 
-code/test.h,298
+code/test.h,450
 #define CURRENTLY_TESTING CURRENTLY_TESTING1,0
-global_variable b32 filetest = true;filetest3,41
-global_variable b32 mathtest = true;mathtest4,79
-global_variable b32 emacstest = true;emacstest5,117
-void none_test()none_test8,160
-void file_test()file_test11,184
-void test()test161,4661
+#define TEST_ONLY_ONCE TEST_ONLY_ONCE2,56
+void seethislater_test()seethislater_test4,113
+void draw_rotated_line_test()draw_rotated_line_test37,715
+void draw_sqaure_around_cursor_test()draw_sqaure_around_cursor_test52,1248
+void concentric_test()concentric_test58,1438
+void file_test()file_test71,1826
+void none_test()none_test79,2098
+#define TEST_ TEST_84,2144
+void test()test85,2180
 
 code/utils.h,1558
 #define UTILS_HUTILS_H2,17
@@ -265,25 +269,32 @@ inline u64 gigabytes(u32 n)gigabytes74,1432
 #define arr_count(arr_count79,1506
 inline u32 trunc_u32(u64 n)trunc_u3282,1606
 
-code/win32_vgengine.c,1430
-global_variable BITMAPINFO window_buffer_info;window_buffer_info11,179
-global_variable b32 running = true;running12,227
-HRESULT directsound_create_stub(LPGUID p1, LPDIRECTSOUND* p2, LPUNKNOWN p3)directsound_create_stub14,266
-typedef HRESULT (*directsound_create_fp) (LPGUID, LPDIRECTSOUND*, LPUNKNOWN);directsound_create_fp18,377
-directsound_create_fp directsound_create  = directsound_create_stub;directsound_create19,456
-typedef struct Window_rect_dimsWindow_rect_dims21,528
-    s32 width;width23,564
-    s32 height;height24,580
-} window_rect_dims;window_rect_dims25,597
-inline window_rect_dims get_window_rect_dims(HWND window)get_window_rect_dims27,620
-HANDLE dbg_open_file(u8* filename)dbg_open_file37,916
-b32 dbg_read_entire_file(u8* filename, void* buffer, u32* buffer_size)dbg_read_entire_file45,1253
-b32 dbg_write_entire_file(u8* filename, void* buffer, u32 buffer_size)dbg_write_entire_file73,1973
-void load_directsound()load_directsound94,2515
-void realloc_window_bitmap_buffer(int new_width, int new_height)realloc_window_bitmap_buffer104,2732
-void resize_and_draw_window_bitmap(HDC dc, int window_width, int window_height)resize_and_draw_window_bitmap126,3367
-LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)window_procedure142,3979
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int nShowCmd)WinMain241,7230
+code/win32_vgengine.c,1875
+global_variable b32 running = true;running13,220
+global_variable b32 valid_dll = false;valid_dll14,257
+void init_memory_base_stub(void* memory_base)init_memory_base_stub17,301
+typedef void (*fp_init_memory_base) (void* memory_base);fp_init_memory_base20,354
+fp_init_memory_base init_memory_base = init_memory_base_stub;init_memory_base21,412
+void* update_and_render_stub()update_and_render_stub23,477
+typedef void* (*fp_update_and_render) ();fp_update_and_render27,530
+fp_update_and_render update_and_render = update_and_render_stub;update_and_render28,573
+void process_frame_input_stub(key k, b32 tk, mouse m, b32 tm)process_frame_input_stub30,641
+typedef void (*fp_process_frame_input) (key k, b32 tk, mouse m, b32 tm);fp_process_frame_input33,710
+fp_process_frame_input process_frame_input = process_frame_input_stub;process_frame_input34,784
+HMODULE load_game()load_game36,858
+void unload_game(HMODULE dll)unload_game75,2100
+typedef struct Window_rect_dimsWindow_rect_dims84,2335
+    s32 width;width86,2371
+    s32 height;height87,2387
+} window_rect_dims;window_rect_dims88,2404
+inline window_rect_dims get_window_rect_dims(HWND window)get_window_rect_dims90,2427
+HANDLE dbg_open_file(u8* filename)dbg_open_file100,2723
+b32 dbg_read_entire_file(u8* filename, void* buffer, u32* buffer_size)dbg_read_entire_file108,3060
+b32 dbg_write_entire_file(u8* filename, void* buffer, u32 buffer_size)dbg_write_entire_file136,3780
+void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPINFO* window_buffestretch_and_draw_window_buffer179,5059
+LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)window_procedure198,5819
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int nShowCmd)WinMain336,10507
+    #define memory_base memory_base352,11036
 
 devenv19.bat,0
 
@@ -297,17 +308,47 @@ exe/.vs/win32_vgengine/v16/ipch/AutoPCH/1e697b2ea718a67c/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/234c41c622a1be9e/WIN32_VGENGINE.ipch,0
 
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/23e2de1194a920c4/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2c800322bf3c4df7/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2ca737db520bb7c/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2d594186158d6aab/WIN32_VGENGINE.ipch,0
+
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/30ec6a69f2b2a0b/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/32d623ca5e7247f3/WIN32_VGENGINE.ipch,0
 
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/46e34e655ef6e2d8/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/537fa418a107d4c5/WIN32_VGENGINE.ipch,0
+
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/560bf95e31ae5953/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5a69ed881e8ee4e4/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5bf5ba526b3f5c20/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/b1f8be5b6981528b/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c8d28971c2fc634e/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/cb16f05b0cdae74b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/dcc08e2d80fb6297/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/ecdfca0b4103dd6b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/f2ed7f13675c249c/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/f82993dd425c5db7/MAIN.ipch,0
+
+exe/main.exp,0
+
+exe/main.map,0
+
+exe/main.pdb,0
 
 exe/vc140.pdb,0
 
@@ -341,24 +382,24 @@ misc/shell.bat,54
 set path=w:\vgengine\misc;C:\msys64;%path%path3,112
 
 misc/snippets.el,964
-(defun cut-snippet-tag ()cut-snippet-tag11,453
-(defun begin-of-code ()begin-of-code18,581
-(defun bracketize (arg1)bracketize24,678
-(defun snippet-el-defun ()snippet-el-defun33,848
-(defun snippet-c-scope ()snippet-c-scope51,1303
-(defun snippet-c-struct ()snippet-c-struct66,1692
-(defun snippet-c-case ()snippet-c-case89,2228
-(defun snippet-c-switch ()snippet-c-switch109,2744
-(defun snippet-c-if ()snippet-c-if116,2899
-(defun snippet-c-ifelse ()snippet-c-ifelse124,3079
-(defun snippet-c-while ()snippet-c-while141,3458
-(defun snippet-c-for ()snippet-c-for148,3610
-(defun snippet-c-include ()snippet-c-include163,3936
-(defun snippet-c-ppif ()snippet-c-ppif172,4151
-(defun snippet-c-ppifd ()snippet-c-ppifd187,4524
-(defun snippet-c-ppifelse ()snippet-c-ppifelse202,4901
-(defun snippet-c-ppifdelse ()snippet-c-ppifdelse224,5474
-(defun snippet-c-guard ()snippet-c-guard246,6052
-(defun snippet-c-fresult ()snippet-c-fresult280,6974
+(defun cut-snippet-tag ()cut-snippet-tag16,520
+(defun begin-of-code ()begin-of-code23,648
+(defun bracketize (arg1)bracketize29,745
+(defun snippet-el-defun ()snippet-el-defun38,915
+(defun snippet-c-scope ()snippet-c-scope56,1370
+(defun snippet-c-struct ()snippet-c-struct71,1759
+(defun snippet-c-case ()snippet-c-case94,2295
+(defun snippet-c-switch ()snippet-c-switch114,2811
+(defun snippet-c-if ()snippet-c-if121,2966
+(defun snippet-c-ifelse ()snippet-c-ifelse129,3146
+(defun snippet-c-while ()snippet-c-while146,3525
+(defun snippet-c-for ()snippet-c-for153,3677
+(defun snippet-c-include ()snippet-c-include168,4003
+(defun snippet-c-ppif ()snippet-c-ppif177,4218
+(defun snippet-c-ppifd ()snippet-c-ppifd192,4591
+(defun snippet-c-ppifelse ()snippet-c-ppifelse207,4968
+(defun snippet-c-ppifdelse ()snippet-c-ppifdelse229,5541
+(defun snippet-c-guard ()snippet-c-guard251,6119
+(defun snippet-c-fresult ()snippet-c-fresult285,7041
 
 TAGS,0

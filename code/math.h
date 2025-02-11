@@ -56,8 +56,8 @@ inline r64 decimal64(r64 n)
 
 #define abs(n) (((n) >= 0) ? (n) : -(n))
 
-#define PI 3.14159
-#define RAD_MAX 2*3.14159
+#define PI ((r32) 3.14159)
+#define RAD_MAX ((r32) 2*3.14159)
 #define DEGREE_MAX 360
 
 // @Note do I want this?

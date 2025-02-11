@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING concentric    ##_test
+#define CURRENTLY_TESTING draw_rotated_line    ##_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 void seethislater_test()
@@ -32,6 +32,23 @@ void seethislater_test()
       s = 0;
       counter = 0;
       }*/
+}
+
+void draw_rotated_line_test()
+{
+    // @TODO clamping
+    fill_background();
+    v2 origin = {.x = Gamestate->wnd_center_x, .y = Gamestate->wnd_center_y};
+    v2 line_offset = {.x = 120, .y = 0};
+    v2 line = {.x = 50, .y = 0};
+    line_offset = scale2(line_offset, Gamestate->line_scaling_factor);
+    line = scale2(line, Gamestate->line_scaling_factor);
+    pxl color = {.R = 0, .G = 0, .B = 0, .A = 0};
+    line = rotate2(line, Gamestate->line_angle);
+    line_offset = rotate2(line_offset, Gamestate->line_angle*1.5);
+    Gamestate->line_angle += PI / 256;
+    v2 offset_by = {.x = origin.x+line_offset.x, .y=origin.y+line_offset.y};
+    draw_line(offset_by, line, color);
 }
 
 void draw_sqaure_around_cursor_test()

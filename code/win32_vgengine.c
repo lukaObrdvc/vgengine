@@ -400,10 +400,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
-        
+    
     while (running)
         {
-#if HOTLOAD
+#if HOTLOAD // @TODO reload based on file datetime instead, to remove stuttering
             if (dll_reload_counter >= 30)
                 {
                     unload_game(dll);

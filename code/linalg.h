@@ -252,14 +252,14 @@ inline v2 perp2(v2 vec)
     return result;
 }
 
-inline v2 scale2(v2 v, r32 s)
-{
-    v2 result;
-    result = v;
-    result.x = result.x * s;
-    result.y = result.y * s;
-    return result;
-}
+/* inline v2 scale2(v2 v, r32 s) */
+/* { */
+/*     v2 result; */
+/*     result = v; */
+/*     result.x = result.x * s; */
+/*     result.y = result.y * s; */
+/*     return result; */
+/* } */
 
 inline v3 scale3(v3 v, r32 s)
 {

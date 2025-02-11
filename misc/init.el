@@ -30,6 +30,9 @@
 
 ;; IMPORTANT: make TAGS file with ctags -e -R on project root
 
+;; automatic window split and open all relevant files on startup...
+;; automatic reloading of ctags (and other things like this...)
+
 ;; struct snippet 
 ;; case snippet
 ;; ?fresult

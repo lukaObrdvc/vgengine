@@ -138,41 +138,47 @@
 /*             } */
 /* } */
 
-/* void draw_line() */
-/* { */
-/*     u32 pitch = wndbuffer.width*wndbuffer.bytpp; */
-/*     u32 offset = (s32)centeredcs.origin.x*wndbuffer.bytpp; */
-/*     pxl* pixel = (pxl*)(wndbuffer.memory + pitch*(s32)centeredcs.origin.y + offset); */
+v2 scale2(v2 vec, r32 scalar)
+{
+    v2 result;
 
-/*     s32 dX = (s32)icomponent(line.B).x; */
-/*     s32 dY = -(s32)jcomponent(line.B).y; */
-/*     s32 movebyX = 0; */
-/*     s32 movebyY = 0; */
-/*     u32 len = (s32)edist(line.A, line.B); */
-/*     r32 whenX = ((r32)len) / dX; */
-/*     r32 whenY = ((r32)len) / dY; */
+    result.x = vec.x * scalar;
+    result.y = vec.y * scalar;
+    
+    return result;
+}
 
-/*     for (u32 i = 1; i <= len; i++) */
-/*         { */
-/*             movebyX = floor32i(i/whenX); */
-/*             movebyY = floor32i(i/whenY); */
+v2 rotate2(v2 vec, r32 angle)
+{
+    v2 result;
 
-/*             // 20 50.50 */
-/*             // 54.3 */
-/*             // 2.7 1.075 */
+    result.x = cos(angle)*vec.x - sin(angle)*vec.y;
+    result.y = sin(angle)*vec.x + cos(angle)*vec.y;
+    
+    return result;
+}
 
-/*             pixel = (pxl*)(wndbuffer.memory + pitch*((s32)centeredcs.origin.y+movebyY) + ((s32)centeredcs.origin.x+movebyX)*wndbuffer.bytpp);// + movebyX*wndbuffer.bytpp + pitch*movebyY); */
+void draw_line(v2 origin, v2 point, pxl color)
+{
+    u8* offset = wnd_buffer + wnd_pitch*round32(origin.y) + wnd_bytpp*round32(origin.x);
+    u8* drawing_point = 0;
+    
+    r32 dX = point.x;
+    r32 dY = -point.y;
+    s32 movebyX = 0;
+    s32 movebyY = 0;
+    r32 len = edist2(origin, point);
+    r32 whenX = len / dX;
+    r32 whenY = len / dY;
 
-/*             pixel->set(0, 0, 0, 255); */
-/*         } */
-
-/*     u32 len = (s32)edist(line.A, line.B); */
-/*     for (u32 i = 0; i < len; i++) */
-/*         { */
-/*             pixel->set(0, 0, 0, 255); */
-/*             pixel++; */
-/*             } */
-/* } */
+    for (s32 i = 1; i <= floor32(len); i++)
+        {
+            movebyX = floor32(i/whenX);
+            movebyY = floor32(i/whenY);
+            drawing_point = offset + wnd_pitch*movebyY + wnd_bytpp*movebyX;
+            *((pxl*)drawing_point) = color;
+        }
+}
 
 void draw_clamped_wndrect(wndrect rectangle, pxl color)
 {
@@ -358,12 +364,14 @@ void process_frame_input(key curr_frame_key,
                     Gamestate->square_length += 50;
                     Gamestate->concentric_spread_x+=10;
                     Gamestate->concentric_spread_y+=4;
+                    Gamestate->line_scaling_factor += 0.1f;
                 }
             if (curr_frame_mouse.code == M2 && curr_frame_mouse.is_down)
                 {
                     Gamestate->square_length -= 50;
                     Gamestate->concentric_spread_x-=10;
                     Gamestate->concentric_spread_y-=4;
+                    Gamestate->line_scaling_factor -= 0.1f;
                 }
             Gamestate->cursor = curr_frame_mouse.cursor;
         }
@@ -402,7 +410,9 @@ void init_game_state()
                 .concentric_thickness = 5,
                 .concentric_count = 10,    
                 .concentric_spread_x = 50, 
-                .concentric_spread_y = 50 };
+                .concentric_spread_y = 50,
+                .line_angle = 0,
+                .line_scaling_factor = 1 };
         }
 }
 
