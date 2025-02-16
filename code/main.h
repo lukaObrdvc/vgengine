@@ -1,11 +1,11 @@
-#ifndef CARDCRAFTER_H
-#define CARDCRAFTER_H
+#ifndef MAIN_H
+#define MAIN_H
 
 #include "linalg.h"
 
 // @Fail what if file not exist?
-typedef b32 (*fp_dbg_read_file) (u8* filename, void* buffer, u32* buffer_size);
-typedef b32 (*fp_dbg_write_file) (u8* filename, void* buffer, u32 buffer_size);
+typedef b32 (*fp_dbg_read_file) (u8*, void*, u32*);
+typedef b32 (*fp_dbg_write_file) (u8*, void*, u32);
 
 // @TODO figure out byte sizes of these fields for alignment optimization and to not waste space
 
@@ -70,7 +70,6 @@ typedef struct Keyboard_key
 /*     key key; */
 /* } input; */
 
-
 // @TODO how do I keep track of sizes of memories??
 typedef struct platform_Provides
 {
@@ -92,7 +91,8 @@ global_variable platform_provides* memory_base;
 #define DBG_READ_FILE memory_base->dbg_read_file
 #define DBG_WRITE_FILE memory_base->dbg_write_file
 
-// @Note I don't know if this pack is working....
+#define DBG_CONCENTRIC_MAX 50
+
 #pragma pack(push, 1)
 typedef struct
 {
@@ -101,6 +101,9 @@ typedef struct
     b32 tested_once;
     s32 wndbuffer_width;
     s32 wndbuffer_height;
+    r32 screen_z;
+    r32 nearclip;
+    r32 farclip;
     v2  cursor;
     s32 dbg_render_x_offset;
     s32 dbg_render_y_offset;
@@ -108,9 +111,10 @@ typedef struct
     s32 wnd_center_x;
     s32 wnd_center_y;
     s32 concentric_thickness;
-    s32 concentric_count;
+    s32 concentric_count;     // must be less than DBG_CONCENTRIC_MAX
     s32 concentric_spread_x;
     s32 concentric_spread_y;
+    r32 concentric_z_values[DBG_CONCENTRIC_MAX];
     r32 line_angle;
     r32 line_scaling_factor;
     r32 rect_angle;
@@ -119,7 +123,7 @@ typedef struct
 } game_state;
 #pragma pack(pop)
 
-#define Gamestate  ((game_state*)(memory_base->perm_mem))                    
+#define Gamestate  ((game_state*)(memory_base->perm_mem))
 #define wnd_width  (((game_state*)(memory_base->perm_mem))->wndbuffer_width) 
 #define wnd_height (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
 #define wnd_bytpp  (memory_base->bytpp)                                      

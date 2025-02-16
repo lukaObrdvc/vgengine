@@ -16,8 +16,9 @@ global_variable b32 valid_dll = false;
 
 void init_memory_base_stub(void* memory_base)
 {
+    return;
 }
-typedef void (*fp_init_memory_base) (void* memory_base);
+typedef void (*fp_init_memory_base) (void*);
 fp_init_memory_base init_memory_base = init_memory_base_stub;
 
 void* update_and_render_stub()
@@ -29,8 +30,9 @@ fp_update_and_render update_and_render = update_and_render_stub;
 
 void process_frame_input_stub(key k, b32 tk, mouse m, b32 tm)
 {
+    return;
 }
-typedef void (*fp_process_frame_input) (key k, b32 tk, mouse m, b32 tm);
+typedef void (*fp_process_frame_input) (key, b32, mouse, b32);
 fp_process_frame_input process_frame_input = process_frame_input_stub;
 
 HMODULE load_game()
@@ -349,14 +351,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     u64 temp_memory_capacity = total_memory_capacity - perm_memory_capacity;
     void* base_ptr = VirtualAlloc(0, total_memory_capacity, MEM_COMMIT, PAGE_READWRITE);
 
-    #define memory_base ((platform_provides*)base_ptr)    
+#define memory_base ((platform_provides*)base_ptr)    
     
     platform_provides provides = {
         .perm_mem = (u8*)base_ptr + sizeof(platform_provides),
         .perm_mem_cap = perm_memory_capacity,
         .temp_mem = (u8*)base_ptr + sizeof(platform_provides) + perm_memory_capacity,
         .temp_mem_cap = temp_memory_capacity,
-         .bytpp = bytes_per_pixel,
+        .bytpp = bytes_per_pixel,
         .dbg_read_file = dbg_read_entire_file,
         .dbg_write_file = dbg_write_entire_file };
 

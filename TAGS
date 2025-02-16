@@ -1,12 +1,12 @@
 
 code/build.bat,569
 set WarningFlags=-W4 -WX -wd4100 -wd4091 -wd4459 -wd4996 -wd4189 -wd4201 -wd4804 -wd4244 -wd4013WarningFlags4,56
-set CompilerFlags=/std:c17 /Zc:preprocessor /TC -DDEBUG=1 -DHOTLOAD=0 -Oi -Zi -MT -GR -EHa -noloCompilerFlags5,154
-set LinkerFlags= -incremental:no -opt:ref user32.lib gdi32.lib kernel32.lib winmm.libLinkerFlags6,254
-set DLLExports=/EXPORT:update_and_render /EXPORT:platform_init_memory_base /EXPORT:process_frameDLLExports7,341
-REM set UniquePDBperDLL=/PDB:main_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%tUniquePDBperDLL8,445
+set CompilerFlags=/std:c17 /Zc:preprocessor /TC -DDEBUG=1 -DHOTLOAD=0 -Oi -Zi -MT -GR -EHa -noloCompilerFlags5,170
+set LinkerFlags= -incremental:no -opt:ref user32.lib gdi32.lib kernel32.lib winmm.libLinkerFlags6,270
+set DLLExports=/EXPORT:update_and_render /EXPORT:platform_init_memory_base /EXPORT:process_frameDLLExports7,357
+REM set UniquePDBperDLL=/PDB:main_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%tUniquePDBperDLL8,461
 
-code/linalg.h,569
+code/linalg.h,523
 #define LINALG_HLINALG_H2,18
 typedef struct V2V25,40
     r32 x;x7,62
@@ -26,24 +26,30 @@ typedef struct V4V418,162
 inline r32 edist2(v2 vec1, v2 vec2)edist2188,3057
 inline r32 edist3(v3 vec1, v3 vec2)edist3194,3187
 inline v2 perp2(v2 vec)perp2247,4346
-inline v2 scale2(v2 v, r32 s)scale2255,4462
-inline v3 scale3(v3 v, r32 s)scale3264,4614
+inline v3 scale3(v3 v, r32 s)scale3264,4662
 
-code/main.c,870
-v2 rotate2(v2 vec, r32 angle)rotate2141,5170
-void draw_line(v2 origin, v2 point, pxl color)draw_line151,5359
-void draw_clamped_wndrect(wndrect rectangle, pxl color)draw_clamped_wndrect173,5991
-void clamp_wndrect(wndrect* rectangle)clamp_wndrect188,6457
-void fill_background()fill_background221,7451
-void dbg_render(s8 x_offset, s8 y_offset)dbg_render236,7915
-void dbg_draw_square_around_cursor(u8 square_length)dbg_draw_square_around_cursor253,8440
-void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)concentric_rectangles_around_origin268,8953
-void process_frame_input(key curr_frame_key,process_frame_input316,10630
-void platform_init_memory_base(void* memory_base_ptr)platform_init_memory_base375,12751
-void init_game_state()init_game_state380,12875
-void update_and_render()update_and_render409,13803
+code/main.c,1318
+wndrect obtain_wndrect(rect2 rectangle, v2 origin)obtain_wndrect15,562
+v2 transpose2(v2 vec, v2 origin)transpose247,1663
+v2 rotate2(v2 vec, r32 angle)rotate257,1817
+v2 clamp_point(v2 point)clamp_point67,2006
+v2 scale2(v2 vec, r32 scalar)scale292,2452
+void draw_rotated_rect_2(rect2 rect, v2 origin, pxl color)draw_rotated_rect_2102,2599
+v2 obtain_leftmost(rect2 rect)obtain_leftmost127,3686
+void draw_rotated_rect(rect2 rect, wndrect outline, pxl color)draw_rotated_rect141,4064
+void draw_line(v2 origin, v2 point, pxl color)draw_line190,6070
+void draw_clamped_wndrect(wndrect rectangle, pxl color)draw_clamped_wndrect213,6747
+void clamp_wndrect(wndrect* rectangle)clamp_wndrect228,7213
+void fill_background()fill_background261,8207
+void dbg_render(s8 x_offset, s8 y_offset)dbg_render277,8692
+void dbg_draw_square_around_cursor(u8 square_length)dbg_draw_square_around_cursor294,9217
+void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)concentric_rectangles_around_origin309,9730
+void process_frame_input(key curr_frame_key,process_frame_input357,11407
+void platform_init_memory_base(void* memory_base_ptr)platform_init_memory_base420,13772
+void init_game_state()init_game_state425,13896
+void update_and_render()update_and_render457,14944
 
-code/main.h,3081
+code/main.h,3253
 #define CARDCRAFTER_HCARDCRAFTER_H2,23
 typedef b32 (*fp_dbg_read_file) (u8* filename, void* buffer, u32* buffer_size);fp_dbg_read_file7,105
 typedef b32 (*fp_dbg_write_file) (u8* filename, void* buffer, u32 buffer_size);fp_dbg_write_file8,186
@@ -94,29 +100,32 @@ typedef struct platform_Providesplatform_Provides75,1420
 global_variable platform_provides* memory_base;memory_base90,1820
 #define DBG_READ_FILE DBG_READ_FILE92,1871
 #define DBG_WRITE_FILE DBG_WRITE_FILE93,1921
-{__anon1cb8196a010898,2065
-    b32 inited;inited99,2068
-    b32 tested_once;tested_once101,2087
-    s32 wndbuffer_width;wndbuffer_width102,2109
-    s32 wndbuffer_height;wndbuffer_height103,2135
-    v2  cursor;cursor104,2162
-    s32 dbg_render_x_offset;dbg_render_x_offset105,2179
-    s32 dbg_render_y_offset;dbg_render_y_offset106,2209
-    s32 square_length;square_length107,2239
-    s32 wnd_center_x;wnd_center_x108,2263
-    s32 wnd_center_y;wnd_center_y109,2286
-    s32 concentric_thickness;concentric_thickness110,2309
-    s32 concentric_count;concentric_count111,2340
-    s32 concentric_spread_x;concentric_spread_x112,2367
-    s32 concentric_spread_y;concentric_spread_y113,2397
-    r32 line_angle;line_angle114,2427
-} game_state;game_state116,2454
-#define Gamestate Gamestate119,2490
-#define wnd_width wnd_width120,2569
-#define wnd_height wnd_height121,2648
-#define wnd_bytpp wnd_bytpp122,2727
-#define wnd_pitch wnd_pitch123,2806
-#define wnd_buffer wnd_buffer124,2879
+typedef struct game_Stategame_State97,2051
+    b32 inited;inited99,2081
+    b32 tested_once;tested_once101,2100
+    s32 wndbuffer_width;wndbuffer_width102,2122
+    s32 wndbuffer_height;wndbuffer_height103,2148
+    v2  cursor;cursor104,2175
+    s32 dbg_render_x_offset;dbg_render_x_offset105,2192
+    s32 dbg_render_y_offset;dbg_render_y_offset106,2222
+    s32 square_length;square_length107,2252
+    s32 wnd_center_x;wnd_center_x108,2276
+    s32 wnd_center_y;wnd_center_y109,2299
+    s32 concentric_thickness;concentric_thickness110,2322
+    s32 concentric_count;concentric_count111,2353
+    s32 concentric_spread_x;concentric_spread_x112,2380
+    s32 concentric_spread_y;concentric_spread_y113,2410
+    r32 line_angle;line_angle114,2440
+    r32 line_scaling_factor;line_scaling_factor115,2461
+    r32 rect_angle;rect_angle116,2491
+    r32 rect_scaling_factor;rect_scaling_factor117,2512
+} game_state;game_state119,2548
+#define Gamestate Gamestate122,2586
+#define wnd_width wnd_width123,2665
+#define wnd_height wnd_height124,2744
+#define wnd_bytpp wnd_bytpp125,2823
+#define wnd_pitch wnd_pitch126,2902
+#define wnd_buffer wnd_buffer127,2975
 
 code/math.h,907
 #define MATH_HMATH_H2,16
@@ -210,17 +219,20 @@ typedef struct Rect3Rect326,341
 inline v2 rect_dims(rect2 rect)rect_dims35,424
 inline v2 rect_dims3(rect3 rect)rect_dims343,581
 
-code/test.h,450
+code/test.h,530
 #define CURRENTLY_TESTING CURRENTLY_TESTING1,0
-#define TEST_ONLY_ONCE TEST_ONLY_ONCE2,56
-void seethislater_test()seethislater_test4,113
-void draw_rotated_line_test()draw_rotated_line_test37,715
-void draw_sqaure_around_cursor_test()draw_sqaure_around_cursor_test52,1248
-void concentric_test()concentric_test58,1438
-void file_test()file_test71,1826
-void none_test()none_test79,2098
-#define TEST_ TEST_84,2144
-void test()test85,2180
+#define TEST_ONLY_ONCE TEST_ONLY_ONCE2,58
+void draw_rotated_rect_2_test()draw_rotated_rect_2_test5,117
+void draw_rotated_rect_test()draw_rotated_rect_test26,795
+void draw_rotated_line_test()draw_rotated_line_test59,1992
+void draw_sqaure_around_cursor_test()draw_sqaure_around_cursor_test96,3255
+void concentric_test()concentric_test102,3445
+void file_test()file_test115,3833
+void none_test()none_test123,4105
+#define TEST_ TEST_128,4151
+void test()test129,4187
+
+code/testing2.rdbg,0
 
 code/utils.h,1558
 #define UTILS_HUTILS_H2,17
@@ -330,7 +342,17 @@ exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5a69ed881e8ee4e4/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5bf5ba526b3f5c20/WIN32_VGENGINE.ipch,0
 
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6635b40ffa0e2716/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6972d9d0a44cc482/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6beccd691c6a9ace/MAIN.ipch,0
+
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/b1f8be5b6981528b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/bbabd67db315a901/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c5d99d91ed71e9d1/WIN32_VGENGINE.ipch,0
 
 exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c8d28971c2fc634e/WIN32_VGENGINE.ipch,0
 
@@ -350,13 +372,13 @@ exe/main.map,0
 
 exe/main.pdb,0
 
+exe/testing.rdbg,0
+
 exe/vc140.pdb,0
 
 exe/win32_vgengine.map,0
 
 exe/win32_vgengine.pdb,0
-
-exe/win32_vgengine.sln,0
 
 misc/config.el,42
 (defun luka-save-all ()luka-save-all1,0
@@ -364,19 +386,19 @@ misc/config.el,42
 misc/info.el,0
 
 misc/init.el,558
-(defun _splitr ()_splitr86,2742
-(defun _splitd ()_splitd91,2809
-(defun _calc ()_calc96,2876
-(defun _config ()_config101,2933
-(defun _rectselect ()_rectselect106,3024
-(defun _rectinsert ()_rectinsert111,3096
-(defun _devenv ()_devenv118,3243
-(defun luka-grep (arg1)luka-grep126,3404
-(defun luka-compile ()luka-compile136,3712
-(defun luka-bigmove-up ()luka-bigmove-up146,3969
-(defun luka-bigmove-down ()luka-bigmove-down156,4165
-(defun luka-hugemove-up ()luka-hugemove-up166,4347
-(defun luka-hugemove-down ()luka-hugemove-down175,4536
+(defun _splitr ()_splitr89,2878
+(defun _splitd ()_splitd94,2945
+(defun _calc ()_calc99,3012
+(defun _config ()_config104,3069
+(defun _rectselect ()_rectselect109,3160
+(defun _rectinsert ()_rectinsert114,3232
+(defun _devenv ()_devenv121,3379
+(defun luka-grep (arg1)luka-grep129,3540
+(defun luka-compile ()luka-compile139,3848
+(defun luka-bigmove-up ()luka-bigmove-up149,4105
+(defun luka-bigmove-down ()luka-bigmove-down159,4301
+(defun luka-hugemove-up ()luka-hugemove-up169,4483
+(defun luka-hugemove-down ()luka-hugemove-down178,4672
 
 misc/shell.bat,54
 set path=w:\vgengine\misc;C:\msys64;%path%path3,112

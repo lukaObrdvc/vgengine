@@ -102,7 +102,7 @@ v2 scale2(v2 vec, r32 scalar)
 void draw_rotated_rect_2(rect2 rect, v2 origin, pxl color)
 {
     // @Note round instead??
-    // @Note there are holes at certain times, due to numerical inaccuracy...
+    // @TODO there are holes at certain times, due to numerical inaccuracy...
     s32 width = floor32(edist2(rect.A, rect.B));
     s32 height = floor32(edist2(rect.A, rect.D));
     for (s32 i = 0; i < height; i++)
@@ -118,7 +118,7 @@ void draw_rotated_rect_2(rect2 rect, v2 origin, pxl color)
                     pxl_point = clamp_point(pxl_point);
                     pxl* draw_point = (pxl*)(wnd_buffer +
                                              wnd_pitch*(s32)pxl_point.y +
-                                             wnd_bytpp*(s32)pxl_point.x);                    
+                                             wnd_bytpp*(s32)pxl_point.x);
                     *draw_point = color;
                 }
         }       
@@ -225,6 +225,11 @@ void draw_clamped_wndrect(wndrect rectangle, pxl color)
         }
 }
 
+void draw_clamped_wndrect_projected(wndrect rectangle, pxl color)
+{
+    // @TODO apply similar triangles formula
+}
+
 void clamp_wndrect(wndrect* rectangle)
 {
     if (rectangle->topleft.x < 0)
@@ -306,51 +311,68 @@ void dbg_draw_square_around_cursor(u8 square_length)
     draw_clamped_wndrect(rect, color);
 }
 
-void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)
+void draw_wndrect_outline_projected(wndrect rect, s32 thickness, pxl color)
 {
-    pxl color = {.R=0, .G=0, .B=0, .A=255};
-    s32 origin_x = Gamestate->wnd_center_x;
-    s32 origin_y = Gamestate->wnd_center_y;
-    for (u32 i=1; i<=count; i++)
-        {
-            s32 top = origin_y-i*(spread_y+thickness);
-            s32 left = origin_x-i*(spread_x+thickness);
-            u32 width = i*2*(spread_x+thickness);
-            u32 height = i*2*(spread_y+thickness);
+    wndrect rect_up = rect;
+    rect_up.height = thickness;
+    clamp_wndrect(&rect_up);
+    
+    wndrect rect_left = rect;
+    rect_left.width = thickness;
+    rect_left.height -= thickness;
+    rect_left.topleft.y += thickness;
+    clamp_wndrect(&rect_left);
+    
+    wndrect rect_down = rect;
+    rect_down.height = thickness;
+    rect_down.width -= thickness;
+    rect_down.topleft.y += rect.height - thickness;
+    rect_down.topleft.x += thickness;
+    clamp_wndrect(&rect_down);
+    
+    wndrect rect_right = rect;
+    rect_right.height -= thickness+thickness;
+    rect_right.width = thickness;
+    rect_right.topleft.y += thickness;
+    rect_right.topleft.x += rect.width - thickness;
+    clamp_wndrect(&rect_right);
+    
+    draw_clamped_wndrect_projected(rect_up, color);
+    draw_clamped_wndrect_projected(rect_left, color);
+    draw_clamped_wndrect_projected(rect_down, color);
+    draw_clamped_wndrect_projected(rect_right, color);
+}
 
-            // @TODO write this in a cleaner way....
-            wndrect wup, wleft, wdown, wright;
-            
-            wup.topleft.y = top;
-            wup.topleft.x = left;
-            wup.width = width;
-            wup.height = thickness;
-
-            wleft.topleft.y = top;
-            wleft.topleft.x = left;
-            wleft.width = thickness;
-            wleft.height = height;
-
-            wright.topleft.y = top;
-            wright.topleft.x = left+width-thickness;
-            wright.width = thickness;
-            wright.height = height;
-
-            wdown.topleft.y = top+height-thickness;
-            wdown.topleft.x = left;
-            wdown.width = width;
-            wdown.height = thickness;
-
-            clamp_wndrect(&wup);
-            clamp_wndrect(&wleft);
-            clamp_wndrect(&wright);
-            clamp_wndrect(&wdown);
-
-            draw_clamped_wndrect(wup, color);
-            draw_clamped_wndrect(wleft, color);
-            draw_clamped_wndrect(wright, color);
-            draw_clamped_wndrect(wdown, color);            
-        }
+void draw_wndrect_outline(wndrect rect, s32 thickness, pxl color)
+{
+    wndrect rect_up = rect;
+    rect_up.height = thickness;
+    clamp_wndrect(&rect_up);
+    
+    wndrect rect_left = rect;
+    rect_left.width = thickness;
+    rect_left.height -= thickness;
+    rect_left.topleft.y += thickness;
+    clamp_wndrect(&rect_left);
+    
+    wndrect rect_down = rect;
+    rect_down.height = thickness;
+    rect_down.width -= thickness;
+    rect_down.topleft.y += rect.height - thickness;
+    rect_down.topleft.x += thickness;
+    clamp_wndrect(&rect_down);
+    
+    wndrect rect_right = rect;
+    rect_right.height -= thickness+thickness;
+    rect_right.width = thickness;
+    rect_right.topleft.y += thickness;
+    rect_right.topleft.x += rect.width - thickness;
+    clamp_wndrect(&rect_right);
+    
+    draw_clamped_wndrect(rect_up, color);
+    draw_clamped_wndrect(rect_left, color);
+    draw_clamped_wndrect(rect_down, color);
+    draw_clamped_wndrect(rect_right, color);
 }
 
 // @TODO make this work when multiple keys are down at the same time ??
@@ -426,6 +448,7 @@ void init_game_state()
 {
     if (!Gamestate->inited)
         {
+            // @TODO include wnd_buffer size in the assert
             Assert(sizeof(game_state) <= memory_base->perm_mem_cap);
             
             *(Gamestate) = literal(game_state) {
@@ -435,13 +458,16 @@ void init_game_state()
                 .wndbuffer_width = 1280,
                 .wndbuffer_height = 720,
                 .cursor = literal(v2) {.x = 640, .y = 360},
+                .screen_z = 0.0f,
+                .nearclip = 0.2f,
+                .farclip = 9.8f,
                 .dbg_render_x_offset = 0, 
                 .dbg_render_y_offset = 0, 
                 .square_length = 10,       
                 .wnd_center_x = 640,        
                 .wnd_center_y = 360,        
                 .concentric_thickness = 5,
-                .concentric_count = 10,    
+                .concentric_count = 10,     // must be less than DBG_CONCENTRIC_MAX
                 .concentric_spread_x = 50, 
                 .concentric_spread_y = 50,
                 .line_angle = 0,

@@ -1,5 +1,51 @@
-#define CURRENTLY_TESTING draw_rotated_rect_2    ##_test
+#define CURRENTLY_TESTING perspective_projection_test      //##_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
+
+
+// @TODO simple dynamic arrays, so you don't have to make a #define
+// for array sizes...
+void perspective_projection_test()
+{
+    s32 concentric_count = Gamestate->concentric_count;
+    r32* concentric_z_values = Gamestate->concentric_z_values;
+    Assert(concentric_count <= DBG_CONCENTRIC_MAX);
+    
+    for (s32 i = 0; i < concentric_count; i++)
+        {
+            concentric_z_values[i] = concentric_count/2.0 - 1 - i;
+        }
+
+    pxl color = {.R=0, .G=0, .B=0, .A=255};
+    s32 thickness = Gamestate->concentric_thickness;
+    
+    s32 origin_x = Gamestate->wnd_center_x;
+    s32 origin_y = Gamestate->wnd_center_y;
+    s32 spread_x = Gamestate->concentric_spread_x;
+    s32 spread_y = Gamestate->concentric_spread_y;
+
+    fill_background();
+
+    for (s32 i=1; i<=concentric_count; i++)
+        {
+            r32 top = (r32)(origin_y-i*(spread_y+thickness));
+            r32 left = (r32)(origin_x-i*(spread_x+thickness));
+            r32 width = (r32)(i*2*(spread_x+thickness));
+            r32 height = (r32)(i*2*(spread_y+thickness));
+
+            wndrect rect = {
+                .topleft = literal(v2) {.x=left, .y=top},
+                .width = width,
+                .height = height
+            };
+
+            if (concentric_z_values[i] >= Gamestate->nearclip &&
+                concentric_z_values[i] <= Gamestate->farclip)
+                {
+                    draw_wndrect_outline_projected(rect, thickness, color);
+                }
+        }
+}
+
 
 
 void draw_rotated_rect_2_test()
@@ -101,15 +147,32 @@ void draw_sqaure_around_cursor_test()
 
 void concentric_test()
 {
-    fill_background();
-    u32 thickness = Gamestate->concentric_thickness;
-    u32 spread_x = Gamestate->concentric_spread_x;
-    u32 spread_y = Gamestate->concentric_spread_y;
-    u32 count = Gamestate->concentric_count;
+    pxl color = {.R=0, .G=0, .B=0, .A=255};
+    s32 thickness = Gamestate->concentric_thickness;
     
-    concentric_rectangles_around_origin(thickness, spread_x, spread_y, count);
+    s32 origin_x = Gamestate->wnd_center_x;
+    s32 origin_y = Gamestate->wnd_center_y;
+    s32 spread_x = Gamestate->concentric_spread_x;
+    s32 spread_y = Gamestate->concentric_spread_y;
+    s32 concentric_count = Gamestate->concentric_count;
+    
+    fill_background();
 
-    //Gamestate->concentric_count = 3;
+    for (s32 i=1; i<=concentric_count; i++)
+        {
+            r32 top = (r32)(origin_y-i*(spread_y+thickness));
+            r32 left = (r32)(origin_x-i*(spread_x+thickness));
+            r32 width = (r32)(i*2*(spread_x+thickness));
+            r32 height = (r32)(i*2*(spread_y+thickness));
+
+            wndrect rect = {
+                .topleft = literal(v2) {.x=left, .y=top},
+                .width = width,
+                .height = height
+            };
+
+            draw_wndrect_outline(rect, thickness, color);
+        }
 }
 
 void file_test()

@@ -1,3 +1,40 @@
+;; (set-face-attribute 'default nil :font "AverageMono-12")
+
+
+;;(set-face-attribute 'default nil :font "Office Code Pro-11")
+
+;; (set-face-attribute 'default nil :font "TeXGyreCursor-Regular-12")
+
+;;(set-face-attribute 'default nil :font "IBM Plex Mono Regular-11")
+;;(set-face-attribute 'default nil :font "IBM Plex Mono Light-11")
+;;(set-face-attribute 'default nil :font "Courier Prime Sans-11")
+
+;; (set-face-attribute 'default nil :font "Office Code Pro-11")
+;; (set-face-attribute 'default nil :font "Source Code Pro Regular-11")
+;; (set-face-attribute 'default nil :font "NotCourierSans-11")
+;; (set-face-attribute 'default nil :font "Inconsolata-g-11")
+;; (set-face-attribute 'default nil :font "FreeMono-12")
+
+
+;; (set-face-attribute 'default nil :font "Fira Code Regular-10")
+;; (set-face-attribute 'default nil :font "Iosevka Light-12")
+
+
+;; (set-face-attribute 'default nil :font "Iosevka Slab Light-12")
+;; (set-face-attribute 'default nil :font "DejaVu Sans Mono-11")
+;; (set-face-attribute 'default nil :font "Ubuntu Light-12")
+;; (set-face-attribute 'default nil :font "Hack-12")
+;; (set-face-attribute 'default nil :font "Liberation Mono-11")
+;; (set-face-attribute 'default nil :font "Consolas-12")
+
+
+
+
+
+
+
+
+
 ;; scope a region and move point above scope
 ;; same but unscope
 

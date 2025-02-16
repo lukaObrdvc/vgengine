@@ -1,5 +1,6 @@
 .vs/
 exe/
+*.rdbg
 *.el#
 *.exe
 *.h~

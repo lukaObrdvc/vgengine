@@ -1,8 +1,38 @@
+;; quick open scratch buffer
+;; ? on command in minibuffer to show possible completions
+;; f3 start macro, f4 end macro or replay last
+;; or just use multiple cursors bro??
+
+;; see casey's too
+
+;; jblow keybindings:
+;; M-n create-new-file
+;; C-p move-up
+;; C-n move-down
+;; C-F move-right (other way around ??)
+;; C-b move-left
+;; C-a begin of line
+;; C-e end of line
+;; C-s search
+;; C-d delete char in front
+;; C-l center around current line
+;; C-k delete to end of line (then pastes...)
+;; C/M-v scroll up/down
+;; C-x o ?? (popping back and forth; windows??) C-o the default
+;; create window
+;; C-0 ?close window all other windows? "snap back to just the buffer"
+;; begin/end of file (C-. C-, ??)
+;; auto-indent region
+;; C-y paste
+;; go to begin of code?
+;; replace (without asking)
+;; uses C-k to remove multiple lines and then pastes them all together??
+
 ;; emacs 29.3_2
 
-(load-file "W:/vgengine/misc/snippets.el")
+;; IMPORTANT remove ido/fido but can autocomplete with tab (make that work???)
+
 (load-file "W:/vgengine/misc/config.el")
-(load-file "W:/vgengine/misc/info.el")
 
 (global-set-key (kbd "M-H e") 'eval-last-sexp) 
 (global-set-key (kbd "M-H d f") 'describe-function)
@@ -10,8 +40,10 @@
 (global-set-key (kbd "M-H d k") 'describe-key)
 (global-set-key (kbd "M-H s") 'where-is)
 
+;;*+ parenstuff, comment out
+
 ;; search C-s (C-r previous, C-s next)
-;; replace(in region too) M-o (y/n)
+;;* replace(in region too) M-o (y/n)
 ;; quit C-g
 ;; minibuffer M-x
 ;; cua
@@ -23,19 +55,15 @@
 ;; begin/end of document M-> / M-<
 ;; move horizontally by word C-leftarrow/C-rightarrow
 ;; yank-from-kill-ring M-y (but what if I use a prefix argument..?)
-;; delete line in front C-k
+;;* delete line in front C-k
 ;; delete line C-S-<backspace>
-;; delete-horizontal-space M-\
+;;* delete-horizontal-space M-\
 ;; jump to definition M-.
 
 ;; IMPORTANT: make TAGS file with ctags -e -R on project root
 
 ;; automatic window split and open all relevant files on startup...
 ;; automatic reloading of ctags (and other things like this...)
-
-;; struct snippet 
-;; case snippet
-;; ?fresult
 
 ;; declare functions from source into header
 ;; guard (automatic?)
@@ -86,6 +114,33 @@
 
 ;; easy creation,deletion,switching,renaming of projects
 
+(defun __save-all ()
+  (interactive)
+  (setq current-prefix-arg '(!))
+  (call-interactively 'save-some-buffers)
+  )
+(run-with-timer 0 30 '__save-all)
+
+(defun __grep (arg1)
+  (interactive "sgrep findstr: ")
+  (__save-all)
+  (if (= (count-windows) 1) (split-window-right))
+  (cd "w:/vgengine")
+  (grep (format "findstr -s -n -i -r \"%s\" *.h *.c" arg1))
+  (cd (file-name-directory buffer-file-name))
+  )
+(global-set-key (kbd "M-+") '__grep)
+
+(defun __compile ()
+  (interactive)
+  (__save-all)
+  (if (= (count-windows) 1) (split-window-right))
+  (cd "w:/vgengine/code")
+  (compile "build")
+  (cd (file-name-directory buffer-file-name))
+  )
+(global-set-key (kbd "M-m") '__compile)
+
 (defun _splitr ()
   (interactive)
   (split-window-right)
@@ -116,37 +171,7 @@
   (call-interactively 'string-insert-rectangle)
   )
 
-;; can do this from emacs' shell
-;; also git....
-(defun _devenv ()
-  (interactive)
-  (luka-save-all)
-  (cd "w:/vgengine")
-  (shell-command "devenv19")
-  (cd (file-name-directory buffer-file-name))
-  )
-
-(defun luka-grep (arg1)
-  (interactive "sgrep findstr: ")
-  (luka-save-all)
-  (if (= (count-windows) 1) (split-window-right))
-  (cd "w:/vgengine")
-  (grep (format "findstr -s -n -i -r \"%s\" *.h *.c" arg1))
-  (cd (file-name-directory buffer-file-name))
-  )
-(global-set-key (kbd "M-+") 'luka-grep)
-
-(defun luka-compile ()
-  (interactive)
-  (luka-save-all)
-  (if (= (count-windows) 1) (split-window-right))
-  (cd "w:/vgengine/code")
-  (compile "build")
-  (cd (file-name-directory buffer-file-name))
-  )
-(global-set-key (kbd "M-m") 'luka-compile)
-
-(defun luka-bigmove-up ()
+(defun __bigmove-up ()
   (interactive)
   (previous-line)
   (previous-line)
@@ -154,9 +179,9 @@
   (previous-line)
   (previous-line)
   )
-(global-set-key (kbd "C-<up>") 'luka-bigmove-up)
+(global-set-key (kbd "C-<up>") '__bigmove-up)
 
-(defun luka-bigmove-down ()
+(defun __bigmove-down ()
   (interactive)
   (next-line)
   (next-line)
@@ -164,24 +189,30 @@
   (next-line)
   (next-line)
   )
-(global-set-key (kbd "C-<down>") 'luka-bigmove-down)
+(global-set-key (kbd "C-<down>") '__bigmove-down)
 
-(defun luka-hugemove-up ()
+(defun __hugemove-up ()
   (interactive)
-  (luka-bigmove-up)
-  (luka-bigmove-up)
-  (luka-bigmove-up)
-  (luka-bigmove-up)
+  (__bigmove-up)
+  (__bigmove-up)
+  (__bigmove-up)
+  (previous-line)
+  (previous-line)
+  (previous-line)
+  (previous-line)
   )
-(global-set-key (kbd "C-S-<up>") 'luka-hugemove-up)
+(global-set-key (kbd "C-S-<up>") '__hugemove-up)
 
-(defun luka-hugemove-down ()
+(defun __hugemove-down ()
   (interactive)
-  (luka-bigmove-down)
-  (luka-bigmove-down)
-  (luka-bigmove-down)
-  (luka-bigmove-down)
+  (__bigmove-down)
+  (__bigmove-down)
+  (__bigmove-down)
+  (next-line)
+  (next-line)
+  (next-line)
+  (next-line)
   )
-(global-set-key (kbd "C-S-<down>") 'luka-hugemove-down)
+(global-set-key (kbd "C-S-<down>") '__hugemove-down)
 
 
