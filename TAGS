@@ -1,427 +1,0 @@
-
-code/build.bat,569
-set WarningFlags=-W4 -WX -wd4100 -wd4091 -wd4459 -wd4996 -wd4189 -wd4201 -wd4804 -wd4244 -wd4013WarningFlags4,56
-set CompilerFlags=/std:c17 /Zc:preprocessor /TC -DDEBUG=1 -DHOTLOAD=0 -Oi -Zi -MT -GR -EHa -noloCompilerFlags5,170
-set LinkerFlags= -incremental:no -opt:ref user32.lib gdi32.lib kernel32.lib winmm.libLinkerFlags6,270
-set DLLExports=/EXPORT:update_and_render /EXPORT:platform_init_memory_base /EXPORT:process_frameDLLExports7,357
-REM set UniquePDBperDLL=/PDB:main_%date:~-4,4%%date:~-10,2%%date:~-7,2%_%time:~0,2%%time:~3,2%%tUniquePDBperDLL8,461
-
-code/linalg.h,523
-#define LINALG_HLINALG_H2,18
-typedef struct V2V25,40
-    r32 x;x7,62
-    r32 y;y8,74
-} v2;v29,86
-typedef struct V3V311,95
-    r32 x;x13,117
-    r32 y;y14,129
-    r32 z;z15,141
-} v3;v316,153
-typedef struct V4V418,162
-    r32 x;x20,184
-    r32 y;y21,196
-    r32 z;z22,208
-    r32 a;a23,220
-} v4;v424,232
-inline r32 edist2(v2 vec1, v2 vec2)edist2188,3057
-inline r32 edist3(v3 vec1, v3 vec2)edist3194,3187
-inline v2 perp2(v2 vec)perp2247,4346
-inline v3 scale3(v3 v, r32 s)scale3264,4662
-
-code/main.c,1318
-wndrect obtain_wndrect(rect2 rectangle, v2 origin)obtain_wndrect15,562
-v2 transpose2(v2 vec, v2 origin)transpose247,1663
-v2 rotate2(v2 vec, r32 angle)rotate257,1817
-v2 clamp_point(v2 point)clamp_point67,2006
-v2 scale2(v2 vec, r32 scalar)scale292,2452
-void draw_rotated_rect_2(rect2 rect, v2 origin, pxl color)draw_rotated_rect_2102,2599
-v2 obtain_leftmost(rect2 rect)obtain_leftmost127,3686
-void draw_rotated_rect(rect2 rect, wndrect outline, pxl color)draw_rotated_rect141,4064
-void draw_line(v2 origin, v2 point, pxl color)draw_line190,6070
-void draw_clamped_wndrect(wndrect rectangle, pxl color)draw_clamped_wndrect213,6747
-void clamp_wndrect(wndrect* rectangle)clamp_wndrect228,7213
-void fill_background()fill_background261,8207
-void dbg_render(s8 x_offset, s8 y_offset)dbg_render277,8692
-void dbg_draw_square_around_cursor(u8 square_length)dbg_draw_square_around_cursor294,9217
-void concentric_rectangles_around_origin(u32 thickness, u32 spread_x, u32 spread_y, u32 count)concentric_rectangles_around_origin309,9730
-void process_frame_input(key curr_frame_key,process_frame_input357,11407
-void platform_init_memory_base(void* memory_base_ptr)platform_init_memory_base420,13772
-void init_game_state()init_game_state425,13896
-void update_and_render()update_and_render457,14944
-
-code/main.h,3253
-#define CARDCRAFTER_HCARDCRAFTER_H2,23
-typedef b32 (*fp_dbg_read_file) (u8* filename, void* buffer, u32* buffer_size);fp_dbg_read_file7,105
-typedef b32 (*fp_dbg_write_file) (u8* filename, void* buffer, u32 buffer_size);fp_dbg_write_file8,186
-typedef struct platform_resized_window_Bufferplatform_resized_window_Buffer12,369
-    b32 to_resize;to_resize14,419
-    u8* memory_base;memory_base15,439
-    u32 width;width16,461
-    u32 height;height17,477
-} platform_resized_window_buffer;platform_resized_window_buffer18,494
-typedef struct WndrectWndrect21,562
-    v2 topleft;topleft23,589
-    r32 width;width24,606
-    r32 height;height25,622
-} wndrect;wndrect26,639
-typedef enum Mouse_key_codeMouse_key_code35,790
-        M_NONE,M_NONE37,826
-        M1,M138,843
-        M2,M239,856
-        M3M340,869
-    } mouse_key_code;mouse_key_code41,881
-typedef struct MouseMouse43,906
-    v2 cursor;cursor45,931
-    b32 mouse_moved;mouse_moved46,947
-    b32 is_down;is_down47,969
-    mouse_key_code code;code48,987
-} mouse;mouse49,1013
-typedef enum Key_codeKey_code51,1025
-        KEY_NONE,KEY_NONE53,1055
-        KEY_UP,KEY_UP54,1074
-        KEY_RIGHT,KEY_RIGHT55,1091
-        KEY_DOWN,KEY_DOWN56,1111
-        KEY_LEFTKEY_LEFT57,1130
-    } key_code;key_code58,1148
-typedef struct Keyboard_keyKeyboard_key60,1167
-    key_code code;code62,1199
-    b32 is_down;is_down63,1219
-    b32 was_down;was_down64,1237
-} key;key65,1256
-typedef struct platform_Providesplatform_Provides75,1420
-    void* perm_mem;perm_mem77,1457
-    u64 perm_mem_cap;perm_mem_cap78,1478
-    void* temp_mem;temp_mem79,1501
-    u64 temp_mem_cap;temp_mem_cap80,1522
-    s32 bytpp;bytpp82,1547
-    fp_dbg_read_file dbg_read_file;dbg_read_file86,1720
-    fp_dbg_write_file dbg_write_file;dbg_write_file87,1757
-} platform_provides;platform_provides88,1796
-global_variable platform_provides* memory_base;memory_base90,1820
-#define DBG_READ_FILE DBG_READ_FILE92,1871
-#define DBG_WRITE_FILE DBG_WRITE_FILE93,1921
-typedef struct game_Stategame_State97,2051
-    b32 inited;inited99,2081
-    b32 tested_once;tested_once101,2100
-    s32 wndbuffer_width;wndbuffer_width102,2122
-    s32 wndbuffer_height;wndbuffer_height103,2148
-    v2  cursor;cursor104,2175
-    s32 dbg_render_x_offset;dbg_render_x_offset105,2192
-    s32 dbg_render_y_offset;dbg_render_y_offset106,2222
-    s32 square_length;square_length107,2252
-    s32 wnd_center_x;wnd_center_x108,2276
-    s32 wnd_center_y;wnd_center_y109,2299
-    s32 concentric_thickness;concentric_thickness110,2322
-    s32 concentric_count;concentric_count111,2353
-    s32 concentric_spread_x;concentric_spread_x112,2380
-    s32 concentric_spread_y;concentric_spread_y113,2410
-    r32 line_angle;line_angle114,2440
-    r32 line_scaling_factor;line_scaling_factor115,2461
-    r32 rect_angle;rect_angle116,2491
-    r32 rect_scaling_factor;rect_scaling_factor117,2512
-} game_state;game_state119,2548
-#define Gamestate Gamestate122,2586
-#define wnd_width wnd_width123,2665
-#define wnd_height wnd_height124,2744
-#define wnd_bytpp wnd_bytpp125,2823
-#define wnd_pitch wnd_pitch126,2902
-#define wnd_buffer wnd_buffer127,2975
-
-code/math.h,907
-#define MATH_HMATH_H2,16
-inline s32 floor32(r32 n)floor3215,365
-inline s64 floor64(r64 n)floor6420,422
-inline s32 ceil32(r32 n)ceil3226,529
-inline s64 ceil64(r64 n)ceil6431,587
-inline s32 round32(r32 n)round3237,697
-inline s64 round64(r64 n)round6442,758
-inline r32 decimal32(r32 n)decimal3247,819
-inline r64 decimal64(r64 n)decimal6452,878
-#define abs(abs57,937
-#define PI PI59,981
-#define RAD_MAX RAD_MAX60,1009
-#define DEGREE_MAX DEGREE_MAX61,1044
-typedef r32 degree;degree64,1096
-typedef r32 rad;rad65,1117
-#define signof32(signof3269,1243
-#define signof64(signof6470,1294
-#define sqr(sqr73,1398
-inline degree moduo_degree(degree angle)moduo_degree82,1646
-inline rad moduo_rad(rad angle)moduo_rad87,1759
-inline degree to_degree(rad angle)to_degree93,1952
-inline rad to_rad(degree angle)to_rad98,2036
-inline r32 lerp(r32 low, r32 high, r32 step)lerp104,2201
-
-code/pixel.h,1436
-#define PIXEL_HPIXEL_H2,17
-typedef struct ClrClr6,113
-    u8 B;B8,136
-    u8 G;G9,147
-    u8 R;R10,158
-} clr;clr11,169
-typedef struct Clr_nClr_n13,179
-    r32 B;B15,204
-    r32 G;G16,216
-    r32 R;R17,228
-} clr_n;clr_n18,240
-typedef u8 alpha_u8;alpha_u821,280
-typedef r32 alpha;alpha22,302
-typedef struct PxlPxl24,324
-    u8 B;B26,347
-    u8 G;G27,358
-    u8 R;R28,369
-    u8 A;A29,380
-} pxl;pxl30,391
-typedef struct Pxl_nPxl_n33,403
-    u8 B;B35,428
-    u8 G;G36,439
-    u8 R;R37,450
-    r32 A;A38,461
-} pxl_n;pxl_n39,473
-typedef struct Pxl_naPxl_na41,485
-    r32 B;B43,511
-    r32 G;G44,523
-    r32 R;R45,535
-    r32 A;A46,547
-} pxl_na;pxl_na47,559
-inline alpha_u8 resulting_alphau8(alpha_u8 src_a, alpha_u8 dest_a)resulting_alphau854,684
-inline alpha resulting_alpha(alpha src_a, alpha dest_a)resulting_alpha65,1127
-inline clr clr_ablend(clr src, clr dest, alpha src_a)clr_ablend70,1232
-inline clr clr_ablend_u8(clr src, clr dest, alpha_u8 src_a)clr_ablend_u879,1503
-inline clr_n clr_n_ablend(clr_n src, clr_n dest, alpha src_a)clr_n_ablend89,1839
-inline clr_n clr_n_ablend_u8(clr_n src, clr_n dest, alpha_u8 src_a)clr_n_ablend_u898,2081
-inline pxl pxl_ablend(pxl foreground, pxl background)pxl_ablend110,2489
-inline pxl_n pxl_n_ablend(pxl_n src, pxl_n dest)pxl_n_ablend121,2922
-inline pxl_na pxl_na_ablend(pxl_na src, pxl_na dest)pxl_na_ablend131,3238
-
-code/renderer.h,582
-#define RENDERER_HRENDERER_H2,20
-typedef struct Line2Line25,88
-    v2 A;A7,113
-    v2 B;B8,124
-} line2;line29,135
-typedef struct Line3Line311,147
-    v3 A;A13,172
-    v3 B;B14,183
-} line3;line315,194
-typedef struct Rect2Rect218,260
-    v2 A;A20,285
-    v2 B;B21,296
-    v2 C;C22,307
-    v2 D;D23,318
-} rect2;rect224,329
-typedef struct Rect3Rect326,341
-    v3 A;A28,366
-    v3 B;B29,377
-    v3 C;C30,388
-    v3 D;D31,399
-} rect3;rect332,410
-inline v2 rect_dims(rect2 rect)rect_dims35,424
-inline v2 rect_dims3(rect3 rect)rect_dims343,581
-
-code/test.h,530
-#define CURRENTLY_TESTING CURRENTLY_TESTING1,0
-#define TEST_ONLY_ONCE TEST_ONLY_ONCE2,58
-void draw_rotated_rect_2_test()draw_rotated_rect_2_test5,117
-void draw_rotated_rect_test()draw_rotated_rect_test26,795
-void draw_rotated_line_test()draw_rotated_line_test59,1992
-void draw_sqaure_around_cursor_test()draw_sqaure_around_cursor_test96,3255
-void concentric_test()concentric_test102,3445
-void file_test()file_test115,3833
-void none_test()none_test123,4105
-#define TEST_ TEST_128,4151
-void test()test129,4187
-
-code/testing2.rdbg,0
-
-code/utils.h,1558
-#define UTILS_HUTILS_H2,17
-typedef int8_t s8;s86,59
-typedef int16_t s16;s167,79
-typedef int32_t s32;s328,101
-typedef int64_t s64;s649,123
-typedef uint8_t u8;u811,147
-typedef uint16_t u16;u1612,168
-typedef uint32_t u32;u3213,191
-typedef uint64_t u64;u6414,214
-typedef float r32;r3216,239
-typedef double r64;r6417,259
-typedef s32 b32; // lower value than 32?b3219,282
-#define literal(literal24,430
-#define literal(literal26,459
-#define true true29,493
-#define false false30,509
-#define global_variableglobal_variable32,528
-#define local_persist local_persist33,553
-#define internal internal34,583
-#define Assert(Assert37,624
-#define Assert(Assert39,690
-#define InvalidCodePath InvalidCodePath42,722
-#define InvalidDefaultCase InvalidDefaultCase43,757
-#define MIN_U MIN_U45,797
-#define MAX_U8 MAX_U846,814
-#define MAX_U16 MAX_U1647,834
-#define MAX_U32 MAX_U3248,857
-#define MAX_U64 MAX_U6449,885
-#define MIN_S8 MIN_S850,924
-#define MIN_S16 MIN_S1651,945
-#define MIN_S32 MIN_S3252,970
-#define MIN_S64 MIN_S6453,999
-#define MAX_S8 MAX_S854,1037
-#define MAX_S16 MAX_S1655,1057
-#define MAX_S32 MAX_S3256,1081
-#define MAX_S64 MAX_S6457,1109
-#define MIN_R32 MIN_R3259,1177
-#define MAX_R32 MAX_R3260,1207
-#define MIN_R64 MIN_R6461,1237
-#define MAX_R64 MAX_R6462,1267
-inline u64 kilobytes(u32 n)kilobytes64,1299
-inline u64 megabytes(u32 n)megabytes69,1363
-inline u64 gigabytes(u32 n)gigabytes74,1432
-#define arr_count(arr_count79,1506
-inline u32 trunc_u32(u64 n)trunc_u3282,1606
-
-code/win32_vgengine.c,1875
-global_variable b32 running = true;running13,220
-global_variable b32 valid_dll = false;valid_dll14,257
-void init_memory_base_stub(void* memory_base)init_memory_base_stub17,301
-typedef void (*fp_init_memory_base) (void* memory_base);fp_init_memory_base20,354
-fp_init_memory_base init_memory_base = init_memory_base_stub;init_memory_base21,412
-void* update_and_render_stub()update_and_render_stub23,477
-typedef void* (*fp_update_and_render) ();fp_update_and_render27,530
-fp_update_and_render update_and_render = update_and_render_stub;update_and_render28,573
-void process_frame_input_stub(key k, b32 tk, mouse m, b32 tm)process_frame_input_stub30,641
-typedef void (*fp_process_frame_input) (key k, b32 tk, mouse m, b32 tm);fp_process_frame_input33,710
-fp_process_frame_input process_frame_input = process_frame_input_stub;process_frame_input34,784
-HMODULE load_game()load_game36,858
-void unload_game(HMODULE dll)unload_game75,2100
-typedef struct Window_rect_dimsWindow_rect_dims84,2335
-    s32 width;width86,2371
-    s32 height;height87,2387
-} window_rect_dims;window_rect_dims88,2404
-inline window_rect_dims get_window_rect_dims(HWND window)get_window_rect_dims90,2427
-HANDLE dbg_open_file(u8* filename)dbg_open_file100,2723
-b32 dbg_read_entire_file(u8* filename, void* buffer, u32* buffer_size)dbg_read_entire_file108,3060
-b32 dbg_write_entire_file(u8* filename, void* buffer, u32 buffer_size)dbg_write_entire_file136,3780
-void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPINFO* window_buffestretch_and_draw_window_buffer179,5059
-LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)window_procedure198,5819
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int nShowCmd)WinMain336,10507
-    #define memory_base memory_base352,11036
-
-devenv19.bat,0
-
-emacs.bat,0
-
-exe/.vs/win32_vgengine/v16/.suo,0
-
-exe/.vs/win32_vgengine/v16/Browse.VC.db,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/1e697b2ea718a67c/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/234c41c622a1be9e/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/23e2de1194a920c4/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2c800322bf3c4df7/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2ca737db520bb7c/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2d594186158d6aab/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/30ec6a69f2b2a0b/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/32d623ca5e7247f3/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/46e34e655ef6e2d8/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/537fa418a107d4c5/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/560bf95e31ae5953/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5a69ed881e8ee4e4/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5bf5ba526b3f5c20/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6635b40ffa0e2716/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6972d9d0a44cc482/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6beccd691c6a9ace/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/b1f8be5b6981528b/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/bbabd67db315a901/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c5d99d91ed71e9d1/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c8d28971c2fc634e/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/cb16f05b0cdae74b/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/dcc08e2d80fb6297/MAIN.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/ecdfca0b4103dd6b/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/f2ed7f13675c249c/WIN32_VGENGINE.ipch,0
-
-exe/.vs/win32_vgengine/v16/ipch/AutoPCH/f82993dd425c5db7/MAIN.ipch,0
-
-exe/main.exp,0
-
-exe/main.map,0
-
-exe/main.pdb,0
-
-exe/testing.rdbg,0
-
-exe/vc140.pdb,0
-
-exe/win32_vgengine.map,0
-
-exe/win32_vgengine.pdb,0
-
-misc/config.el,42
-(defun luka-save-all ()luka-save-all1,0
-
-misc/info.el,0
-
-misc/init.el,558
-(defun _splitr ()_splitr89,2878
-(defun _splitd ()_splitd94,2945
-(defun _calc ()_calc99,3012
-(defun _config ()_config104,3069
-(defun _rectselect ()_rectselect109,3160
-(defun _rectinsert ()_rectinsert114,3232
-(defun _devenv ()_devenv121,3379
-(defun luka-grep (arg1)luka-grep129,3540
-(defun luka-compile ()luka-compile139,3848
-(defun luka-bigmove-up ()luka-bigmove-up149,4105
-(defun luka-bigmove-down ()luka-bigmove-down159,4301
-(defun luka-hugemove-up ()luka-hugemove-up169,4483
-(defun luka-hugemove-down ()luka-hugemove-down178,4672
-
-misc/shell.bat,54
-set path=w:\vgengine\misc;C:\msys64;%path%path3,112
-
-misc/snippets.el,964
-(defun cut-snippet-tag ()cut-snippet-tag16,520
-(defun begin-of-code ()begin-of-code23,648
-(defun bracketize (arg1)bracketize29,745
-(defun snippet-el-defun ()snippet-el-defun38,915
-(defun snippet-c-scope ()snippet-c-scope56,1370
-(defun snippet-c-struct ()snippet-c-struct71,1759
-(defun snippet-c-case ()snippet-c-case94,2295
-(defun snippet-c-switch ()snippet-c-switch114,2811
-(defun snippet-c-if ()snippet-c-if121,2966
-(defun snippet-c-ifelse ()snippet-c-ifelse129,3146
-(defun snippet-c-while ()snippet-c-while146,3525
-(defun snippet-c-for ()snippet-c-for153,3677
-(defun snippet-c-include ()snippet-c-include168,4003
-(defun snippet-c-ppif ()snippet-c-ppif177,4218
-(defun snippet-c-ppifd ()snippet-c-ppifd192,4591
-(defun snippet-c-ppifelse ()snippet-c-ppifelse207,4968
-(defun snippet-c-ppifdelse ()snippet-c-ppifdelse229,5541
-(defun snippet-c-guard ()snippet-c-guard251,6119
-(defun snippet-c-fresult ()snippet-c-fresult285,7041
-
-TAGS,0

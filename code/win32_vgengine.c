@@ -37,8 +37,9 @@ fp_process_frame_input process_frame_input = process_frame_input_stub;
 
 HMODULE load_game()
 {
-    CopyFile("W:\\vgengine\\exe\\main.dll", "W:\\vgengine\\exe\\main_copy.dll", FALSE);
-    HMODULE dll = LoadLibrary("W:\\vgengine\\exe\\main_copy.dll");
+    // @Failure this stuff will not work when you change project root directory
+    CopyFile("W:\\Projects\\vgengine\\exe\\main.dll", "W:\\Projects\\vgengine\\exe\\main_copy.dll", FALSE);
+    HMODULE dll = LoadLibrary("W:\\Projects\\vgengine\\exe\\main_copy.dll");
 
     if (dll)
         {
