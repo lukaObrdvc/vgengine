@@ -4,6 +4,7 @@
 #include "pixel.h"
 #include "renderer.h"
 #include "main.h"
+// none
 
 // @TODO put void into functions that actually do not get passed anything
 
