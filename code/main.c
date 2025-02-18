@@ -4,7 +4,6 @@
 #include "pixel.h"
 #include "renderer.h"
 #include "main.h"
-// none
 
 // @TODO put void into functions that actually do not get passed anything
 
@@ -226,10 +225,72 @@ void draw_clamped_wndrect(wndrect rectangle, pxl color)
         }
 }
 
-void draw_clamped_wndrect_projected(wndrect rectangle, pxl color)
+v2 project_point(v2 point)
 {
-    // @TODO apply similar triangles formula
+    v2 result;
+
+    r32 point_z = Gamestate->concentric_z_values[Gamestate->concentric_current_z];
+    r32 screen_z = 0.1f;
+    result.x = point.x / point_z * screen_z;
+    result.y = point.y / point_z * screen_z;
+    
+    return result;
 }
+
+wndrect project_wndrect(wndrect rect)
+{
+    wndrect result;
+
+    s32 concentric_current_z = Gamestate->concentric_current_z;
+    r32 rect_z = Gamestate->concentric_z_values[concentric_current_z];
+    r32 screen_z = Gamestate->screen_z;
+    r32 scaling_factor = screen_z / rect_z;
+    
+    v2 A = rect.topleft;
+    v2 B = {.x = rect.topleft.x + rect.width , .y = rect.topleft.y};
+    //v2 C = {.x = rect.topleft.x + rect.width , .y = rect.topleft.y + rect.height};
+    v2 D = {.x = rect.topleft.x, .y = rect.topleft.y + rect.height};
+
+
+/* signof(A.x - eye_x) *  */
+/* signof(A.y - eye_y) *      */
+/* signof(B.x - eye_x) *      */
+/* signof(D.y - eye_y) *      */
+#if 1
+    A.x = Gamestate->eye_x - scaling_factor * (Gamestate->eye_x - A.x);
+    A.y = Gamestate->eye_y - scaling_factor * (Gamestate->eye_y - A.y);
+    B.x = Gamestate->eye_x - scaling_factor * (Gamestate->eye_x - B.x);
+    D.y = Gamestate->eye_y - scaling_factor * (Gamestate->eye_y - D.y);
+#else
+    // @Cleanup can do less processing here
+    A = project_point(A);
+    B = project_point(B);
+    //C = project_point(C);
+    D = project_point(D);
+#endif
+    result.topleft = A;
+    result.width = B.x - A.x;
+    result.height = D.y - A.y;
+    
+    return result;
+}
+
+/* void draw_clamped_wndrect_projected(wndrect rectangle, pxl color) */
+/* { */
+/*     // @TODO apply similar triangles formula */
+
+/*     u32 offset = wnd_pitch*round32(rectangle.topleft.y) + */
+/*         round32(rectangle.topleft.x)*wnd_bytpp; */
+/*     for (s32 i = 0; i < rectangle.height; i++) */
+/*         { */
+/*             pxl* row = (pxl*)(wnd_buffer + wnd_pitch*i + offset); */
+/*             for (s32 j = 0; j < rectangle.width; j++) */
+/*                 { */
+/*                     *row = color; */
+/*                     row++; */
+/*                 } */
+/*         }        */
+/* } */
 
 void clamp_wndrect(wndrect* rectangle)
 {
@@ -316,12 +377,14 @@ void draw_wndrect_outline_projected(wndrect rect, s32 thickness, pxl color)
 {
     wndrect rect_up = rect;
     rect_up.height = thickness;
+    rect_up = project_wndrect(rect_up);
     clamp_wndrect(&rect_up);
     
     wndrect rect_left = rect;
     rect_left.width = thickness;
     rect_left.height -= thickness;
     rect_left.topleft.y += thickness;
+    rect_left = project_wndrect(rect_left);
     clamp_wndrect(&rect_left);
     
     wndrect rect_down = rect;
@@ -329,6 +392,7 @@ void draw_wndrect_outline_projected(wndrect rect, s32 thickness, pxl color)
     rect_down.width -= thickness;
     rect_down.topleft.y += rect.height - thickness;
     rect_down.topleft.x += thickness;
+    rect_down =  project_wndrect(rect_down);
     clamp_wndrect(&rect_down);
     
     wndrect rect_right = rect;
@@ -336,12 +400,13 @@ void draw_wndrect_outline_projected(wndrect rect, s32 thickness, pxl color)
     rect_right.width = thickness;
     rect_right.topleft.y += thickness;
     rect_right.topleft.x += rect.width - thickness;
+    rect_right = project_wndrect(rect_right);
     clamp_wndrect(&rect_right);
     
-    draw_clamped_wndrect_projected(rect_up, color);
-    draw_clamped_wndrect_projected(rect_left, color);
-    draw_clamped_wndrect_projected(rect_down, color);
-    draw_clamped_wndrect_projected(rect_right, color);
+    draw_clamped_wndrect(rect_up, color);
+    draw_clamped_wndrect(rect_left, color);
+    draw_clamped_wndrect(rect_down, color);
+    draw_clamped_wndrect(rect_right, color);
 }
 
 void draw_wndrect_outline(wndrect rect, s32 thickness, pxl color)
@@ -420,6 +485,10 @@ void process_frame_input(key curr_frame_key,
                     Gamestate->concentric_spread_y+=4;
                     Gamestate->line_scaling_factor += 0.1f;
                     Gamestate->rect_scaling_factor += 0.1f;
+                    for (s32 i = 0; i < Gamestate->concentric_count; i++)
+                        {
+                            Gamestate->concentric_z_values[i]++;
+                        }
                 }
             if (curr_frame_mouse.code == M2 && curr_frame_mouse.is_down)
                 {
@@ -428,6 +497,10 @@ void process_frame_input(key curr_frame_key,
                     Gamestate->concentric_spread_y-=4;
                     Gamestate->line_scaling_factor -= 0.1f;
                     Gamestate->rect_scaling_factor -= 0.1f;
+                    for (s32 i = 0; i < Gamestate->concentric_count; i++)
+                        {
+                            Gamestate->concentric_z_values[i]--;
+                        }
                 }
             Gamestate->cursor = curr_frame_mouse.cursor;
         }
@@ -459,8 +532,10 @@ void init_game_state()
                 .wndbuffer_width = 1280,
                 .wndbuffer_height = 720,
                 .cursor = literal(v2) {.x = 640, .y = 360},
-                .screen_z = 0.0f,
-                .nearclip = 0.2f,
+                .eye_x = 640,
+                .eye_y = 360,
+                .screen_z = 0.5f,
+                .nearclip = 0.7f,
                 .farclip = 9.8f,
                 .dbg_render_x_offset = 0, 
                 .dbg_render_y_offset = 0, 
@@ -471,10 +546,21 @@ void init_game_state()
                 .concentric_count = 10,     // must be less than DBG_CONCENTRIC_MAX
                 .concentric_spread_x = 50, 
                 .concentric_spread_y = 50,
+                .concentric_current_z = 0,
                 .line_angle = 0,
                 .line_scaling_factor = 1,
                 .rect_angle = 0,
                 .rect_scaling_factor = 1 };
+
+            s32 concentric_count = Gamestate->concentric_count;
+            r32* concentric_z_values = Gamestate->concentric_z_values;
+            Assert(concentric_count <= DBG_CONCENTRIC_MAX);
+    
+            for (s32 i = 0; i < concentric_count; i++)
+                {
+                    concentric_z_values[i] = round32(concentric_count/2.0 - 1 - i);
+                }
+
         }
 }
 

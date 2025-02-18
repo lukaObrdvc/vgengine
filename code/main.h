@@ -18,6 +18,7 @@ typedef struct platform_resized_window_Buffer
 } platform_resized_window_buffer;
 
 // @Note do I want a v2 here?
+// @TODO refactor into 2 offsets, width and height
 typedef struct Wndrect
 {
     v2 topleft;
@@ -101,6 +102,8 @@ typedef struct
     b32 tested_once;
     s32 wndbuffer_width;
     s32 wndbuffer_height;
+    r32 eye_x;
+    r32 eye_y;
     r32 screen_z;
     r32 nearclip;
     r32 farclip;
@@ -115,6 +118,7 @@ typedef struct
     s32 concentric_spread_x;
     s32 concentric_spread_y;
     r32 concentric_z_values[DBG_CONCENTRIC_MAX];
+    s32 concentric_current_z;
     r32 line_angle;
     r32 line_scaling_factor;
     r32 rect_angle;

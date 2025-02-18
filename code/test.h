@@ -6,15 +6,11 @@
 // for array sizes...
 void perspective_projection_test()
 {
+    // @TODO fix not cliping correctly and division by zero orsmth...
+    Gamestate->concentric_current_z = 0;
     s32 concentric_count = Gamestate->concentric_count;
     r32* concentric_z_values = Gamestate->concentric_z_values;
-    Assert(concentric_count <= DBG_CONCENTRIC_MAX);
     
-    for (s32 i = 0; i < concentric_count; i++)
-        {
-            concentric_z_values[i] = concentric_count/2.0 - 1 - i;
-        }
-
     pxl color = {.R=0, .G=0, .B=0, .A=255};
     s32 thickness = Gamestate->concentric_thickness;
     
@@ -43,7 +39,10 @@ void perspective_projection_test()
                 {
                     draw_wndrect_outline_projected(rect, thickness, color);
                 }
+            Gamestate->concentric_current_z++;
         }
+
+    //Gamestate->concentric_count = 7;
 }
 
 

@@ -12,6 +12,7 @@
 // @TODO intrinsics for these?
 
 // @TODO check if work for negative, if desired like that
+// @IMPORTANT needs to work for negative numbers
 inline s32 floor32(r32 n)
 {
     return (s32)(n);
