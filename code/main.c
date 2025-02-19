@@ -453,22 +453,22 @@ void process_frame_input(key curr_frame_key,
                 {            
                 case KEY_UP:
                     {
-                        Gamestate->wnd_center_y-= 10;
+                        Gamestate->wnd_center_y-= 20;
                         Gamestate->dbg_render_y_offset-= 10;
                     } break;
                 case KEY_DOWN:
                     {
-                        Gamestate->wnd_center_y+= 10;
+                        Gamestate->wnd_center_y+= 20;
                         Gamestate->dbg_render_y_offset+= 10;
                     } break;
                 case KEY_LEFT:
                     {
-                        Gamestate->wnd_center_x-= 10;
+                        Gamestate->wnd_center_x-= 20;
                         Gamestate->dbg_render_x_offset-= 10;
                     } break;
                 case KEY_RIGHT:
                     {
-                        Gamestate->wnd_center_x+= 10;
+                        Gamestate->wnd_center_x+= 20;
                         Gamestate->dbg_render_x_offset+= 10;
                     } break;
                 default:
@@ -543,7 +543,7 @@ void init_game_state()
                 .wnd_center_x = 640,        
                 .wnd_center_y = 360,        
                 .concentric_thickness = 5,
-                .concentric_count = 10,     // must be less than DBG_CONCENTRIC_MAX
+                .concentric_count = 10,     // must be less than CONCENTRIC_MAX
                 .concentric_spread_x = 50, 
                 .concentric_spread_y = 50,
                 .concentric_current_z = 0,
@@ -554,11 +554,11 @@ void init_game_state()
 
             s32 concentric_count = Gamestate->concentric_count;
             r32* concentric_z_values = Gamestate->concentric_z_values;
-            Assert(concentric_count <= DBG_CONCENTRIC_MAX);
+            Assert(concentric_count <= CONCENTRIC_MAX);
     
             for (s32 i = 0; i < concentric_count; i++)
                 {
-                    concentric_z_values[i] = round32(concentric_count/2.0 - 1 - i);
+                    concentric_z_values[i] = floor32(concentric_count/2.0 - 1 - i);
                 }
 
         }

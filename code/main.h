@@ -92,7 +92,7 @@ global_variable platform_provides* memory_base;
 #define DBG_READ_FILE memory_base->dbg_read_file
 #define DBG_WRITE_FILE memory_base->dbg_write_file
 
-#define DBG_CONCENTRIC_MAX 50
+#define CONCENTRIC_MAX 50
 
 #pragma pack(push, 1)
 typedef struct
@@ -114,10 +114,10 @@ typedef struct
     s32 wnd_center_x;
     s32 wnd_center_y;
     s32 concentric_thickness;
-    s32 concentric_count;     // must be less than DBG_CONCENTRIC_MAX
+    s32 concentric_count;     // must be less than CONCENTRIC_MAX
     s32 concentric_spread_x;
     s32 concentric_spread_y;
-    r32 concentric_z_values[DBG_CONCENTRIC_MAX];
+    r32 concentric_z_values[CONCENTRIC_MAX];
     s32 concentric_current_z;
     r32 line_angle;
     r32 line_scaling_factor;

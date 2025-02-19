@@ -8,7 +8,6 @@
 
 #include "utils.h"
 #include "main.h"
-//#include "main.c"
 
 global_variable b32 running = true;
 global_variable b32 valid_dll = false;
@@ -156,28 +155,6 @@ b32 dbg_write_entire_file(u8* filename, void* buffer, u32 buffer_size)
     CloseHandle(filehandle);
      return true;
 }
-
-/* void realloc_window_bitmap_buffer(int new_width, int new_height) */
-/* { */
-/*     // @Note memory, wndbuffer, origin_x, origin_y are globals */
-/*     if (memory.size) */
-/*         { */
-/*             memory.size = 0; */
-/*         } */
-
-/*     origin_x = new_width / 2; */
-/*     origin_y = new_height / 2; */
-    
-/*     wndbuffer.width = new_width; */
-/*     wndbuffer.height = new_height; */
-
-/*     window_buffer_info.bmiHeader.biWidth = new_width; */
-/*     window_buffer_info.bmiHeader.biHeight = -new_height; */
-  
-/*     s32 new_size = new_width*new_height*wndbuffer.bytpp; */
-/*     wndbuffer.memory = (u8*) memory.base; // @Note this line is not needed */
-/*     memory.size = new_size; */
-/* } */
 
 void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPINFO* window_buffer_info,int window_width, int window_height)
 {
@@ -343,7 +320,13 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     timeBeginPeriod(1);
 
     HMODULE dll = load_game();
-    int dll_reload_counter = 0;
+#if HOTLOAD
+    WIN32_FIND_DATA find_data;
+    HANDLE dll_filehandle = FindFirstFile((LPCSTR)"W:\\Projects\\vgengine\\exe\\main.dll", &find_data);
+    FindClose(dll_filehandle);
+    FILETIME dll_filetime_prev = find_data.ftLastWriteTime;
+    FILETIME dll_filetime_curr;
+#endif
 
     int bytes_per_pixel = 4;
     
@@ -406,13 +389,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     
     while (running)
         {
-#if HOTLOAD // @TODO reload based on file datetime instead, to remove stuttering
-            if (dll_reload_counter >= 30)
+#if HOTLOAD
+           dll_filehandle = FindFirstFile((LPCSTR)"W:\\Projects\\vgengine\\exe\\main.dll", &find_data);
+           FindClose(dll_filehandle);
+           dll_filetime_curr = find_data.ftLastWriteTime;
+            if (dll_filetime_curr.dwLowDateTime > dll_filetime_prev.dwLowDateTime)
                 {
                     unload_game(dll);
                     dll = load_game();
-                    dll_reload_counter = 0;
-
+                    dll_filetime_prev = dll_filetime_curr;
+                    
                     init_memory_base(base_ptr);
                 }
 #endif         
@@ -483,11 +469,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             sprintf(debug_str,"%f fps : %f ms : %I64d cycles\n", fps, ms_per_frame, cycles_per_frame );
 
             // @Note turned off for now
-            //OutputDebugStringA(debug_str);
+            OutputDebugStringA(debug_str);
 
-            dll_reload_counter++;
-
-            
             //Sleep(200);
         }
 

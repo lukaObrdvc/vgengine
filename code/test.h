@@ -6,7 +6,6 @@
 // for array sizes...
 void perspective_projection_test()
 {
-    // @TODO fix not cliping correctly and division by zero orsmth...
     Gamestate->concentric_current_z = 0;
     s32 concentric_count = Gamestate->concentric_count;
     r32* concentric_z_values = Gamestate->concentric_z_values;
@@ -172,6 +171,7 @@ void concentric_test()
 
             draw_wndrect_outline(rect, thickness, color);
         }
+    //Gamestate->concentric_count = 10;
 }
 
 void file_test()
