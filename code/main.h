@@ -9,23 +9,6 @@ typedef b32 (*fp_dbg_write_file) (u8*, void*, u32);
 
 // @TODO figure out byte sizes of these fields for alignment optimization and to not waste space
 
-typedef struct platform_resized_window_Buffer
-{
-    b32 to_resize;
-    u8* memory_base;
-    u32 width;
-    u32 height;
-} platform_resized_window_buffer;
-
-// @Note do I want a v2 here?
-// @TODO refactor into 2 offsets, width and height
-typedef struct Wndrect
-{
-    v2 topleft;
-    r32 width;
-    r32 height;
-} wndrect;
-
 /* // @Failure do I want unsigned here? */
 /* typedef struct Cursor */
 /* { */
@@ -133,16 +116,6 @@ typedef struct
 #define wnd_bytpp  (memory_base->bytpp)                                      
 #define wnd_pitch  (wnd_width*wnd_bytpp)                               
 #define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) + sizeof(game_state)))
-
-/* inline void* dbg_alloc(u32 size) */
-/* { */
-/*     void* result; */
-/*     result = (u8*)memory_base+ *((u64)memory_base); */
-/*     *((u64)memory_base) += size; */
-/*     return result; */
-/* } */
-
-// @IMPORTANT you cannot inline if you want to export with DLL ???
 
 
 #endif

@@ -77,6 +77,7 @@ HMODULE load_game()
 void unload_game(HMODULE dll)
 {
     FreeLibrary(dll);
+    //DeleteFile("W:\\Projects\\vgengine\\exe\\main_copy.dll");
     valid_dll = false;
     init_memory_base = init_memory_base_stub;
     update_and_render = update_and_render_stub;
@@ -390,9 +391,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     while (running)
         {
 #if HOTLOAD
-           dll_filehandle = FindFirstFile((LPCSTR)"W:\\Projects\\vgengine\\exe\\main.dll", &find_data);
-           FindClose(dll_filehandle);
-           dll_filetime_curr = find_data.ftLastWriteTime;
+            // @TODO when doing rotated_line test, then hotloading perspective_test
+            // it won't hotload every time, and also sometimes it might bug out
+            // and not load anything...?
+
+            // maybe delete previous dll?
+            // not perfectly reloading....
+            dll_filehandle = FindFirstFile((LPCSTR)"W:\\Projects\\vgengine\\exe\\main.dll", &find_data);
+            FindClose(dll_filehandle);
+            dll_filetime_curr = find_data.ftLastWriteTime;
             if (dll_filetime_curr.dwLowDateTime > dll_filetime_prev.dwLowDateTime)
                 {
                     unload_game(dll);

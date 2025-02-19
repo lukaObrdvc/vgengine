@@ -1,6 +1,6 @@
 #include "utils.h"
 #include "math.h"
-#include "linalg.h"
+#include "vector.h"
 #include "pixel.h"
 #include "renderer.h"
 #include "main.h"
@@ -44,26 +44,6 @@ wndrect obtain_wndrect(rect2 rectangle, v2 origin)
     return result;
 }
 
-v2 transpose2(v2 vec, v2 origin)
-{
-    v2 result;
-
-    result.x = vec.x - origin.x;
-    result.y = vec.y - origin.y;
-    
-    return result;
-}
-
-v2 rotate2(v2 vec, r32 angle)
-{
-    v2 result;
-
-    result.x = cos(angle)*vec.x - sin(angle)*vec.y;
-    result.y = sin(angle)*vec.x + cos(angle)*vec.y;
-    
-    return result;
-}
-
 v2 clamp_point(v2 point)
 {
     v2 result = { .x = point.x , .y = point.y };
@@ -85,16 +65,6 @@ v2 clamp_point(v2 point)
         {
             result.y = wnd_height;
         }
-    
-    return result;
-}
-
-v2 scale2(v2 vec, r32 scalar)
-{
-    v2 result;
-
-    result.x = vec.x * scalar;
-    result.y = vec.y * scalar;
     
     return result;
 }
@@ -225,17 +195,17 @@ void draw_clamped_wndrect(wndrect rectangle, pxl color)
         }
 }
 
-v2 project_point(v2 point)
-{
-    v2 result;
+/* v2 project_point(v2 point) */
+/* { */
+/*     v2 result; */
 
-    r32 point_z = Gamestate->concentric_z_values[Gamestate->concentric_current_z];
-    r32 screen_z = 0.1f;
-    result.x = point.x / point_z * screen_z;
-    result.y = point.y / point_z * screen_z;
+/*     r32 point_z = Gamestate->concentric_z_values[Gamestate->concentric_current_z]; */
+/*     r32 screen_z = 0.1f; */
+/*     result.x = point.x / point_z * screen_z; */
+/*     result.y = point.y / point_z * screen_z; */
     
-    return result;
-}
+/*     return result; */
+/* } */
 
 wndrect project_wndrect(wndrect rect)
 {
@@ -248,49 +218,18 @@ wndrect project_wndrect(wndrect rect)
     
     v2 A = rect.topleft;
     v2 B = {.x = rect.topleft.x + rect.width , .y = rect.topleft.y};
-    //v2 C = {.x = rect.topleft.x + rect.width , .y = rect.topleft.y + rect.height};
     v2 D = {.x = rect.topleft.x, .y = rect.topleft.y + rect.height};
 
-
-/* signof(A.x - eye_x) *  */
-/* signof(A.y - eye_y) *      */
-/* signof(B.x - eye_x) *      */
-/* signof(D.y - eye_y) *      */
-#if 1
     A.x = Gamestate->eye_x - scaling_factor * (Gamestate->eye_x - A.x);
     A.y = Gamestate->eye_y - scaling_factor * (Gamestate->eye_y - A.y);
     B.x = Gamestate->eye_x - scaling_factor * (Gamestate->eye_x - B.x);
     D.y = Gamestate->eye_y - scaling_factor * (Gamestate->eye_y - D.y);
-#else
-    // @Cleanup can do less processing here
-    A = project_point(A);
-    B = project_point(B);
-    //C = project_point(C);
-    D = project_point(D);
-#endif
     result.topleft = A;
     result.width = B.x - A.x;
     result.height = D.y - A.y;
     
     return result;
 }
-
-/* void draw_clamped_wndrect_projected(wndrect rectangle, pxl color) */
-/* { */
-/*     // @TODO apply similar triangles formula */
-
-/*     u32 offset = wnd_pitch*round32(rectangle.topleft.y) + */
-/*         round32(rectangle.topleft.x)*wnd_bytpp; */
-/*     for (s32 i = 0; i < rectangle.height; i++) */
-/*         { */
-/*             pxl* row = (pxl*)(wnd_buffer + wnd_pitch*i + offset); */
-/*             for (s32 j = 0; j < rectangle.width; j++) */
-/*                 { */
-/*                     *row = color; */
-/*                     row++; */
-/*                 } */
-/*         }        */
-/* } */
 
 void clamp_wndrect(wndrect* rectangle)
 {

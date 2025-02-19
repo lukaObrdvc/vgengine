@@ -1,52 +1,48 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-// @Note length of a line is just edist(A,B)
-typedef struct Line2
-{
-    v2 A;
-    v2 B;
-} line2;
+// @Note essentialy a rectangular portion of the window that can have a Z
 
-typedef struct Line3
-{
-    v3 A;
-    v3 B;
-} line3;
+// @Note you can associate a Z with this,
+// so that you can layer multiple of these on each other
+// and project them
 
-// @Note A->B->C->D clockwise (is this a good idea?)
-typedef struct Rect2
-{
-    v2 A;
-    v2 B;
-    v2 C;
-    v2 D;
-} rect2;
+// @Note must use y-is-up and x-is-right coordinate system,
+// do not do preemptive abs on dims or figuring out min/max coords
 
-typedef struct Rect3
+// @Note also use z-is-towards-me (establishes right-handed coordsys)
+typedef union
 {
-    v3 A;
-    v3 B;
-    v3 C;
-    v3 D;
-} rect3;
+    struct
+    {
+        r32 left;  // x_min
+        r32 down;  // y_min
+        r32 right; // x_max
+        r32 top;   // y_max
+    };
+    struct
+    {
+        v2 ll;     // lower left  corner
+        v2 ur;     // upper right corner
+    };
+} wndrect;
 
-
-inline v2 rect_dims(rect2 rect)
+inline r32 wndrect_width(wndrect rect)
 {
-    v2 result;
-    result.x = edist2(rect.A, rect.B);
-    result.y = edist2(rect.A, rect.D);
+    r32 result;
+    
+    result = rect.right - rect.left;
+    
     return result;
 }
 
-inline v2 rect_dims3(rect3 rect)
+inline r32 wndrect_height(wndrect rect)
 {
-    v2 result;
-    result.x = edist3(rect.A, rect.B);
-    result.y = edist3(rect.A, rect.D);
+    r32 result;
+    
+    result = rect.top - rect.down;
+    
     return result;
 }
-
 
 #endif

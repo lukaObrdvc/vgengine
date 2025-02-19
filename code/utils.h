@@ -16,10 +16,8 @@ typedef uint64_t u64;
 typedef float r32;
 typedef double r64;
 
-typedef s32 b32; // lower value than 32?
+typedef s32 b32;
 
-// @Note IMPORTANT this stuff is very iffy if trying
-// to be compatible with c++
 #ifdef __cplusplus
 #define literal(t) t
 #else
@@ -30,7 +28,7 @@ typedef s32 b32; // lower value than 32?
 #define false 0
 
 #define global_variable
-#define local_persist static
+// #define local_persist static           (we do not even use this...)
 #define internal static
 
 #ifdef DEBUG
@@ -55,11 +53,11 @@ typedef s32 b32; // lower value than 32?
 #define MAX_S16 131071
 #define MAX_S32 2147483647
 #define MAX_S64 9223372036854775807
-// @Fail is this correct lol?
-#define MIN_R32 (r32)MIN_S32
-#define MAX_R32 (r32)MAX_S32
-#define MIN_R64 (r64)MIN_S64
-#define MAX_R64 (r64)MAX_S64
+// @Fail this is probably false
+/* #define MIN_R32 (r32)MIN_S32 */
+/* #define MAX_R32 (r32)MAX_S32 */
+/* #define MIN_R64 (r64)MIN_S64 */
+/* #define MAX_R64 (r64)MAX_S64 */
 
 inline u64 kilobytes(u32 n)
 {
@@ -79,10 +77,11 @@ inline u64 gigabytes(u32 n)
 #define arr_count(arr) (sizeof((arr))/sizeof((arr)[0]))
 
 // @TODO other truncation I might need?
-inline u32 trunc_u32(u64 n)
-{
-    Assert(n <= MAX_U32);
-    return (u32)n;
-}
+// @TODO this seems useless, figure out if you need it from examples and so on ...
+/* inline u32 trunc_u32(u64 n) */
+/* { */
+/*     Assert(n <= MAX_U32); */
+/*     return (u32)n; */
+/* } */
 
 #endif

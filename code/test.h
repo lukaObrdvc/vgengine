@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING perspective_projection_test      //##_test
+#define CURRENTLY_TESTING perspective_projection_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 
@@ -41,7 +41,6 @@ void perspective_projection_test()
             Gamestate->concentric_current_z++;
         }
 
-    //Gamestate->concentric_count = 7;
 }
 
 
@@ -171,7 +170,6 @@ void concentric_test()
 
             draw_wndrect_outline(rect, thickness, color);
         }
-    //Gamestate->concentric_count = 10;
 }
 
 void file_test()
