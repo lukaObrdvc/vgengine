@@ -1,6 +1,9 @@
-#define CURRENTLY_TESTING perspective_projection_test
+#define CURRENTLY_TESTING concentric_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
+// @TODO make a variable brush (multiple of them ?) that's RGBA,
+// that you can set and get with macros, so you don't have to make
+// colors everywhere...
 
 // @TODO simple dynamic arrays, so you don't have to make a #define
 // for array sizes...
@@ -104,32 +107,34 @@ void draw_rotated_line_test()
     // @TODO prevent drawing along left and top wndrect edges when coords are 0...
     fill_background();
     
-    pxl color = {.R = 0, .G = 0, .B = 0, .A = 0};
-    v2 origin = {.x = Gamestate->wnd_center_x, .y = Gamestate->wnd_center_y};
-    v2 offset_line = {.x = 100, .y = 0};
-    v2 line = {.x = 50, .y = 0};
+    pxl color      = {.R = 0, .G = 0, .B = 0, .A = 0};
+    v2 origin      = V2(wnd_width/2.0f, wnd_height/2.0f);
+    v2 offset_line = V2(100, 0);
+    v2 line        = V2(50, 0);
     
     line = scale2(line, Gamestate->line_scaling_factor);
     line = rotate2(line, Gamestate->line_angle);
     offset_line = scale2(offset_line, Gamestate->line_scaling_factor);
     offset_line = rotate2(offset_line, Gamestate->line_angle*1.5);
-    offset_line.y = -offset_line.y;
-    v2 start = {.x = origin.x+offset_line.x, .y=origin.y-offset_line.y};
-    v2 end = {.x = origin.x+line.x+offset_line.x, .y=origin.y-line.y-offset_line.y};
+    //offset_line.y = -offset_line.y;  nocheckin
+    // figure out if this can be done with add2 orwhtv
+    v2 start = V2(origin.x+offset_line.x, origin.y-offset_line.y);
+    v2 end = V2(origin.x+line.x+offset_line.x, origin.y-line.y-offset_line.y);
 
-    origin = clamp_point(origin);
-    start = clamp_point(start);
-    end = clamp_point(end);
+    origin = clamp2(origin);
+    start  = clamp2(start);
+    end    = clamp2(end);
 
-    origin.y = -origin.y;
-    start.y = -start.y;
-    end.y = -end.y;
-    line = transpose2(end, start);
-    offset_line = transpose2(start, origin);
-    origin.y = -origin.y;
-    start.y = -start.y;
-    end.y = -end.y;
+    /* origin.y = -origin.y; */
+    /* start.y = -start.y; */
+    /* end.y = -end.y; */
+    line = transpose2(end, zero2() ,start);
+    offset_line = transpose2(start, zero2(), origin);
+    /* origin.y = -origin.y; */
+    /* start.y = -start.y; */
+    /* end.y = -end.y; */
 
+    // nochecking
     draw_line(start, line, color);
     draw_line(origin, offset_line, color);
 
@@ -144,29 +149,28 @@ void draw_sqaure_around_cursor_test()
 
 void concentric_test()
 {
-    pxl color = {.R=0, .G=0, .B=0, .A=255};
-    s32 thickness = Gamestate->concentric_thickness;
+    pxl color     = {.R=0, .G=0, .B=0, .A=255};
+    r32 thickness = Gamestate->concentric_thickness;    
+    v2  origin    = make2(wnd_width  / 2.0f,
+                          wnd_height / 2.0f);
     
-    s32 origin_x = Gamestate->wnd_center_x;
-    s32 origin_y = Gamestate->wnd_center_y;
-    s32 spread_x = Gamestate->concentric_spread_x;
-    s32 spread_y = Gamestate->concentric_spread_y;
+    r32 spread_x         = Gamestate->concentric_spread_x;
+    r32 spread_y         = Gamestate->concentric_spread_y;
     s32 concentric_count = Gamestate->concentric_count;
     
     fill_background();
 
     for (s32 i=1; i<=concentric_count; i++)
         {
-            r32 top = (r32)(origin_y-i*(spread_y+thickness));
-            r32 left = (r32)(origin_x-i*(spread_x+thickness));
-            r32 width = (r32)(i*2*(spread_x+thickness));
-            r32 height = (r32)(i*2*(spread_y+thickness));
-
-            wndrect rect = {
-                .topleft = literal(v2) {.x=left, .y=top},
-                .width = width,
-                .height = height
-            };
+            r32 half_width  = i*(spread_x+thickness);
+            r32 half_height = i*(spread_y+thickness);
+            
+            r32 left   = origin.x - half_width;
+            r32 bottom = origin.y - half_height;
+            r32 right  = origin.x + half_width;
+            r32 top    = origin.y + half_height;
+            
+            wndrect rect = Wndrect(left, bottom, right, top);
 
             draw_wndrect_outline(rect, thickness, color);
         }

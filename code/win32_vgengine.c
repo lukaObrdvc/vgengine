@@ -364,6 +364,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
     ATOM registered_window = RegisterClass(&registered_window_infostruct);
 
+    // @Note initial window dims (perhaps offset too), is not written by
+    // platform, but by game and they can be inconsistent, think about
+    // whose job it is to do that, and how to resize the window....
+    // @TODO window resizing...
+    
     HWND window = CreateWindow(
                                registered_window_infostruct.lpszClassName,
                                "Cardcrafter",

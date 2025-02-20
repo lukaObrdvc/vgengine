@@ -44,31 +44,6 @@ wndrect obtain_wndrect(rect2 rectangle, v2 origin)
     return result;
 }
 
-v2 clamp_point(v2 point)
-{
-    v2 result = { .x = point.x , .y = point.y };
-
-    if (point.x < 0)
-        {
-            result.x = 0;
-        }
-    else if (point.x > wnd_width)
-        {
-            result.x = wnd_width;
-        }
-    
-    if (point.y < 0)
-        {
-            result.y = 0;
-        }
-    else if (point.y > wnd_height)
-        {
-            result.y = wnd_height;
-        }
-    
-    return result;
-}
-
 void draw_rotated_rect_2(rect2 rect, v2 origin, pxl color)
 {
     // @Note round instead??
@@ -157,6 +132,7 @@ void draw_rotated_rect(rect2 rect, wndrect outline, pxl color)
         }       
 }
 
+// nochecking
 void draw_line(v2 origin, v2 point, pxl color)
 {
     u8* offset = wnd_buffer + wnd_pitch*round32(origin.y) + wnd_bytpp*round32(origin.x);
@@ -180,20 +156,6 @@ void draw_line(v2 origin, v2 point, pxl color)
         }
 }
 
-void draw_clamped_wndrect(wndrect rectangle, pxl color)
-{
-    u32 offset = wnd_pitch*round32(rectangle.topleft.y) +
-        round32(rectangle.topleft.x)*wnd_bytpp;
-    for (s32 i = 0; i < rectangle.height; i++)
-        {
-            pxl* row = (pxl*)(wnd_buffer + wnd_pitch*i + offset);
-            for (s32 j = 0; j < rectangle.width; j++)
-                {
-                    *row = color;
-                    row++;
-                }
-        }
-}
 
 /* v2 project_point(v2 point) */
 /* { */
@@ -231,45 +193,11 @@ wndrect project_wndrect(wndrect rect)
     return result;
 }
 
-void clamp_wndrect(wndrect* rectangle)
-{
-    if (rectangle->topleft.x < 0)
-        {
-            rectangle->width += rectangle->topleft.x;
-            rectangle->topleft.x = 0;
-        }
-    else if (rectangle->topleft.x > wnd_width)
-        {
-            rectangle->width = 0;
-            rectangle->topleft.x = (r32)wnd_width;
-        }
-    if (rectangle->topleft.y < 0)
-        {
-            rectangle->height += rectangle->topleft.y;
-            rectangle->topleft.y = 0;            
-        }
-    else if (rectangle->topleft.y > wnd_height)
-        {
-            rectangle->height = 0;
-            rectangle->topleft.y = (r32)wnd_height;
-        }
-    
-    if (rectangle->topleft.x + rectangle->width > wnd_width)
-        {
-            rectangle->width = wnd_width - rectangle->topleft.x;
-        }
-    if (rectangle->topleft.y + rectangle->height > wnd_height)
-        {
-            rectangle->height = wnd_height - rectangle->topleft.y;
-        }    
-}
-
 void fill_background()
 {
-    s32 pitch = wnd_width*wnd_bytpp;
     for (s32 i = 0; i < wnd_height; i++)
         {
-            pxl* row = (pxl*)(wnd_buffer + i*pitch);
+            pxl* row = (pxl*)(wnd_buffer + i*wnd_pitch);
             for (s32 j = 0; j < wnd_width; j++)
                 {
                     *row = literal(pxl) {120, 0, 120, 255};
@@ -282,14 +210,13 @@ void fill_background()
 
 void dbg_render(s8 x_offset, s8 y_offset)
 {
-    s32 pitch = wnd_width*wnd_bytpp;
     for (s32 i = 0; i < wnd_height; i++)
         {
-            pxl* row = (pxl*)(wnd_buffer + i*pitch);
+            pxl* row = (pxl*)(wnd_buffer + i*wnd_pitch);
             for (s32 j = 0; j < wnd_width; j++)
                 {
-                    u8 g = j + Gamestate->dbg_render_x_offset;
-                    u8 b = i + Gamestate->dbg_render_y_offset;
+                    u8 g = j + x_offset;
+                    u8 b = i + y_offset;
 
                     *row = literal(pxl) {.R=0, .G=g, .B=b, .A=255};
                     row++;
@@ -297,18 +224,18 @@ void dbg_render(s8 x_offset, s8 y_offset)
         }    
 }
 
-void dbg_draw_square_around_cursor(u8 square_length)
+void dbg_draw_square_around_cursor(r32 square_length)
 {
     pxl color = {.R=0, .G=0, .B=0, .A=255};
-    r32 top = Gamestate->cursor.y - (((r32)square_length)/2.0f);
-    r32 left = Gamestate->cursor.x - (((r32)square_length)/2.0f);
-    r32 width = (r32)square_length;
-    r32 height = (r32)square_length;
-    wndrect rect = {
-        .topleft = literal(v2) {.x = left, .y = top},
-        .width = width,
-        .height = height };
-    clamp_wndrect(&rect);
+    r32 half_square_length = square_length/2;
+    
+    r32 left   = Gamestate->cursor.x - half_square_length;
+    r32 bottom = Gamestate->cursor.y - half_square_length;
+    r32 right  = Gamestate->cursor.x + half_square_length;
+    r32 top    = Gamestate->cursor.y + half_square_length;
+
+    wndrect rect = Wndrect(left, bottom, right, top);
+    rect = clamp_wndrect(rect);
     draw_clamped_wndrect(rect, color);
 }
 
@@ -350,34 +277,38 @@ void draw_wndrect_outline_projected(wndrect rect, s32 thickness, pxl color)
 
 void draw_wndrect_outline(wndrect rect, s32 thickness, pxl color)
 {
-    wndrect rect_up = rect;
-    rect_up.height = thickness;
-    clamp_wndrect(&rect_up);
+    wndrect rect_left   = Wndrect(rect.left,
+                                  rect.bottom,
+                                  rect.left + thickness,
+                                  rect.top);
     
-    wndrect rect_left = rect;
-    rect_left.width = thickness;
-    rect_left.height -= thickness;
-    rect_left.topleft.y += thickness;
-    clamp_wndrect(&rect_left);
+    rect_left = clamp_wndrect(rect_left);
     
-    wndrect rect_down = rect;
-    rect_down.height = thickness;
-    rect_down.width -= thickness;
-    rect_down.topleft.y += rect.height - thickness;
-    rect_down.topleft.x += thickness;
-    clamp_wndrect(&rect_down);
+    wndrect rect_bottom = Wndrect(rect.left,
+                                  rect.bottom,
+                                  rect.right,
+                                  rect.bottom + thickness);
     
-    wndrect rect_right = rect;
-    rect_right.height -= thickness+thickness;
-    rect_right.width = thickness;
-    rect_right.topleft.y += thickness;
-    rect_right.topleft.x += rect.width - thickness;
-    clamp_wndrect(&rect_right);
+    rect_bottom = clamp_wndrect(rect_bottom);
+ 
+    wndrect rect_right  = Wndrect(rect.right - thickness,
+                                  rect.bottom,
+                                  rect.right,
+                                  rect.top);
     
-    draw_clamped_wndrect(rect_up, color);
+    rect_right = clamp_wndrect(rect_right);
+    
+    wndrect rect_top    = Wndrect(rect.left,
+                                  rect.top - thickness,
+                                  rect.right,
+                                  rect.top);
+    
+    rect_top = clamp_wndrect(rect_top);
+
     draw_clamped_wndrect(rect_left, color);
-    draw_clamped_wndrect(rect_down, color);
+    draw_clamped_wndrect(rect_bottom, color);
     draw_clamped_wndrect(rect_right, color);
+    draw_clamped_wndrect(rect_top, color);    
 }
 
 // @TODO make this work when multiple keys are down at the same time ??
@@ -461,26 +392,33 @@ void init_game_state()
 {
     if (!Gamestate->inited)
         {
+            s32 init_wnd_width     = 1280;
+            s32 init_wnd_height    = 720;
+            s32 init_wnd_center_x  = 640;
+            s32 init_wnd_center_y  = 360;
+            
             // @TODO include wnd_buffer size in the assert
-            Assert(sizeof(game_state) <= memory_base->perm_mem_cap);
+            Assert(sizeof(game_state) + wnd_bytesize <= memory_base->perm_mem_cap);
             
             *(Gamestate) = literal(game_state) {
                 .inited = true,
-
                 .tested_once = 0,
-                .wndbuffer_width = 1280,
-                .wndbuffer_height = 720,
-                .cursor = literal(v2) {.x = 640, .y = 360},
-                .eye_x = 640,
-                .eye_y = 360,
+
+                .cursor = V2(init_wnd_center_x,
+                             init_wnd_center_y),
+                    
+                .wndbuffer_width = init_wnd_width,
+                .wndbuffer_height = init_wnd_height,
+
+                .eye_x = init_wnd_width,
+                .eye_y = init_wnd_height,
                 .screen_z = 0.5f,
                 .nearclip = 0.7f,
                 .farclip = 9.8f,
+                    
                 .dbg_render_x_offset = 0, 
                 .dbg_render_y_offset = 0, 
                 .square_length = 10,       
-                .wnd_center_x = 640,        
-                .wnd_center_y = 360,        
                 .concentric_thickness = 5,
                 .concentric_count = 10,     // must be less than CONCENTRIC_MAX
                 .concentric_spread_x = 50, 

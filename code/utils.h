@@ -75,6 +75,8 @@ inline u64 gigabytes(u32 n)
 }
 
 #define arr_count(arr) (sizeof((arr))/sizeof((arr)[0]))
+#define clamp(value, min, max) (if ((value) < (min)) (value) = (min);   \
+                                else if ((value) > (max)) (value) = (max);)
 
 // @TODO other truncation I might need?
 // @TODO this seems useless, figure out if you need it from examples and so on ...

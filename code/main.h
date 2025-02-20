@@ -62,7 +62,7 @@ typedef struct platform_Provides
     void* temp_mem;
     u64 temp_mem_cap;
 
-    s32 bytpp;
+    s32 bytpp;            // access through macro
     // @TODO do I want stubs for these (and then
     // the question is does the platform or game
     // set the stub, and in what circumstances etc....)
@@ -75,31 +75,33 @@ global_variable platform_provides* memory_base;
 #define DBG_READ_FILE memory_base->dbg_read_file
 #define DBG_WRITE_FILE memory_base->dbg_write_file
 
-#define CONCENTRIC_MAX 50
+#define CONCENTRIC_MAX 50 // must be positive integer less than 256
 
 #pragma pack(push, 1)
 typedef struct
 {
     b32 inited;
-
     b32 tested_once;
-    s32 wndbuffer_width;
-    s32 wndbuffer_height;
+
+    v2  cursor;
+
+    s32 wndbuffer_width;  // access through macro
+    s32 wndbuffer_height; // access through macro
+
+    // @TODO these can designed better probably
     r32 eye_x;
     r32 eye_y;
     r32 screen_z;
     r32 nearclip;
     r32 farclip;
-    v2  cursor;
+    
     s32 dbg_render_x_offset;
     s32 dbg_render_y_offset;
-    s32 square_length;
-    s32 wnd_center_x;
-    s32 wnd_center_y;
-    s32 concentric_thickness;
+    r32 square_length;
+    r32 concentric_thickness;
     s32 concentric_count;     // must be less than CONCENTRIC_MAX
-    s32 concentric_spread_x;
-    s32 concentric_spread_y;
+    r32 concentric_spread_x;
+    r32 concentric_spread_y;
     r32 concentric_z_values[CONCENTRIC_MAX];
     s32 concentric_current_z;
     r32 line_angle;
@@ -110,12 +112,26 @@ typedef struct
 } game_state;
 #pragma pack(pop)
 
-#define Gamestate  ((game_state*)(memory_base->perm_mem))
-#define wnd_width  (((game_state*)(memory_base->perm_mem))->wndbuffer_width) 
-#define wnd_height (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
-#define wnd_bytpp  (memory_base->bytpp)                                      
-#define wnd_pitch  (wnd_width*wnd_bytpp)                               
-#define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) + sizeof(game_state)))
+#define Gamestate    ((game_state*)(memory_base->perm_mem))
 
+#define wnd_width    (((game_state*)(memory_base->perm_mem))->wndbuffer_width)
+#define wnd_height   (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
+#define wnd_bytpp    (memory_base->bytpp)                                      
+#define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)
+
+// @TODO need to have macros that assume a base coordinate system that
+// is right handed and whose origin is in the lower left corner of the
+// window, but that expand to things that transform into windows'
+// actual base coordinate system (in upper left corner, y-is-down)
+
+//#define wnd_pitch  (wnd_width*wnd_bytpp)
+//#define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) + sizeof(game_state)))
+#define wnd_pitch  (-wnd_width*wnd_bytpp)
+#define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) +                \
+                          sizeof(game_state) +                          \
+                          wnd_bytesize + wnd_pitch))
+
+#define wnd_nearclip (((game_state*)(memory_base->perm_mem))->nearclip)
+#define wnd_farclip (((game_state*)(memory_base->perm_mem))->farclip)
 
 #endif

@@ -27,7 +27,7 @@ inline r32 edist3(v3 vec1, v3 vec2)
                      sqr(vec1.z-vec2.z));
 }
 
-inline v2 make2(r32 x, r32 y)
+inline v2 V2(r32 x, r32 y)
 {
     v2 result;
 
@@ -37,7 +37,7 @@ inline v2 make2(r32 x, r32 y)
     return result;
 }
 
-inline v3 make3(r32 x, r32 y, r32 z)
+inline v3 V3(r32 x, r32 y, r32 z)
 {
     v3 result;
 
@@ -132,6 +132,49 @@ inline v3 scale3(v3 vec, r32 scalar)
     return result;
 }
 
+/* v2 result = { .x = point.x , .y = point.y }; */
+
+/* if (point.x < 0) */
+/*     { */
+/*         result.x = 0; */
+/*     } */
+/* else if (point.x > wnd_width) */
+/*     { */
+/*         result.x = wnd_width; */
+/*     } */
+    
+/* if (point.y < 0) */
+/*     { */
+/*         result.y = 0; */
+/*     } */
+/* else if (point.y > wnd_height) */
+/*     { */
+/*         result.y = wnd_height; */
+/*     } */
+    
+/* return result; */
+
+inline v2 clamp2(v2 vec)
+{
+    v2 result;
+
+    clamp(vec.x, 0, wnd_width);
+    clamp(vec.y, 0, wnd_height);
+    
+    return result;
+}
+
+inline v3 clamp3(v3 vec)
+{
+    v3 result;
+
+    clamp(vec.x, 0, wnd_width);
+    clamp(vec.y, 0, wnd_height);
+    clamp(vec.z, wnd_nearclip, wnd_farclip); // @TODO is this correct?
+    
+    return result;
+}
+
 inline v2 unit2(v2 vec)
 {
     v2 result;
@@ -155,6 +198,27 @@ inline v3 unit3(v3 vec)
     return result;
 }
 
+inline v2 transpose2(v2 vec, v2 from, v2 to)
+{
+    v2 result;
+
+    result.x = vec.x - (to.x - from.x);
+    result.y = vec.y - (to.y - from.y);
+    
+    return result;
+}
+
+inline v3 transpose3(v3 vec, v3 from, v3 to)
+{
+    v3 result;
+
+    result.x = vec.x - (to.x - from.x);
+    result.y = vec.y - (to.y - from.y);
+    result.z = vec.z - (to.z - from.z);
+    
+    return result;
+}
+
 // @TODO add v3 versions of these
 
 inline v2 perp2(v2 vec)
@@ -163,16 +227,6 @@ inline v2 perp2(v2 vec)
     
     result.x = vec.y;
     result.y = -vec.x;
-    
-    return result;
-}
-
-inline v2 transpose2(v2 vec, v2 origin)
-{
-    v2 result;
-
-    result.x = vec.x - origin.x;
-    result.y = vec.y - origin.y;
     
     return result;
 }
