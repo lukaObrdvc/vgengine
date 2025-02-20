@@ -9,6 +9,10 @@
 #include "utils.h"
 #include "main.h"
 
+// @IMPORTANT nocheckin this shite is the problem methinks, did not
+// compile on win32 program........?
+//typedef struct v2 v2;
+
 global_variable b32 running = true;
 global_variable b32 valid_dll = false;
 
@@ -276,6 +280,9 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
         case WM_RBUTTONDOWN:
             //case WM_RBUTTONUP:
             {
+                curr_frame_mouse.cursor = literal(v2) { .x =lParam & 0x0000FFFF,
+                                                        .y =(lParam & 0xFFFF0000) >> 16 };
+
                 curr_frame_mouse.code = M2;
                 curr_frame_mouse.is_down = true;
 

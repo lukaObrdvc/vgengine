@@ -1,6 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+// @Note do I want floor2, floor3 and similar...?
+
 typedef struct
 {
     r32 x;
@@ -128,49 +130,6 @@ inline v3 scale3(v3 vec, r32 scalar)
     result.x = vec.x * scalar;
     result.y = vec.y * scalar;
     result.z = vec.z * scalar;
-    
-    return result;
-}
-
-/* v2 result = { .x = point.x , .y = point.y }; */
-
-/* if (point.x < 0) */
-/*     { */
-/*         result.x = 0; */
-/*     } */
-/* else if (point.x > wnd_width) */
-/*     { */
-/*         result.x = wnd_width; */
-/*     } */
-    
-/* if (point.y < 0) */
-/*     { */
-/*         result.y = 0; */
-/*     } */
-/* else if (point.y > wnd_height) */
-/*     { */
-/*         result.y = wnd_height; */
-/*     } */
-    
-/* return result; */
-
-inline v2 clamp2(v2 vec)
-{
-    v2 result;
-
-    clamp(vec.x, 0, wnd_width);
-    clamp(vec.y, 0, wnd_height);
-    
-    return result;
-}
-
-inline v3 clamp3(v3 vec)
-{
-    v3 result;
-
-    clamp(vec.x, 0, wnd_width);
-    clamp(vec.y, 0, wnd_height);
-    clamp(vec.z, wnd_nearclip, wnd_farclip); // @TODO is this correct?
     
     return result;
 }

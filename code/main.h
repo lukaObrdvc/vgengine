@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "linalg.h"
+#include "vector.h"
 
 // @Fail what if file not exist?
 typedef b32 (*fp_dbg_read_file) (u8*, void*, u32*);
@@ -16,7 +16,7 @@ typedef b32 (*fp_dbg_write_file) (u8*, void*, u32);
 /*     u32 y; */
 /* } cursor; */
 
-typedef enum Mouse_key_code
+typedef enum
     {
         M_NONE,
         M1,
@@ -24,7 +24,7 @@ typedef enum Mouse_key_code
         M3
     } mouse_key_code;
 
-typedef struct Mouse
+typedef struct
 {
     v2 cursor;
     b32 mouse_moved;
@@ -48,14 +48,8 @@ typedef struct Keyboard_key
     b32 was_down;
 } key;
 
-/* typedef struct Input */
-/* { */
-/*     mouse mouse; */
-/*     key key; */
-/* } input; */
-
 // @TODO how do I keep track of sizes of memories??
-typedef struct platform_Provides
+typedef struct
 {
     void* perm_mem;
     u64 perm_mem_cap;
@@ -63,6 +57,7 @@ typedef struct platform_Provides
     u64 temp_mem_cap;
 
     s32 bytpp;            // access through macro
+    
     // @TODO do I want stubs for these (and then
     // the question is does the platform or game
     // set the stub, and in what circumstances etc....)
@@ -72,10 +67,12 @@ typedef struct platform_Provides
 
 global_variable platform_provides* memory_base;
 
+
 #define DBG_READ_FILE memory_base->dbg_read_file
 #define DBG_WRITE_FILE memory_base->dbg_write_file
 
 #define CONCENTRIC_MAX 50 // must be positive integer less than 256
+
 
 #pragma pack(push, 1)
 typedef struct
@@ -83,7 +80,7 @@ typedef struct
     b32 inited;
     b32 tested_once;
 
-    v2  cursor;
+    v2 cursor;
 
     s32 wndbuffer_width;  // access through macro
     s32 wndbuffer_height; // access through macro
@@ -94,6 +91,11 @@ typedef struct
     r32 screen_z;
     r32 nearclip;
     r32 farclip;
+
+    // @Note this is what the input changes,
+    // probably think of something better
+    r32 wnd_center_x; 
+    r32 wnd_center_y;
     
     s32 dbg_render_x_offset;
     s32 dbg_render_y_offset;
@@ -112,6 +114,7 @@ typedef struct
 } game_state;
 #pragma pack(pop)
 
+
 #define Gamestate    ((game_state*)(memory_base->perm_mem))
 
 #define wnd_width    (((game_state*)(memory_base->perm_mem))->wndbuffer_width)
@@ -119,19 +122,23 @@ typedef struct
 #define wnd_bytpp    (memory_base->bytpp)                                      
 #define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)
 
-// @TODO need to have macros that assume a base coordinate system that
-// is right handed and whose origin is in the lower left corner of the
-// window, but that expand to things that transform into windows'
-// actual base coordinate system (in upper left corner, y-is-down)
-
-//#define wnd_pitch  (wnd_width*wnd_bytpp)
-//#define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) + sizeof(game_state)))
-#define wnd_pitch  (-wnd_width*wnd_bytpp)
-#define wnd_buffer ((u8*)((u8*)(memory_base->perm_mem) +                \
-                          sizeof(game_state) +                          \
-                          wnd_bytesize + wnd_pitch))
+#define wnd_pitch    (-wnd_width*wnd_bytpp)
+#define wnd_buffer   (((u8*)(memory_base->perm_mem) +   \
+                       sizeof(game_state) +             \
+                       wnd_bytesize + wnd_pitch))
 
 #define wnd_nearclip (((game_state*)(memory_base->perm_mem))->nearclip)
-#define wnd_farclip (((game_state*)(memory_base->perm_mem))->farclip)
+#define wnd_farclip  (((game_state*)(memory_base->perm_mem))->farclip)
+
+// @Note the cursor will always be in the windows' coordsys
+// so if you want to draw around it, you have to translate
+// to that coordsys
+
+// @Note better name?
+// @TODO do I make one for converting a wndrect (has to switch top and bottom)
+#define to_yisdown(y) (wnd_height - (y))
+//#define wndrect_yisdown(y)
+
+// @TODO figure out default rotation direction cw or ccw and transforms...
 
 #endif
