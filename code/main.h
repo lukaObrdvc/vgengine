@@ -72,7 +72,19 @@ global_variable platform_provides* memory_base;
 #define DBG_WRITE_FILE memory_base->dbg_write_file
 
 #define CONCENTRIC_MAX 50 // must be positive integer less than 256
+#define MAX_BRUSHES 16
 
+typedef enum
+    {
+        BRUSH_NONE = 0,
+        BRUSH_SCANLINE = 1
+    } BRUSH;
+
+typedef enum
+    {
+        ORTHOGRAPHIC,
+        PERSPECTIVE
+    } PROJECTION;
 
 #pragma pack(push, 1)
 typedef struct
@@ -91,6 +103,8 @@ typedef struct
     r32 screen_z;
     r32 nearclip;
     r32 farclip;
+
+    u32 brushes[MAX_BRUSHES];
 
     // @Note this is what the input changes,
     // probably think of something better
@@ -140,5 +154,9 @@ typedef struct
 //#define wndrect_yisdown(y)
 
 // @TODO figure out default rotation direction cw or ccw and transforms...
+
+#define GetBrush(type) (Gamestate->brushes[(type)])
+// @Note maybe not a good idea
+#define SetBrush(type, color) Gamestate->brushes[(type)] = color
 
 #endif

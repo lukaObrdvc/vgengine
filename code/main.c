@@ -6,7 +6,87 @@
 
 #include "main.h"
 
+// @TODO I think making a origin as alias of v3 is useful visually
 
+inline r32 slope2(v2 vec1, v2 vec2)
+{
+    r32 result;
+
+    result = (vec1.y - vec2.y) / (vec1.x / vec2.x);
+    
+    return result;
+}
+
+/* else if (x < 0 && y < 0) // 3rd quadrant */
+/*     { */
+/*         if (y0 >= 0) */
+/*             { */
+/*                 r32 y0c = clamp(y0, 0, wnd_height); */
+/*                 result = V2(0, y0c); */
+/*             } */
+/*         else */
+/*             { */
+/*                 r32 x0c = clamp(x0, 0, wnd_width); */
+/*                 result = V2(x0c, 0); */
+/*             } */
+/*     } */
+
+v2 clamp_line(v2 vec, v2 other)
+{
+    // @IMPORTANT methinks it is assumed that vector is in wnd coordsys
+    v2 result = zero2();
+
+    // @TODO probably put these in their respective branches instead
+    r32 x = vec.x;
+    r32 y = vec.y;
+    r32 k = (vec.y - other.y) / (vec.x - other.x);
+    r32 y0 = y - x * k;
+    r32 x0 = x - y / k;
+    r32 yw = y - (x - wnd_width)  * k;
+    r32 xh = x - (y - wnd_height) / k;
+
+    if (x < 0 && y > wnd_height && y0 > wnd_height) // ul corner 2nd quadrant and y0 > wnd_height
+        {
+            r32 xhc = clamp32(xhc, 0, wnd_height);
+            result = V2(xhc, wnd_height);
+        }
+    else if ((x < 0 && y > 0) ||
+             (x < 0 && y < 0 && y0 < 0)) // bl corner 2nd quadrant or 3rd and y0 < 0
+        {
+            r32 y0c = clamp32(y0, 0, wnd_height);
+            result = V2(0, y0c);
+        }
+    else if (x > wnd_width && y < 0 && yw < 0) // br corner 4th quadrant and yw < 0
+        {
+            r32 x0c = clamp32(x0, 0, wnd_width);
+            result = V2(x0c, 0);
+        }
+    else if ((x > 0 && y < 0) ||
+             (x < 0 && y < 0 && y0 >= 0)) // bl corner 4th quadrant or 3rd and y0 >= 0
+        {
+            r32 x0c = clamp32(x0, 0, wnd_width);
+            result = V2(x0c, 0);
+        }
+    else if ((x < wnd_width && y > wnd_height) ||  // ur corner 2nd quadrant or 3rd and yw > wnd_height
+             (x > wnd_width && y > wnd_height && yw > wnd_height))
+        {
+            r32 xhc = clamp32(xh, 0, wnd_width);
+            result = V2(xhc, wnd_height);
+        }
+    else if ((x > wnd_width && y < wnd_height) ||  // ur corner 4th quadrant or 3rd and yw <= wnd_height
+             (x > wnd_width && y > wnd_height && yw <= wnd_height))
+        {
+            r32 ywc = clamp32(yw, 0, wnd_height);
+            result = V2(wnd_width, ywc);
+        }
+    
+    return result;
+}
+
+// @Note this is actually bad because it clamps perpendicular
+// to the window, instead of toward the direction of the vector
+
+// so you actually have to clamp towards some other origin
 inline v2 clamp2(v2 vec)
 {
     v2 result = vec;
@@ -18,6 +98,9 @@ inline v2 clamp2(v2 vec)
     return result;
 }
 
+// @Note this is actually bad, because of the previous, but also
+// because clamping Z like this is a special case where you are
+// XY-plane aligned, I explained this in another note
 inline v3 clamp3(v3 vec)
 {
     v3 result = vec;
@@ -85,7 +168,74 @@ void draw_rotated_rect(s32 width, s32 height, v2 origin, pxl color)
         }       
 }
 
-void draw_line(v2 origin, v2 point, pxl color)
+v2 project(v3 point, PROJECTION P)
+{
+    v2 result = zero2();
+                
+    switch (P)
+        {
+        case ORTHOGRAPHIC:
+            {
+                result = V2(point.x, point.y);                        
+            } break;
+        case PERSPECTIVE:
+            {
+                r32 scaling_factor = Gamestate->screen_z / point.z;
+                v2 focus = V2(Gamestate->eye_x, Gamestate->eye_y);
+                v2 point2 = V2(point.x, point.y);
+
+                // @TODO maybe it's actually better if you write two lines instead
+                result = sub2(focus, scale2(sub2(focus, point2), scaling_factor));
+            } break;
+        default:
+            {
+                InvalidDefaultCase;
+            }
+        }
+    
+    return result;
+}
+
+void draw_wndline(v2 point_A, v2 point_B, u32 color)
+{
+    // @TODO potentially say if lines on the outline of wndrect don't draw
+    // or clamp lines in a different way
+
+    // essentialy the problem there is that with rectangles you draw based
+    // on whether width or height exists, for triangles you can draw based
+    // on whether all 3 points are on a line, but for a line you can't
+    // do these things because a line doesn't have an Area, only a Length
+
+    // so you need to clamp lines differently, by reducing their length instead,
+    // which you do by clamping towards the other end of the line, not
+    // perpendicularly towards the window
+
+    
+    
+    // @TODO implement anti-aliasing
+    
+    u8* offset = wnd_buffer + wnd_pitch*round32(origin.y) + wnd_bytpp*round32(origin.x);
+    u8* drawing_point = 0;
+    
+    r32 dX = point.x;
+    r32 dY = point.y;
+    s32 movebyX = 0;
+    s32 movebyY = 0;
+    r32 len = edist2(origin, point);
+    r32 whenX = len / dX; // @Note divide by zero here??
+    r32 whenY = len / dY;
+
+    
+    for (s32 i = 1; i <= floor32(len); i++)
+        {
+            movebyX = floor32(i/whenX);
+            movebyY = floor32(i/whenY);
+            drawing_point = offset + wnd_pitch*movebyY + wnd_bytpp*movebyX;
+                *((u32*)drawing_point) = color;
+        }
+}
+
+void draw_line(v2 origin, v2 point, u32 color)
 {
     // @TODO potentially say if lines on the outline of wndrect don't draw
     // or clamp lines in a different way
@@ -109,20 +259,18 @@ void draw_line(v2 origin, v2 point, pxl color)
             movebyX = floor32(i/whenX);
             movebyY = floor32(i/whenY);
             drawing_point = offset + wnd_pitch*movebyY + wnd_bytpp*movebyX;
-                *((pxl*)drawing_point) = color;
+                *((u32*)drawing_point) = color;
         }
 }
 
-void fill_background(void)
+void fill_background()
 {
     for (s32 i = 0; i < wnd_height; i++)
         {
-            pxl* row = (pxl*)(wnd_buffer + i*wnd_pitch);
+            u32* row = (u32*)(wnd_buffer + i*wnd_pitch);
             for (s32 j = 0; j < wnd_width; j++)
                 {
-                    *row = literal(pxl) {120, 0, 120, 255};
-                    // in struct is r,g,b,a ..?
-                    //*row = (a << 24) | (R << 16) | (G << 8) | B;
+                    *row = Gamestate->brushes[BRUSH_NONE];
                     row++;
                 }
         }    
@@ -379,7 +527,19 @@ void init_game_state(void)
             s32 concentric_count = Gamestate->concentric_count;
             r32* concentric_z_values = Gamestate->concentric_z_values;
             Assert(concentric_count <= CONCENTRIC_MAX);
-    
+
+            for (s32 i = 0; i < MAX_BRUSHES; i++)
+                {
+                    Gamestate->brushes[i] = ((256 << 24) |  // a
+                                             (120 << 16) |  // R
+                                             (0 << 8) |     // G
+                                             120);          // B
+                }
+            Gamestate->brushes[BRUSH_SCANLINE] = ((256 << 24) |
+                                                  (0 << 16) |
+                                                  (0 << 8) |   
+                                                  0);        
+            
             for (s32 i = 0; i < concentric_count; i++)
                 {
                     concentric_z_values[i] = floor32(concentric_count/2.0 - 1 - i);

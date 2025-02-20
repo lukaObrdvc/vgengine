@@ -78,6 +78,22 @@ inline u64 gigabytes(u32 n)
 #define clamp(value, min, max) if ((value) < (min)) (value) = (min);   \
     else if ((value) > (max)) (value) = (max)
 
+inline r32 clamp32(r32 value, r32 min, r32 max)
+{
+    r32 result;
+    
+    if (value < min)
+        {
+            result = min;
+        }
+    else if (value > max)
+        {
+            result = max;
+        }
+
+    return result;
+}
+
 // @TODO other truncation I might need?
 // @TODO this seems useless, figure out if you need it from examples and so on ...
 /* inline u32 trunc_u32(u64 n) */

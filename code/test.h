@@ -1,12 +1,108 @@
-#define CURRENTLY_TESTING perspective_projection_test
+#define CURRENTLY_TESTING scanlines_concentric_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
-// @TODO make a variable brush (multiple of them ?) that's RGBA,
-// that you can set and get with macros, so you don't have to make
-// colors everywhere...
+// @TODO figure out how to rasterize a triangle, then you can draw
+// a rotate rectangle better
+
+// @TODO figure out how to abstract a plane in 3D, in particular
+// the screen/camera (nearclip, farclip) plane, and then figure
+// out how to project the virtual world to this plane (and move
+// plane around through user input)
+
+// @TODO after that you can potentially try to figure out
+// 3D rotation (quaternions?)
+
+
 
 // @TODO simple dynamic arrays, so you don't have to make a #define
 // for array sizes...
+
+
+
+
+
+// @Note nearclip and farclip should actually be planes
+// then you first test a point against those planes
+// then you project
+
+// @Note in reality, if you have a large world, you can't
+// test every point, so you should probably put things to
+// draw in a buffer (sorted by distance between nearclip
+// and farclip planes), then you only test for things in
+// that buffer, and when it fails, you load new things to
+// draw into that buffer
+
+// @Note potentially a different way to do this is with
+// defined boundaries of the world and test against those
+// instead of against nearclip and farclip planes
+
+// @Note first is essentialy fov bounds check
+// second is world chunk bounds check
+
+// @Note actually, because you can move around the camera
+// very rapidly, you don't won't to fov check, because
+// that would be very slow, you would probably want to
+// have a world chunk, and then you have to sort in your
+// fov what to draw first (Z buffering, but depends on
+// the coordinate system if it's Z axis aligned (XY-plane
+// aligned....) )
+
+// @Note for example you can bounds check the camera position
+// actually, and if it fails load a chunk around it,
+// and sort what to draw first in fov....
+
+void scanlines_concentric_test(void)
+{
+    v2  origin    = V2(Gamestate->wnd_center_x,
+                       Gamestate->wnd_center_y);
+    
+    r32 spread_x         = Gamestate->concentric_spread_x;
+    r32 spread_y         = Gamestate->concentric_spread_y;
+    s32 concentric_count = Gamestate->concentric_count;
+    
+    r32* concentric_z_buffer = Gamestate->concentric_z_values;
+    
+    fill_background();
+
+    for (s32 i=1; i<=concentric_count; i++)
+        {
+            r32 curr_z = concentric_z_buffer[i];
+            
+            if (curr_z >= wnd_nearclip &&
+                curr_z <= wnd_farclip)
+                {
+                    r32 half_width  = i * spread_x;
+                    r32 half_height = i * spread_y;
+            
+                    r32 left   = origin.x - half_width;
+                    r32 bottom = origin.y - half_height;
+                    r32 right  = origin.x + half_width;
+                    r32 top    = origin.y + half_height;
+
+                    v3 A3 = V3(left, top, curr_z);
+                    v3 B3 = V3(right, top, curr_z);
+                    v3 C3 = V3(right, bottom, curr_z);
+                    v3 D3 = V3(left, bottom, curr_z);                    
+            
+                    v2 A2 = project(A3, PERSPECTIVE);
+                    v2 B2 = project(B3, PERSPECTIVE);
+                    v2 C2 = project(C3, PERSPECTIVE);
+                    v2 D2 = project(D3, PERSPECTIVE);
+
+                    A2 = clamp_line(A2, B2);
+                    B2 = clamp_line(B2, C2);
+                    C2 = clamp_line(C2, D2);
+                    D2 = clamp_line(D2, A2);
+
+                    BRUSH brush = GetBrush(BRUSH_SCANLINE);
+                    
+                    draw_wndline(A2, B2, brush);
+                    draw_wndline(B2, C2, brush);
+                    draw_wndline(C2, D2, brush);
+                    draw_wndline(D2, A2, brush);
+                }
+        }    
+}
 
 void draw_rotated_line_test(void)
 {
@@ -34,8 +130,8 @@ void draw_rotated_line_test(void)
     line = transpose2(end, zero2() ,start);
     offset_line = transpose2(start, zero2(), origin);
 
-    draw_line(start, line, color);
-    draw_line(origin, offset_line, color);
+    //draw_line(start, line, color); because of pxl
+    // draw_line(origin, offset_line, color); because of pxl
 
     Gamestate->line_angle += PI / 256;
 }

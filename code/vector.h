@@ -92,6 +92,27 @@ inline v3 add3(v3 vec1, v3 vec2)
     return result;
 }
 
+inline v2 sub2(v2 vec1, v2 vec2)
+{
+    v2 result;
+
+    result.x = vec1.x - vec2.x;
+    result.y = vec1.y - vec2.y;
+    
+    return result;
+}
+
+inline v3 sub3(v3 vec1, v3 vec2)
+{
+    v3 result;
+
+    result.x = vec1.x - vec2.x;
+    result.y = vec1.y - vec2.y;
+    result.z = vec1.z - vec2.z;
+    
+    return result;
+}
+
 inline v2 dot2(v2 vec1, v2 vec2)
 {
     v2 result;
