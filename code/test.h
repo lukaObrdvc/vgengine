@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING line_side_by_side_test
+#define CURRENTLY_TESTING scanlines_concentric_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // @TODO figure out how to rasterize a triangle, then you can draw
@@ -94,7 +94,7 @@ void scanlines_concentric_test(void)
     
     r32* concentric_z_buffer = Gamestate->concentric_z_values;
 
-    Gamestate->brushes[0] = 0xFFFFFF;
+    //Gamestate->brushes[0] = 0xFFFFFF;
     fill_background();
 
     // @TODO maybe don't do i=1 here ?
@@ -123,14 +123,15 @@ void scanlines_concentric_test(void)
                     v2 C2 = project(C3, PERSPECTIVE);
                     v2 D2 = project(D3, PERSPECTIVE);
 
-                    // don't you want to clamp the other points too ??
+                    v2 tmp = A2;
                     A2 = clamp_line(A2, B2);
                     B2 = clamp_line(B2, C2);
                     C2 = clamp_line(C2, D2);
-                    D2 = clamp_line(D2, A2);
+                    D2 = clamp_line(D2, tmp);
 
                     BRUSH brush = GetBrush(BRUSH_SCANLINE);
-                    
+
+                    // first test for edist2 for lines, then draw if true
                     draw_wndline_aa(A2, B2, brush);
                     draw_wndline_aa(B2, C2, brush);
                     draw_wndline_aa(C2, D2, brush);

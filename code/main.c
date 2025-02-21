@@ -61,45 +61,51 @@ v2 clamp_line(v2 vec, v2 other)
     r32 yw = y - (x - wnd_width)  * k;
     r32 xh = x - (y - wnd_height) / k;
 
+    // @TODO
+    // added -1 on wnd_width and wnd_height (but is this a good solution??)
+    // essentially it's still drawing around outline of the window
+    // even though this kind of clamping (towards line not perpendicular)
+    // is still desirable but figure out how to prevent that draw.....??
+    
     if ((vec.y - other.y) == 0 ||
         (vec.x - other.x) == 0) // horizontal or vectial line
         {
-            result.x = clamp32(x, 0, wnd_width);
-            result.y = clamp32(y, 0, wnd_height);
+            result.x = clamp32(x, 0, wnd_width - 1);
+            result.y = clamp32(y, 0, wnd_height - 1);
         }
     else if (x < 0 && y > wnd_height && y0 > wnd_height) // ul corner 2nd quadrant and y0 > wnd_height
         {
-            r32 xhc = clamp32(xh, 0, wnd_width);
-            result = V2(xhc, wnd_height);
+            r32 xhc = clamp32(xh, 0, wnd_width - 1);
+            result = V2(xhc, wnd_height - 1);
         }
     else if ((x < 0 && y > 0) ||
              (x < 0 && y < 0 && y0 < 0)) // bl corner 2nd quadrant or 3rd and y0 < 0
         {
-            r32 y0c = clamp32(y0, 0, wnd_height);
+            r32 y0c = clamp32(y0, 0, wnd_height - 1);
             result = V2(0, y0c);
         }
     else if (x > wnd_width && y < 0 && yw < 0) // br corner 4th quadrant and yw < 0
         {
-            r32 x0c = clamp32(x0, 0, wnd_width);
+            r32 x0c = clamp32(x0, 0, wnd_width - 1);
             result = V2(x0c, 0);
         }
     else if ((x > 0 && y < 0) ||
              (x < 0 && y < 0 && y0 >= 0)) // bl corner 4th quadrant or 3rd and y0 >= 0
         {
-            r32 x0c = clamp32(x0, 0, wnd_width);
+            r32 x0c = clamp32(x0, 0, wnd_width - 1);
             result = V2(x0c, 0);
         }
     else if ((x < wnd_width && y > wnd_height) ||  // ur corner 2nd quadrant or 3rd and yw > wnd_height
              (x > wnd_width && y > wnd_height && yw > wnd_height))
         {
-            r32 xhc = clamp32(xh, 0, wnd_width);
-            result = V2(xhc, wnd_height);
+            r32 xhc = clamp32(xh, 0, wnd_width - 1);
+            result = V2(xhc, wnd_height - 1);
         }
     else if ((x > wnd_width && y < wnd_height) ||  // ur corner 4th quadrant or 3rd and yw <= wnd_height
              (x > wnd_width && y > wnd_height && yw <= wnd_height))
         {
-            r32 ywc = clamp32(yw, 0, wnd_height);
-            result = V2(wnd_width, ywc);
+            r32 ywc = clamp32(yw, 0, wnd_height - 1);
+            result = V2(wnd_width - 1, ywc);
         }
     
     return result;
@@ -228,10 +234,8 @@ v2 project(v3 point, PROJECTION P)
 
 void draw_wndline_aa(v2 P0, v2 P1, u32 color)
 {
-    s32 steep = abs(P1.y - P0.y) > abs(P1.x - P0.x);
+    b32 steep = abs(P1.y - P0.y) > abs(P1.x - P0.x);
 
-    // swap the co-ordinates if slope > 1 or we
-    // draw backwards
     if (steep)
         {
             r32 tmp = P0.x;
@@ -261,260 +265,81 @@ void draw_wndline_aa(v2 P0, v2 P1, u32 color)
             k = 1; // why exactly?
         }
 
-    s32 xpxl1 = floor32(P0.x); // round here?
-    s32 xpxl2 = floor32(P1.x);
+    s32 xstart = floor32(P0.x); // round here?
+    s32 xend = floor32(P1.x);
     r32 intersectY = P0.y;
 
-    // main loop
+    s32 xoffset;
+    s32 yoffset;
+    
     if (steep)
         {
-            s32 x;
-            for (x = xpxl1; x <= xpxl2; x++)
-                {
-                    /* // pixel coverage is determined by fractional */
-                    /* // part of y co-ordinate */
-                    /* r32 ipart = floor32(intersectY); */
-                    /* r32 dpart = 1 - decimal32(intersectY); */
-                    /* /\* drawPixel(floor32(intersectY), x, 1 - decimal32(intersectY)); *\/ */
-                    
-                    /* drawPixel(floor32(intersectY) - 1, x, decimal32(intersectY)); */
-                                        // pixel coverage is determined by fractional
-                    // part of y co-ordinate
-                    r32 ipart = floor32(intersectY);    // 367
-                    r32 dpart = 1 - decimal32(intersectY); // 0.5
-
-                    // this does: first  drawing_point [632 , 367]
-                    //            second drawing_point [632, 366]        // but this goes down why not up ?? (cus floor instead of ceil I guess ?)
-                    //
-                    //            gives an alpha of 0.5 to both pixels and draws there   // do I want to lerp with background instead??
-                    //                                                                   // actually you have to because that is exactly how you
-                    //                                                                   // get the color
-                    //            then does intersectY += 0
-                    
-                    /* drawPixel(x, floor32(intersectY), 1 - decimal32(intersectY)); */
-                    
-                    /* drawPixel(x, floor32(intersectY) - 1, decimal32(intersectY)); */
-
-                    u32* drawing_point1 = (u32*)(wnd_buffer + floor32(intersectY) * wnd_bytpp + x * wnd_pitch);
-                    u32* drawing_point2 = (u32*)(wnd_buffer + (floor32(intersectY) - 1) * wnd_bytpp + x * wnd_pitch);
-
-                    r32 alpha1 = 1 - decimal32(intersectY);
-                    r32 alpha2 = decimal32(intersectY);
-
-                    u32 color1 = *drawing_point1;
-                    u32 color2 = *drawing_point2;
-                    
-                    /* Gamestate->brushes[i] = ((256 << 24) |  // a */
-                    /*                          (120 << 16) |  // R */
-                    /*                          (0 << 8) |     // G */
-                    /*                          120);          // B */
-
-                    /* r32 r1 = ((u8)(color1 & 0x00FF0000)) / 255.0; */
-                    /* r32 g1 = ((u8)(color1 & 0x0000FF00)) / 255.0; */
-                    /* r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0; */
-
-                    /* r32 r2 = ((u8)(color2 & 0x00FF0000)) / 255.0; */
-                    /* r32 g2 = ((u8)(color2 & 0x0000FF00)) / 255.0; */
-                    /* r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0; */
-
-                    /* r32 rc = ((u8)(color & 0x00FF0000)) / 255.0; */
-                    /* r32 gc = ((u8)(color & 0x0000FF00)) / 255.0; */
-                    /* r32 bc = ((u8)(color & 0x000000FF)) / 255.0; */
-
-                    r32 r1 = ((u8)((color1 & 0x00FF0000) >> 16)) / 255.0;
-                    r32 g1 = ((u8)((color1 & 0x0000FF00) >> 8)) / 255.0;
-                    r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0;
-
-                    r32 r2 = ((u8)((color2 & 0x00FF0000) >> 16)) / 255.0;
-                    r32 g2 = ((u8)((color2 & 0x0000FF00) >> 8)) / 255.0;
-                    r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0;
-
-                    r32 rc = ((u8)((color & 0x00FF0000) >> 16)) / 255.0;
-                    r32 gc = ((u8)((color & 0x0000FF00) >> 8)) / 255.0;
-                    r32 bc = ((u8)(color & 0x000000FF)) / 255.0;
-                    
-                    r1 = lerp(rc, r1, alpha1);
-                    g1 = lerp(gc, g1, alpha1);
-                    b1 = lerp(bc, b1, alpha1);
-
-                    r2 = lerp(rc, r2, alpha2);
-                    g2 = lerp(gc, g2, alpha2);
-                    b2 = lerp(bc, b2, alpha2);
-
-
-                    /* r32 rc1 = rc * alpha1; */
-                    /* r32 gc1 = gc * alpha1; */
-                    /* r32 bc1 = bc * alpha1; */
-
-                    /* r32 rc2 = rc * alpha2; */
-                    /* r32 gc2 = gc * alpha2; */
-                    /* r32 bc2 = bc * alpha2; */
-
-                    u32 R1 = (u32)(r1 * 255);
-                    u32 G1 = (u32)(g1 * 255);
-                    u32 B1 = (u32)(b1 * 255);
-
-                    u32 R2 = (u32)(r2 * 255);
-                    u32 G2 = (u32)(g2 * 255);
-                    u32 B2 = (u32)(b2 * 255);
-                    
-                    /* r1 = lerp(rc, rc, alpha1); */
-                    /* g1 = lerp(gc, gc, alpha1); */
-                    /* b1 = lerp(bc, bc, alpha1); */
-
-                    /* r2 = lerp(rc, rc, alpha2); */
-                    /* g2 = lerp(gc, gc, alpha2); */
-                    /* b2 = lerp(bc, bc, alpha2); */
-
-
-                    u32 final1 = ((255 << 24) |
-                                  (R1 << 16) |
-                                  (G1 << 8) |   
-                                  B1);        
-
-                    u32 final2 = ((255 << 24) |
-                                  (R2 << 16) |
-                                  (G2 << 8) |   
-                                  B2);        
-
-                    *drawing_point1 = final1;
-                    *drawing_point2 = final2;
-                    
-                    intersectY += k;
-                }
+            xoffset = wnd_pitch;
+            yoffset = wnd_bytpp;
         }
     else
         {
-            // P0 [632.5 , 367.5]   P1 [647.5 , 367.5]
-            s32 x;
-            for (x = xpxl1; x <= xpxl2; x++) // 632 - 647
-                {
-                    // pixel coverage is determined by fractional
-                    // part of y co-ordinate
-                    r32 ipart = floor32(intersectY);    // 367
-                    r32 dpart = 1 - decimal32(intersectY); // 0.5
+            xoffset = wnd_bytpp;
+            yoffset = wnd_pitch;
+        }
 
-                    // this does: first  drawing_point [632 , 367]
-                    //            second drawing_point [632, 366]        // but this goes down why not up ?? (cus floor instead of ceil I guess ?)
-                    //
-                    //            gives an alpha of 0.5 to both pixels and draws there   // do I want to lerp with background instead??
-                    //                                                                   // actually you have to because that is exactly how you
-                    //                                                                   // get the color
-                    //            then does intersectY += 0
+    for (s32 x = xstart; x <= xend; x++)
+        {
+            // @IMPORTANT do we actually want to use 256 instead of 255, and in that case we can shift instead...
+            
+            u32* drawing_point1 = (u32*)(wnd_buffer + floor32(intersectY) * yoffset + x * xoffset);
+            u32* drawing_point2 = (u32*)(wnd_buffer + (floor32(intersectY) - 1) * yoffset + x * xoffset);
+
+            r32 alpha1 = 1 - decimal32(intersectY);
+            r32 alpha2 = decimal32(intersectY);
+
+            u32 color1 = *drawing_point1;
+            u32 color2 = *drawing_point2;
                     
-                    /* drawPixel(x, floor32(intersectY), 1 - decimal32(intersectY)); */
+            r32 r1 = ((u8)((color1 & 0x00FF0000) >> 16)) / 255.0;
+            r32 g1 = ((u8)((color1 & 0x0000FF00) >> 8)) / 255.0;
+            r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0;
+
+            r32 r2 = ((u8)((color2 & 0x00FF0000) >> 16)) / 255.0;
+            r32 g2 = ((u8)((color2 & 0x0000FF00) >> 8)) / 255.0;
+            r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0;
+
+            r32 rc = ((u8)((color & 0x00FF0000) >> 16)) / 255.0;
+            r32 gc = ((u8)((color & 0x0000FF00) >> 8)) / 255.0;
+            r32 bc = ((u8)(color & 0x000000FF)) / 255.0;
                     
-                    /* drawPixel(x, floor32(intersectY) - 1, decimal32(intersectY)); */
+            r1 = lerp(rc, r1, alpha1);
+            g1 = lerp(gc, g1, alpha1);
+            b1 = lerp(bc, b1, alpha1);
 
-                    u32* drawing_point1 = (u32*)(wnd_buffer + floor32(intersectY) * wnd_pitch + x * wnd_bytpp);
-                    u32* drawing_point2 = (u32*)(wnd_buffer + (floor32(intersectY) - 1) * wnd_pitch + x * wnd_bytpp);
+            r2 = lerp(rc, r2, alpha2);
+            g2 = lerp(gc, g2, alpha2);
+            b2 = lerp(bc, b2, alpha2);
 
-                    r32 alpha1 = 1 - decimal32(intersectY);
-                    r32 alpha2 = decimal32(intersectY);
+            u32 R1 = (u32)(r1 * 255);
+            u32 G1 = (u32)(g1 * 255);
+            u32 B1 = (u32)(b1 * 255);
 
-                    u32 color1 = *drawing_point1;
-                    u32 color2 = *drawing_point2;
+            u32 R2 = (u32)(r2 * 255);
+            u32 G2 = (u32)(g2 * 255);
+            u32 B2 = (u32)(b2 * 255);
                     
-                    /* Gamestate->brushes[i] = ((256 << 24) |  // a */
-                    /*                          (120 << 16) |  // R */
-                    /*                          (0 << 8) |     // G */
-                    /*                          120);          // B */
+            u32 final1 = ((255 << 24) |
+                          (R1 << 16) |
+                          (G1 << 8) |   
+                          B1);        
 
-                    r32 r1 = ((u8)((color1 & 0x00FF0000) >> 16)) / 255.0;
-                    r32 g1 = ((u8)((color1 & 0x0000FF00) >> 8)) / 255.0;
-                    r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0;
+            u32 final2 = ((255 << 24) |
+                          (R2 << 16) |
+                          (G2 << 8) |   
+                          B2);        
 
-                    r32 r2 = ((u8)((color2 & 0x00FF0000) >> 16)) / 255.0;
-                    r32 g2 = ((u8)((color2 & 0x0000FF00) >> 8)) / 255.0;
-                    r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0;
-
-                    r32 rc = ((u8)((color & 0x00FF0000) >> 16)) / 255.0;
-                    r32 gc = ((u8)((color & 0x0000FF00) >> 8)) / 255.0;
-                    r32 bc = ((u8)(color & 0x000000FF)) / 255.0;
+            *drawing_point1 = final1;
+            *drawing_point2 = final2;
                     
-                    // other way around ??
-                    /* r1 = lerp(r1, rc, alpha1); */
-                    /* g1 = lerp(g1, gc, alpha1); */
-                    /* b1 = lerp(b1, bc, alpha1); */
-
-                    /* r2 = lerp(r2, rc, alpha2); */
-                    /* g2 = lerp(g2, gc, alpha2); */
-                    /* b2 = lerp(b2, bc, alpha2); */
-
-                    // probably not gut........
-                    /* r1 = lerp(rc, rc, alpha1); */
-                    /* g1 = lerp(gc, gc, alpha1); */
-                    /* b1 = lerp(bc, bc, alpha1); */
-
-                    /* r2 = lerp(rc, rc, alpha2); */
-                    /* g2 = lerp(gc, gc, alpha2); */
-                    /* b2 = lerp(bc, bc, alpha2); */
-
-                    r1 = lerp(rc, r1, alpha1);
-                    g1 = lerp(gc, g1, alpha1);
-                    b1 = lerp(bc, b1, alpha1);
-
-                    r2 = lerp(rc, r2, alpha2);
-                    g2 = lerp(gc, g2, alpha2);
-                    b2 = lerp(bc, b2, alpha2);
-
-                    /* r32 rc1 = rc * alpha1; */
-                    /* r32 gc1 = gc * alpha1; */
-                    /* r32 bc1 = bc * alpha1; */
-
-                    /* r32 rc2 = rc * alpha2; */
-                    /* r32 gc2 = gc * alpha2; */
-                    /* r32 bc2 = bc * alpha2; */
-
-                    u32 R1 = (u32)(r1 * 255);
-                    u32 G1 = (u32)(g1 * 255);
-                    u32 B1 = (u32)(b1 * 255);
-
-                    u32 R2 = (u32)(r2 * 255);
-                    u32 G2 = (u32)(g2 * 255);
-                    u32 B2 = (u32)(b2 * 255);
-
-                    u32 final1 = ((255 << 24) |
-                                  (R1 << 16) |
-                                  (G1 << 8) |   
-                                  B1);        
-
-                    u32 final2 = ((255 << 24) |
-                                  (R2 << 16) |
-                                  (G2 << 8) |   
-                                  B2);        
-
-                    *drawing_point1 = final1;
-                    *drawing_point2 = final2;
-                    
-                    intersectY += k;
-                }
+            intersectY += k;
         }
 }
-
-/* void draw_wndline(v2 point_A, v2 point_B, u32 color) */
-/* { */
-/*     // @TODO implement anti-aliasing */
-    
-/*     u8* offset = wnd_buffer + wnd_pitch*round32(origin.y) + wnd_bytpp*round32(origin.x); */
-/*     u8* drawing_point = 0; */
-    
-/*     r32 dX = point.x; */
-/*     r32 dY = point.y; */
-/*     s32 movebyX = 0; */
-/*     s32 movebyY = 0; */
-/*     r32 len = edist2(origin, point); */
-/*     r32 whenX = len / dX; // @Note divide by zero here?? */
-/*     r32 whenY = len / dY; */
-    
-/*     for (s32 i = 1; i <= floor32(len); i++) */
-/*         { */
-/*             movebyX = floor32(i/whenX); */
-/*             movebyY = floor32(i/whenY); */
-/*             drawing_point = offset + wnd_pitch*movebyY + wnd_bytpp*movebyX; */
-/*                 *((u32*)drawing_point) = color; */
-/*         } */
-/* } */
 
 void draw_line(v2 origin, v2 point, u32 color)
 {
