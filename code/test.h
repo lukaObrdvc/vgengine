@@ -61,18 +61,20 @@ void scanlines_concentric_test(void)
     s32 concentric_count = Gamestate->concentric_count;
     
     r32* concentric_z_buffer = Gamestate->concentric_z_values;
-    
+
+    Gamestate->brushes[0] = 0xFFFFFF;
     fill_background();
 
-    for (s32 i=1; i<=concentric_count; i++)
+    // @TODO maybe don't do i=1 here ?
+    for (s32 i=0; i<concentric_count; i++)
         {
             r32 curr_z = concentric_z_buffer[i];
             
             if (curr_z >= wnd_nearclip &&
                 curr_z <= wnd_farclip)
                 {
-                    r32 half_width  = i * spread_x;
-                    r32 half_height = i * spread_y;
+                    r32 half_width  = (i+1) * spread_x;
+                    r32 half_height = (i+1) * spread_y;
             
                     r32 left   = origin.x - half_width;
                     r32 bottom = origin.y - half_height;
@@ -89,6 +91,7 @@ void scanlines_concentric_test(void)
                     v2 C2 = project(C3, PERSPECTIVE);
                     v2 D2 = project(D3, PERSPECTIVE);
 
+                    // don't you want to clamp the other points too ??
                     A2 = clamp_line(A2, B2);
                     B2 = clamp_line(B2, C2);
                     C2 = clamp_line(C2, D2);
@@ -96,10 +99,10 @@ void scanlines_concentric_test(void)
 
                     BRUSH brush = GetBrush(BRUSH_SCANLINE);
                     
-                    draw_wndline(A2, B2, brush);
-                    draw_wndline(B2, C2, brush);
-                    draw_wndline(C2, D2, brush);
-                    draw_wndline(D2, A2, brush);
+                    draw_wndline_aa(A2, B2, brush);
+                    draw_wndline_aa(B2, C2, brush);
+                    draw_wndline_aa(C2, D2, brush);
+                    draw_wndline_aa(D2, A2, brush);
                 }
         }    
 }

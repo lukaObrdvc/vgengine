@@ -80,7 +80,7 @@ inline u64 gigabytes(u32 n)
 
 inline r32 clamp32(r32 value, r32 min, r32 max)
 {
-    r32 result;
+    r32 result = value;
     
     if (value < min)
         {
