@@ -309,26 +309,46 @@ void draw_wndline_aa(v2 P0, v2 P1, u32 color)
                     /*                          (0 << 8) |     // G */
                     /*                          120);          // B */
 
-                    r32 r1 = ((u8)(color1 & 0x00FF0000)) / 255.0;
-                    r32 g1 = ((u8)(color1 & 0x0000FF00)) / 255.0;
+                    /* r32 r1 = ((u8)(color1 & 0x00FF0000)) / 255.0; */
+                    /* r32 g1 = ((u8)(color1 & 0x0000FF00)) / 255.0; */
+                    /* r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0; */
+
+                    /* r32 r2 = ((u8)(color2 & 0x00FF0000)) / 255.0; */
+                    /* r32 g2 = ((u8)(color2 & 0x0000FF00)) / 255.0; */
+                    /* r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0; */
+
+                    /* r32 rc = ((u8)(color & 0x00FF0000)) / 255.0; */
+                    /* r32 gc = ((u8)(color & 0x0000FF00)) / 255.0; */
+                    /* r32 bc = ((u8)(color & 0x000000FF)) / 255.0; */
+
+                    r32 r1 = ((u8)((color1 & 0x00FF0000) >> 16)) / 255.0;
+                    r32 g1 = ((u8)((color1 & 0x0000FF00) >> 8)) / 255.0;
                     r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0;
 
-                    r32 r2 = ((u8)(color2 & 0x00FF0000)) / 255.0;
-                    r32 g2 = ((u8)(color2 & 0x0000FF00)) / 255.0;
+                    r32 r2 = ((u8)((color2 & 0x00FF0000) >> 16)) / 255.0;
+                    r32 g2 = ((u8)((color2 & 0x0000FF00) >> 8)) / 255.0;
                     r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0;
 
-                    r32 rc = ((u8)(color & 0x00FF0000)) / 255.0;
-                    r32 gc = ((u8)(color & 0x0000FF00)) / 255.0;
+                    r32 rc = ((u8)((color & 0x00FF0000) >> 16)) / 255.0;
+                    r32 gc = ((u8)((color & 0x0000FF00) >> 8)) / 255.0;
                     r32 bc = ((u8)(color & 0x000000FF)) / 255.0;
                     
-                    // other way around ??
-                    r1 = lerp(r1, rc, alpha1);
-                    g1 = lerp(g1, gc, alpha1);
-                    b1 = lerp(b1, bc, alpha1);
+                    r1 = lerp(rc, r1, alpha1);
+                    g1 = lerp(gc, g1, alpha1);
+                    b1 = lerp(bc, b1, alpha1);
 
-                    r2 = lerp(r2, rc, alpha2);
-                    g2 = lerp(g2, gc, alpha2);
-                    b2 = lerp(b2, bc, alpha2);
+                    r2 = lerp(rc, r2, alpha2);
+                    g2 = lerp(gc, g2, alpha2);
+                    b2 = lerp(bc, b2, alpha2);
+
+
+                    /* r32 rc1 = rc * alpha1; */
+                    /* r32 gc1 = gc * alpha1; */
+                    /* r32 bc1 = bc * alpha1; */
+
+                    /* r32 rc2 = rc * alpha2; */
+                    /* r32 gc2 = gc * alpha2; */
+                    /* r32 bc2 = bc * alpha2; */
 
                     u32 R1 = (u32)(r1 * 255);
                     u32 G1 = (u32)(g1 * 255);
@@ -337,6 +357,15 @@ void draw_wndline_aa(v2 P0, v2 P1, u32 color)
                     u32 R2 = (u32)(r2 * 255);
                     u32 G2 = (u32)(g2 * 255);
                     u32 B2 = (u32)(b2 * 255);
+                    
+                    /* r1 = lerp(rc, rc, alpha1); */
+                    /* g1 = lerp(gc, gc, alpha1); */
+                    /* b1 = lerp(bc, bc, alpha1); */
+
+                    /* r2 = lerp(rc, rc, alpha2); */
+                    /* g2 = lerp(gc, gc, alpha2); */
+                    /* b2 = lerp(bc, bc, alpha2); */
+
 
                     u32 final1 = ((255 << 24) |
                                   (R1 << 16) |
@@ -391,26 +420,51 @@ void draw_wndline_aa(v2 P0, v2 P1, u32 color)
                     /*                          (0 << 8) |     // G */
                     /*                          120);          // B */
 
-                    r32 r1 = ((u8)(color1 & 0x00FF0000)) / 255.0;
-                    r32 g1 = ((u8)(color1 & 0x0000FF00)) / 255.0;
+                    r32 r1 = ((u8)((color1 & 0x00FF0000) >> 16)) / 255.0;
+                    r32 g1 = ((u8)((color1 & 0x0000FF00) >> 8)) / 255.0;
                     r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0;
 
-                    r32 r2 = ((u8)(color2 & 0x00FF0000)) / 255.0;
-                    r32 g2 = ((u8)(color2 & 0x0000FF00)) / 255.0;
+                    r32 r2 = ((u8)((color2 & 0x00FF0000) >> 16)) / 255.0;
+                    r32 g2 = ((u8)((color2 & 0x0000FF00) >> 8)) / 255.0;
                     r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0;
 
-                    r32 rc = ((u8)(color & 0x00FF0000)) / 255.0;
-                    r32 gc = ((u8)(color & 0x0000FF00)) / 255.0;
+                    r32 rc = ((u8)((color & 0x00FF0000) >> 16)) / 255.0;
+                    r32 gc = ((u8)((color & 0x0000FF00) >> 8)) / 255.0;
                     r32 bc = ((u8)(color & 0x000000FF)) / 255.0;
                     
                     // other way around ??
-                    r1 = lerp(r1, rc, alpha1);
-                    g1 = lerp(g1, gc, alpha1);
-                    b1 = lerp(b1, bc, alpha1);
+                    /* r1 = lerp(r1, rc, alpha1); */
+                    /* g1 = lerp(g1, gc, alpha1); */
+                    /* b1 = lerp(b1, bc, alpha1); */
 
-                    r2 = lerp(r2, rc, alpha2);
-                    g2 = lerp(g2, gc, alpha2);
-                    b2 = lerp(b2, bc, alpha2);
+                    /* r2 = lerp(r2, rc, alpha2); */
+                    /* g2 = lerp(g2, gc, alpha2); */
+                    /* b2 = lerp(b2, bc, alpha2); */
+
+                    // probably not gut........
+                    /* r1 = lerp(rc, rc, alpha1); */
+                    /* g1 = lerp(gc, gc, alpha1); */
+                    /* b1 = lerp(bc, bc, alpha1); */
+
+                    /* r2 = lerp(rc, rc, alpha2); */
+                    /* g2 = lerp(gc, gc, alpha2); */
+                    /* b2 = lerp(bc, bc, alpha2); */
+
+                    r1 = lerp(rc, r1, alpha1);
+                    g1 = lerp(gc, g1, alpha1);
+                    b1 = lerp(bc, b1, alpha1);
+
+                    r2 = lerp(rc, r2, alpha2);
+                    g2 = lerp(gc, g2, alpha2);
+                    b2 = lerp(bc, b2, alpha2);
+
+                    /* r32 rc1 = rc * alpha1; */
+                    /* r32 gc1 = gc * alpha1; */
+                    /* r32 bc1 = bc * alpha1; */
+
+                    /* r32 rc2 = rc * alpha2; */
+                    /* r32 gc2 = gc * alpha2; */
+                    /* r32 bc2 = bc * alpha2; */
 
                     u32 R1 = (u32)(r1 * 255);
                     u32 G1 = (u32)(g1 * 255);

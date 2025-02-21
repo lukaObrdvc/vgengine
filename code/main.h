@@ -134,9 +134,9 @@ typedef struct
 #define wnd_width    (((game_state*)(memory_base->perm_mem))->wndbuffer_width)
 #define wnd_height   (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
 #define wnd_bytpp    (memory_base->bytpp)                                      
-#define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)
+#define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)      // cache in scope ?
 
-#define wnd_pitch    (-wnd_width*wnd_bytpp)
+#define wnd_pitch    (-wnd_width*wnd_bytpp)                // cache in scope ?
 #define wnd_buffer   (((u8*)(memory_base->perm_mem) +   \
                        sizeof(game_state) +             \
                        wnd_bytesize + wnd_pitch))
@@ -157,6 +157,6 @@ typedef struct
 
 #define GetBrush(type) (Gamestate->brushes[(type)])
 // @Note maybe not a good idea
-#define SetBrush(type, color) Gamestate->brushes[(type)] = color
+#define SetBrush(type, color) Gamestate->brushes[(type)] = (color)
 
 #endif

@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING scanlines_concentric_test
+#define CURRENTLY_TESTING line_side_by_side_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // @TODO figure out how to rasterize a triangle, then you can draw
@@ -19,7 +19,39 @@
 
 
 
+void line_side_by_side_test(void)
+{
+    //Gamestate->brushes[BRUSH_NONE] = 0xFFFFFF;
+    fill_background();
 
+    u32 color      = Gamestate->brushes[BRUSH_SCANLINE];
+    v2 origin      = V2(Gamestate->wnd_center_x,
+                        Gamestate->wnd_center_y);
+    v2 line        = V2(100, 0);
+    
+    line = scale2(line, Gamestate->line_scaling_factor);
+    line = rotate2(line, -Gamestate->line_angle);
+    
+    draw_line(origin, line, color);
+
+    v2 origin_aa = V2(Gamestate->wnd_center_x,
+                        Gamestate->wnd_center_y + 10);
+    v2 line_aa = V2(100, 0);
+    line_aa = rotate2(line_aa, -Gamestate->line_angle);
+    line_aa = scale2(line_aa, Gamestate->line_scaling_factor);
+
+    line_aa = add2(origin_aa, line_aa);
+    //line_aa = transpose2(line_aa, zero2(), origin_aa);
+    
+    
+    draw_wndline_aa(origin_aa, line_aa, color);
+    
+    Gamestate->line_angle += PI / 256;
+
+    // draw_line_aa
+    
+    // draw_line
+}
 
 // @Note nearclip and farclip should actually be planes
 // then you first test a point against those planes
