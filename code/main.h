@@ -86,6 +86,14 @@ typedef enum
         PERSPECTIVE
     } PROJECTION;
 
+typedef struct
+{
+    v3 fpoint;
+    r32 yaw;
+    r32 pitch;
+    r32 roll;
+} Camera;
+
 #pragma pack(push, 1)
 typedef struct
 {
@@ -101,8 +109,10 @@ typedef struct
     r32 eye_x;
     r32 eye_y;
     r32 screen_z;
+    r32 new_screen_z;
     r32 nearclip;
     r32 farclip;
+    Camera camera;
 
     u32 brushes[MAX_BRUSHES];
 

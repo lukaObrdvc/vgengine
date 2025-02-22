@@ -225,18 +225,20 @@ void draw_rotated_rect(s32 width, s32 height, v2 origin, pxl color)
         }       
 }
 
-typedef struct
-{
-    v3 fpoint;
-    r32 yaw;
-    r32 pitch;
-    r32 roll;
-} camera;
+
+// transpose point to coordsys of camera
+// by offseting by fpoint, then rotating
+// in 3d by yaw, pitch, roll
 
 v2 project(v3 point, PROJECTION P)
 {
     v2 result = zero2();
-                
+
+    Camera camera = Gamestate->camera;
+    
+    point = transpose3(point, zero3(), camera.fpoint);
+    point = rotate3(point, camera.yaw, camera.pitch, camera.roll);
+    
     switch (P)
         {
         case ORTHOGRAPHIC:
@@ -245,12 +247,20 @@ v2 project(v3 point, PROJECTION P)
             } break;
         case PERSPECTIVE:
             {
-                r32 scaling_factor = Gamestate->screen_z / point.z;
-                v2 focus = V2(Gamestate->eye_x, Gamestate->eye_y);
-                v2 point2 = V2(point.x, point.y);
+                r32 scaling_factor = Gamestate->new_screen_z / point.z;
 
-                // @TODO maybe it's actually better if you write two lines instead
-                result = sub2(focus, scale2(sub2(focus, point2), scaling_factor));
+                /* result.x = Gamestate->eye_x + scaling_factor * (point.x - Gamestate->eye_x); */
+                /* result.y = Gamestate->eye_y + scaling_factor * (point.y - Gamestate->eye_y); */
+                
+                result.x = Gamestate->eye_x + scaling_factor * point.x;
+                result.y = Gamestate->eye_y + scaling_factor * point.y;
+                
+                /* r32 scaling_factor = Gamestate->screen_z / point.z; */
+                /* v2 focus = V2(Gamestate->eye_x, Gamestate->eye_y); */
+                /* v2 point2 = V2(point.x, point.y); */
+
+                /* // @TODO maybe it's actually better if you write two lines instead */
+                /* result = sub2(focus, scale2(sub2(focus, point2), scaling_factor)); */
 
                 /* result.left   = Gamestate->eye_x - scaling_factor * (Gamestate->eye_x - rect.left); */
                 /* result.bottom = Gamestate->eye_y - scaling_factor * (Gamestate->eye_y - rect.bottom); */
@@ -648,6 +658,7 @@ void init_game_state(void)
                 .eye_x = init_wnd_center_x,
                 .eye_y = init_wnd_center_y,
                 .screen_z = 30.0f,   // was 0.6f
+                .new_screen_z = 30.0f,
                 .nearclip = -500.0f,  // was 0.7f
                 .farclip = 500.0f,  // was 9.8f
 
@@ -667,6 +678,11 @@ void init_game_state(void)
                 .rect_angle = 0,
                 .rect_scaling_factor = 1 };
 
+            Gamestate->camera.fpoint = V3(1000, 360, 5);
+            Gamestate->camera.yaw    = 0;
+            Gamestate->camera.pitch  = PI/4;
+            Gamestate->camera.roll   = 0;
+            
             s32 concentric_count = Gamestate->concentric_count;
             r32* concentric_z_values = Gamestate->concentric_z_values;
             Assert(concentric_count <= CONCENTRIC_MAX);

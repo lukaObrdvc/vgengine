@@ -52,6 +52,8 @@ inline v3 V3(r32 x, r32 y, r32 z)
     return result;
 }
 
+// @TODO probably turn these zeroes into macros so you don't have to
+// add () everywhere
 inline v2 zero2(void)
 {
     v2 result;
