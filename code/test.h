@@ -1,5 +1,211 @@
-#define CURRENTLY_TESTING scanlines_concentric_test
+#define CURRENTLY_TESTING static_camera_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
+
+
+void static_camera_test(void)
+{
+    fill_background();
+
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z + 140);
+
+    v3 A = V3(-60, 60, -60);
+    v3 B = V3(60, 60, -60);
+    v3 C = V3(60, -60, -60);
+    v3 D = V3(-60, -60, -60);
+
+    v3 bA = V3(-60, 60, 60);
+    v3 bB = V3(60, 60, 60);
+    v3 bC = V3(60, -60, 60);
+    v3 bD = V3(-60, -60, 60);
+
+    // project is now different
+    
+    A = add3(A, screen_center);
+    v2 pA = project(A, PERSPECTIVE);
+            
+    B = add3(B, screen_center);
+    v2 pB = project(B, PERSPECTIVE);
+            
+    C = add3(C, screen_center);
+    v2 pC = project(C, PERSPECTIVE);
+
+    D = add3(D, screen_center);
+    v2 pD = project(D, PERSPECTIVE);
+
+
+    bA = add3(bA, screen_center);
+    v2 pbA = project(bA, PERSPECTIVE);
+            
+    bB = add3(bB, screen_center);
+    v2 pbB = project(bB, PERSPECTIVE);
+            
+    bC = add3(bC, screen_center);
+    v2 pbC = project(bC, PERSPECTIVE);
+
+    bD = add3(bD, screen_center);
+    v2 pbD = project(bD, PERSPECTIVE);
+            
+    v2 pSC = project(screen_center, PERSPECTIVE);
+
+    draw_wndline_aa(pA, pB, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pB, pC, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pC, pD, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pD, pA, Gamestate->brushes[BRUSH_SCANLINE]);
+
+    draw_wndline_aa(pbA, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pbB, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pbC, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pbD, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
+
+    draw_wndline_aa(pA, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pB, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pC, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pD, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
+}
+
+
+void rotate_cube_test(void)
+{
+    fill_background();
+    
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z + 140);
+
+    v3 A = V3(-60, 60, -60);
+    v3 B = V3(60, 60, -60);
+    v3 C = V3(60, -60, -60);
+    v3 D = V3(-60, -60, -60);
+
+    v3 bA = V3(-60, 60, 60);
+    v3 bB = V3(60, 60, 60);
+    v3 bC = V3(60, -60, 60);
+    v3 bD = V3(-60, -60, 60);
+
+    // assume I will offset my_point into screen_center
+    // so don't test for it's Z
+    if (screen_center.z >= wnd_nearclip &&
+        screen_center.z <= wnd_farclip)
+        {
+            A = rotate3(A, Gamestate->line_angle, 0, Gamestate->line_angle);
+            A = add3(A, screen_center);
+            v2 pA = project(A, PERSPECTIVE);
+            
+            B = rotate3(B, Gamestate->line_angle, 0, Gamestate->line_angle);
+            B = add3(B, screen_center);
+            v2 pB = project(B, PERSPECTIVE);
+            
+            C = rotate3(C, Gamestate->line_angle, 0, Gamestate->line_angle);
+            C = add3(C, screen_center);
+            v2 pC = project(C, PERSPECTIVE);
+
+            D = rotate3(D, Gamestate->line_angle, 0, Gamestate->line_angle);
+            D = add3(D, screen_center);
+            v2 pD = project(D, PERSPECTIVE);
+
+
+            bA = rotate3(bA, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bA = add3(bA, screen_center);
+            v2 pbA = project(bA, PERSPECTIVE);
+            
+            bB = rotate3(bB, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bB = add3(bB, screen_center);
+            v2 pbB = project(bB, PERSPECTIVE);
+            
+            bC = rotate3(bC, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bC = add3(bC, screen_center);
+            v2 pbC = project(bC, PERSPECTIVE);
+
+            bD = rotate3(bD, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bD = add3(bD, screen_center);
+            v2 pbD = project(bD, PERSPECTIVE);
+
+            
+            v2 pSC = project(screen_center, PERSPECTIVE);
+
+
+            // @IMPORTANT this doesn't work bro...
+            /* v2 tmp = projected_my_point; */
+            /* projected_my_point = clamp_line(projected_my_point, */
+            /*                                 projected_screen_center); */
+    
+            /* projected_screen_center = clamp_line(projected_screen_center, */
+            /*                                      tmp); */
+    
+            draw_wndline_aa(pA, pB, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pB, pC, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pC, pD, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pD, pA, Gamestate->brushes[BRUSH_SCANLINE]);
+
+            draw_wndline_aa(pbA, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pbB, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pbC, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pbD, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
+
+            draw_wndline_aa(pA, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pB, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pC, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pD, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
+        }
+    Gamestate->line_angle += PI / 256;
+    //Gamestate->line_angle += PI / (256*4);
+}
+
+
+
+
+void rotate3_test(void)
+{
+    fill_background();
+    
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z + 140);
+
+    v3 my_point = V3(150, 150, 0);
+
+    // assume I will offset my_point into screen_center
+    // so don't test for it's Z
+    if (screen_center.z >= wnd_nearclip &&
+        screen_center.z <= wnd_farclip)
+        {
+            my_point = rotate3(my_point, Gamestate->line_angle/4, 0, Gamestate->line_angle/4);
+            my_point = add3(my_point, screen_center);
+
+            v2 projected_screen_center = project(screen_center, PERSPECTIVE);
+            v2 projected_my_point = project(my_point, PERSPECTIVE);
+
+            v2 tmp = projected_my_point;
+
+            // @IMPORTANT this doesn't work bro...
+            /* projected_my_point = clamp_line(projected_my_point, */
+            /*                                 projected_screen_center); */
+    
+            /* projected_screen_center = clamp_line(projected_screen_center, */
+            /*                                      tmp); */
+    
+            draw_wndline_aa(projected_screen_center,
+                            projected_my_point,
+                            Gamestate->brushes[BRUSH_SCANLINE]);
+        }
+    Gamestate->line_angle += PI / 256;
+    //Gamestate->line_angle += PI / (256*4);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // @TODO figure out how to rasterize a triangle, then you can draw
 // a rotate rectangle better

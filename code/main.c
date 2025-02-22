@@ -156,6 +156,35 @@ inline wndrect clamp_wndrect(wndrect rect)
 
 // @TODO probably put this into .c instead and don't inline
 
+
+                         //   z         y         x
+inline v3 rotate3(v3 vec, r32 yaw, r32 pitch, r32 roll)
+{
+    v3 result = zero3();
+
+    r32 x = vec.x;
+    r32 y = vec.y;
+    r32 z = vec.z;
+    
+    r32 sA = sin(yaw);
+    r32 cA = cos(yaw);
+
+    r32 sB = sin(pitch);
+    r32 cB = cos(pitch);
+
+    r32 sG = sin(roll);
+    r32 cG = cos(roll);
+
+    
+    result.x = x * (cA*cB) + y * (cA*sB*sG-sA*cG) + z * (cA*sB*cG+sA*sG);
+    result.y = x * (sA*cB) + y * (sA*sB*sG+cA*cG) + z * (sA*sB*cG-cA*sG);
+    result.z = x * (-sB)   + y * (cB*sG)          + z * (cB*cG);
+    
+    return result;
+}
+
+
+
 void draw_clamped_wndrect(wndrect rect, pxl color)
 {
     // @TODO do I round?
@@ -195,6 +224,14 @@ void draw_rotated_rect(s32 width, s32 height, v2 origin, pxl color)
                 }
         }       
 }
+
+typedef struct
+{
+    v3 fpoint;
+    r32 yaw;
+    r32 pitch;
+    r32 roll;
+} camera;
 
 v2 project(v3 point, PROJECTION P)
 {
@@ -610,9 +647,9 @@ void init_game_state(void)
 
                 .eye_x = init_wnd_center_x,
                 .eye_y = init_wnd_center_y,
-                .screen_z = 0.6f,
-                .nearclip = 0.7f,
-                .farclip = 9.8f,
+                .screen_z = 30.0f,   // was 0.6f
+                .nearclip = -500.0f,  // was 0.7f
+                .farclip = 500.0f,  // was 9.8f
 
                 .wnd_center_x = init_wnd_center_x,
                 .wnd_center_y = init_wnd_center_y,

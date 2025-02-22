@@ -3,6 +3,8 @@
 
 // @Note do I want floor2, floor3 and similar...?
 
+// @TODO do the union trick on these
+
 typedef struct
 {
     r32 x;

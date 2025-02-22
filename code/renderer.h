@@ -57,5 +57,4 @@ inline r32 wndrect_height(wndrect rect)
     return result;
 }
 
-
 #endif
