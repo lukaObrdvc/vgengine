@@ -38,7 +38,19 @@ typedef enum Key_code
         KEY_UP,
         KEY_RIGHT,
         KEY_DOWN,
-        KEY_LEFT
+        KEY_LEFT,
+        KEY_W,
+        KEY_S,
+        KEY_A,
+        KEY_D,
+        KEY_Q,
+        KEY_E,
+        KEY_I,
+        KEY_K,
+        KEY_J,
+        KEY_L,
+        KEY_U,
+        KEY_O
     } key_code;
 
 typedef struct Keyboard_key

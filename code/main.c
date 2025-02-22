@@ -587,6 +587,61 @@ void process_frame_input(key curr_frame_key,
                         Gamestate->wnd_center_x+= 20;
                         Gamestate->dbg_render_x_offset+= 10;
                     } break;
+
+
+                    
+                case KEY_W:
+                    {
+                        Gamestate->camera.roll += PI/256;
+                    } break;
+                case KEY_S:
+                    {
+                        Gamestate->camera.roll -= PI/256;
+                    } break;
+                case KEY_A:
+                    {
+                        Gamestate->camera.pitch += PI/256;
+                    } break;
+                case KEY_D:
+                    {
+                        Gamestate->camera.pitch -= PI/256;
+                    } break;
+                case KEY_Q:
+                    {
+                        Gamestate->camera.yaw += PI/256;
+                    } break;
+                case KEY_E:
+                    {
+                        Gamestate->camera.yaw -= PI/256;
+                    } break;
+
+                    
+                case KEY_I:
+                    {
+                        Gamestate->camera.fpoint.y += 5;
+                    } break;
+                case KEY_K:
+                    {
+                        Gamestate->camera.fpoint.y -= 5;
+                    } break;
+                case KEY_J:
+                    {
+                        Gamestate->camera.fpoint.x += 5;
+                    } break;
+                case KEY_L:
+                    {
+                        Gamestate->camera.fpoint.x -= 5;
+                    } break;
+                case KEY_U:
+                    {
+                        Gamestate->camera.fpoint.z += 5;
+                    } break;
+                case KEY_O:
+                    {
+                        Gamestate->camera.fpoint.z -= 5;
+                    } break;
+
+                    
                 default:
                     {}
                 }
@@ -678,9 +733,10 @@ void init_game_state(void)
                 .rect_angle = 0,
                 .rect_scaling_factor = 1 };
 
-            Gamestate->camera.fpoint = V3(1000, 360, 5);
+            Gamestate->camera.fpoint = V3(680, 360, 5);
             Gamestate->camera.yaw    = 0;
-            Gamestate->camera.pitch  = PI/4;
+            Gamestate->camera.pitch  = 0;
+            //Gamestate->camera.pitch  = PI/4;
             Gamestate->camera.roll   = 0;
             
             s32 concentric_count = Gamestate->concentric_count;

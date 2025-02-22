@@ -238,6 +238,58 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
                         {
                             curr_frame_key.code = KEY_LEFT;
                         } break;
+                        
+                    case 'W':
+                        {
+                            curr_frame_key.code = KEY_W;
+                        } break;
+                    case 'S':
+                        {
+                            curr_frame_key.code = KEY_S;
+                        } break;
+                    case 'A':
+                        {
+                            curr_frame_key.code = KEY_A;
+                        } break;
+                    case 'D':
+                        {
+                            curr_frame_key.code = KEY_D;
+                        } break;
+                    case 'Q':
+                        {
+                            curr_frame_key.code = KEY_Q;
+                        } break;
+                    case 'E':
+                        {
+                            curr_frame_key.code = KEY_E;
+                        } break;
+
+                    case 'I':
+                        {
+                            curr_frame_key.code = KEY_I;
+                        } break;
+                    case 'K':
+                        {
+                            curr_frame_key.code = KEY_K;
+                        } break;
+                    case 'J':
+                        {
+                            curr_frame_key.code = KEY_J;
+                        } break;
+                    case 'L':
+                        {
+                            curr_frame_key.code = KEY_L;
+                        } break;
+                    case 'U':
+                        {
+                            curr_frame_key.code = KEY_U;
+                        } break;
+                    case 'O':
+                        {
+                            curr_frame_key.code = KEY_O;
+                        } break;
+
+                        
                     default:
                         {}                      
                     }
