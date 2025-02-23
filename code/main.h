@@ -175,6 +175,13 @@ typedef struct
 #define to_yisdown(y) (wnd_height - (y))
 //#define wndrect_yisdown(y)
 
+// cast to r32* after you offset...
+#define zbuffer (((u8*)(memory_base->perm_mem) +    \
+                  sizeof(game_state) +              \
+                  wnd_bytesize +                    \
+                  wnd_bytesize + wnd_pitch))
+
+
 // @TODO figure out default rotation direction cw or ccw and transforms...
 
 #define GetBrush(type) (Gamestate->brushes[(type)])

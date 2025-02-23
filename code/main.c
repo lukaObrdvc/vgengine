@@ -183,7 +183,28 @@ inline v3 rotate3(v3 vec, r32 yaw, r32 pitch, r32 roll)
     return result;
 }
 
-
+void draw_clamped_zbuffered_wndrect(wndrect rect, r32 z, pxl color)
+{
+    s32 offset = wnd_pitch*round32(rect.bottom) +
+        round32(rect.left)*wnd_bytpp;
+    s32 height = round32(wndrect_height(rect));
+    s32 width = round32(wndrect_width(rect));
+    
+    for (s32 i = 0; i < height; i++)
+        {
+            pxl* row = (pxl*)(wnd_buffer + wnd_pitch*i + offset);
+            for (s32 j = 0; j < width; j++)
+                {
+                    r32* zbuffer_point = (r32*)(zbuffer + wnd_pitch*i + wnd_bytpp*j + offset);
+                    if (z < *zbuffer_point)
+                        {
+                            *row = color;
+                            *zbuffer_point = z;
+                        }
+                    row++;
+                }
+        }    
+}
 
 void draw_clamped_wndrect(wndrect rect, pxl color)
 {
@@ -701,38 +722,50 @@ void init_game_state(void)
             Assert(sizeof(game_state) + wnd_bytesize <= memory_base->perm_mem_cap);
             
             *(Gamestate) = literal(game_state) {
-                .inited = true,
-                .tested_once = 0,
 
-                .cursor = V2(init_wnd_center_x,
-                             init_wnd_center_y),
+                    .inited = true,
+                    .tested_once = 0,
+
+                    .cursor = V2(init_wnd_center_x,
+                                 init_wnd_center_y),
                 
-                .wndbuffer_width = init_wnd_width,
-                .wndbuffer_height = init_wnd_height,
+                    .wndbuffer_width = init_wnd_width,
+                    .wndbuffer_height = init_wnd_height,
 
-                .eye_x = init_wnd_center_x,
-                .eye_y = init_wnd_center_y,
-                .screen_z = 30.0f,   // was 0.6f
-                .new_screen_z = 30.0f,
-                .nearclip = -500.0f,  // was 0.7f
-                .farclip = 500.0f,  // was 9.8f
+                    .eye_x = init_wnd_center_x,
+                    .eye_y = init_wnd_center_y,
+                    .screen_z = 30.0f,   // was 0.6f
+                    .new_screen_z = 30.0f,
+                    .nearclip = -500.0f,  // was 0.7f
+                    .farclip = 500.0f,  // was 9.8f
 
-                .wnd_center_x = init_wnd_center_x,
-                .wnd_center_y = init_wnd_center_y,
+                    .wnd_center_x = init_wnd_center_x,
+                    .wnd_center_y = init_wnd_center_y,
                     
-                .dbg_render_x_offset = 0, 
-                .dbg_render_y_offset = 0, 
-                .square_length = 10,       
-                .concentric_thickness = 5,
-                .concentric_count = 10,     // must be less than CONCENTRIC_MAX
-                .concentric_spread_x = 50, 
-                .concentric_spread_y = 50,
-                .concentric_current_z = 0,
-                .line_angle = 0,
-                .line_scaling_factor = 1,
-                .rect_angle = 0,
-                .rect_scaling_factor = 1 };
+                    .dbg_render_x_offset = 0, 
+                    .dbg_render_y_offset = 0, 
+                    .square_length = 10,       
+                    .concentric_thickness = 5,
+                    .concentric_count = 10,     // must be less than CONCENTRIC_MAX
+                    .concentric_spread_x = 50, 
+                    .concentric_spread_y = 50,
+                    .concentric_current_z = 0,
+                    .line_angle = 0,
+                    .line_scaling_factor = 1,
+                    .rect_angle = 0,
+                    .rect_scaling_factor = 1 };
 
+
+            for (s32 i = 0; i < wnd_height; i++)
+                {
+                    r32* row = (r32*)(zbuffer + i*wnd_pitch);
+                    for (s32 j = 0; j < wnd_width; j++)
+                        {
+                            *row = Gamestate->farclip; // smth else??
+                            row++;
+                        }
+                }
+            
             Gamestate->camera.fpoint = V3(680, 360, 5);
             Gamestate->camera.yaw    = 0;
             Gamestate->camera.pitch  = 0;

@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING draw_triangle_test
+#define CURRENTLY_TESTING zbuffering_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // next steps:
@@ -20,6 +20,104 @@
 //  figure out how to do art a little bit orsmth.....
 //
 // then you start hardware rendering.......
+
+void zbuffering_test(void)
+{
+
+    fill_background();
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z);
+
+    v3 rect1A = V3(-30, 30, 5);
+    v3 rect1B = V3(30, 30, 5);
+    v3 rect1C = V3(30, -30, 5);
+    v3 rect1D = V3(-30, -30, 5);
+
+    v3 rect2A = V3(-60, 60, 10);
+    v3 rect2B = V3(60, 60, 10);
+    v3 rect2C = V3(60, -60, 10);
+    v3 rect2D = V3(-60, -60, 10);
+
+    v3 rect3A = V3(-20, 20, 7);
+    v3 rect3B = V3(20, 20, 7);
+    v3 rect3C = V3(20, -20, 7);
+    v3 rect3D = V3(-20, -20, 7);
+
+    rect1A = add3(rect1A, screen_center);
+    rect1B = add3(rect1B, screen_center);
+    rect1C = add3(rect1C, screen_center);
+    rect1D = add3(rect1D, screen_center);
+
+    rect2A = add3(rect2A, screen_center);
+    rect2B = add3(rect2B, screen_center);
+    rect2C = add3(rect2C, screen_center);
+    rect2D = add3(rect2D, screen_center);
+
+    rect3A = add3(rect3A, screen_center);
+    rect3B = add3(rect3B, screen_center);
+    rect3C = add3(rect3C, screen_center);
+    rect3D = add3(rect3D, screen_center);
+
+    PROJECTION p = PERSPECTIVE;
+    v2 rect1pA = project(rect1A, p);
+    v2 rect1pB = project(rect1B, p);
+    v2 rect1pC = project(rect1C, p);
+    v2 rect1pD = project(rect1D, p);
+
+    v2 rect2pA = project(rect2A, p);
+    v2 rect2pB = project(rect2B, p);
+    v2 rect2pC = project(rect2C, p);
+    v2 rect2pD = project(rect2D, p);
+
+    v2 rect3pA = project(rect3A, p);
+    v2 rect3pB = project(rect3B, p);
+    v2 rect3pC = project(rect3C, p);
+    v2 rect3pD = project(rect3D, p);
+
+    wndrect rect1 = Wndrect(rect1pD.x, rect1pD.y, rect1pB.x, rect1pB.y);
+    wndrect rect2 = Wndrect(rect2pD.x, rect2pD.y, rect2pB.x, rect2pB.y);
+    wndrect rect3 = Wndrect(rect3pD.x, rect3pD.y, rect3pB.x, rect3pB.y);
+
+    rect1 = clamp_wndrect(rect1);
+    rect2 = clamp_wndrect(rect2);
+    rect3 = clamp_wndrect(rect3);
+    
+    pxl color1 = {.R = 0, .G = 255, .B = 0, .A = 255};
+    pxl color2 = {.R = 0, .G = 0, .B = 255, .A = 255};
+    pxl color3 = {.R = 255, .G = 0, .B = 0, .A = 255};
+
+    // do z-buffering here:
+    //   find equation of a plane for rect1 and rect2
+    //   call draw_clamped_zbuffered_wndrect for them...
+
+    // since rect1 and rect2 are parallel to the XY plane,
+    // we don't have to calculate a normal to define a
+    // plane equation....
+
+    // rect1: z - 35 = 0    -> z = 35
+    // rect2: z - 40 = 0    -> z = 40   (obviously this is a simple case...)
+
+    draw_clamped_zbuffered_wndrect(rect1, rect1A.z, color1);
+    draw_clamped_zbuffered_wndrect(rect2, rect2A.z, color2);
+    draw_clamped_zbuffered_wndrect(rect3, rect3A.z, color3);
+    
+    /* draw_clamped_wndrect(rect1, color1); */
+    /* draw_clamped_wndrect(rect2, color2); */
+
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    *row = Gamestate->farclip; // smth else??
+                    row++;
+                }
+        }
+    
+}
 
 
 void draw_triangle_test(void)
