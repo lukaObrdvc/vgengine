@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING zbuffering_test
+#define CURRENTLY_TESTING zbuffering_triangles_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // next steps:
@@ -20,6 +20,325 @@
 //  figure out how to do art a little bit orsmth.....
 //
 // then you start hardware rendering.......
+
+void zbuffering_triangles_test(void)
+{
+
+    fill_background();
+    u32 color1 = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color2 = Gamestate->brushes[BRUSH_SCANLINE2];
+
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z);
+    
+    v3 A = V3(-50, -10, 7);
+    v3 B = V3(60, 10, 50);
+    v3 C = V3(-70, 70, 15);
+
+    v3 I = V3(-80, 30, 11);
+    v3 J = V3(80, -30, 3);
+    v3 K = V3(80, 30, 11);
+    
+    A = add3(A, screen_center);
+    B = add3(B, screen_center);
+    C = add3(C, screen_center);
+
+    I = add3(I, screen_center);
+    J = add3(J, screen_center);
+    K = add3(K, screen_center);
+
+    v2 pA = project(A, PERSPECTIVE);
+    v2 pB = project(B, PERSPECTIVE);
+    v2 pC = project(C, PERSPECTIVE);
+
+    v2 pI = project(I, PERSPECTIVE);
+    v2 pJ = project(J, PERSPECTIVE);
+    v2 pK = project(K, PERSPECTIVE);
+
+    r32 kAB = (pA.y - pB.y) / (pA.x - pB.x);
+    r32 kBC = (pB.y - pC.y) / (pB.x - pC.x);
+    r32 kCA = (pC.y - pA.y) / (pC.x - pA.x);
+
+    r32 kIJ = (pI.y - pJ.y) / (pI.x - pJ.x);
+    r32 kJK = (pJ.y - pK.y) / (pJ.x - pK.x);
+    r32 kKI = (pK.y - pI.y) / (pK.x - pI.x);
+
+    wndrect outline1 = Wndrect(pA.x, pA.y, pA.x, pA.y);
+    wndrect outline2 = Wndrect(pI.x, pI.y, pI.x, pI.y);
+
+    if (pA.x < outline1.left)   outline1.left = pA.x;
+    if (pA.y < outline1.bottom) outline1.bottom = pA.y;
+    if (pA.x > outline1.right)  outline1.right = pA.x;
+    if (pA.y > outline1.top)    outline1.top = pA.y;
+
+    if (pB.x < outline1.left)   outline1.left = pB.x;
+    if (pB.y < outline1.bottom) outline1.bottom = pB.y;
+    if (pB.x > outline1.right)  outline1.right = pB.x;
+    if (pB.y > outline1.top)    outline1.top = pB.y;
+
+    if (pC.x < outline1.left)   outline1.left = pC.x;
+    if (pC.y < outline1.bottom) outline1.bottom = pC.y;
+    if (pC.x > outline1.right)  outline1.right = pC.x;
+    if (pC.y > outline1.top)    outline1.top = pC.y;
+
+    if (pI.x < outline2.left)   outline2.left = pI.x;
+    if (pI.y < outline2.bottom) outline2.bottom = pI.y;
+    if (pI.x > outline2.right)  outline2.right = pI.x;
+    if (pI.y > outline2.top)    outline2.top = pI.y;
+
+    if (pJ.x < outline2.left)   outline2.left = pJ.x;
+    if (pJ.y < outline2.bottom) outline2.bottom = pJ.y;
+    if (pJ.x > outline2.right)  outline2.right = pJ.x;
+    if (pJ.y > outline2.top)    outline2.top = pJ.y;
+
+    if (pK.x < outline2.left)   outline2.left = pK.x;
+    if (pK.y < outline2.bottom) outline2.bottom = pK.y;
+    if (pK.x > outline2.right)  outline2.right = pK.x;
+    if (pK.y > outline2.top)    outline2.top = pK.y;
+
+    b32 two_below1 = true;
+    b32 two_below2 = true;
+    if (pA.y == outline1.bottom)
+        {
+            v2 tmp = pA;
+            pA = V2(pB.x, pB.y);  // can you do pA = pB ??
+            pB = V2(tmp.x, tmp.y);
+
+            r32 tmp2 = kCA;
+            kCA = kBC;
+            kBC = tmp2;
+            
+            if (pB.x == outline1.right || pB.x == outline1.left)
+                {
+                    two_below1 = false;
+                }
+        }
+    else if (pB.y == outline1.bottom)
+        {            
+            if (pB.x == outline1.right || pB.x == outline1.left)
+                {
+                    two_below1 = false;
+                }
+        }
+    else if (pC.y == outline1.bottom)
+        {
+            v2 tmp = pC;
+            pC = V2(pB.x, pB.y);
+            pB = V2(tmp.x, tmp.y);
+
+            r32 tmp2 = kAB;
+            kAB = kCA;
+            kCA = tmp2;
+            
+            if (pB.x == outline1.right || pB.x == outline1.left)
+                {
+                    two_below1 = false;
+                }
+        }
+    // ------------------------------------------------------------
+    if (pI.y == outline2.bottom)
+        {
+            v2 tmp = pI;
+            pI = V2(pJ.x, pJ.y);  // can you do pI = pJ ??
+            pJ = V2(tmp.x, tmp.y);
+
+            r32 tmp2 = kCA;
+            kCA = kBC;
+            kBC = tmp2;
+            
+            if (pJ.x == outline2.right || pJ.x == outline2.left)
+                {
+                    two_below2 = false;
+                }
+        }
+    else if (pJ.y == outline2.bottom)
+        {            
+            if (pJ.x == outline2.right || pJ.x == outline2.left)
+                {
+                    two_below2 = false;
+                }
+        }
+    else if (pK.y == outline2.bottom)
+        {
+            v2 tmp = pK;
+            pK = V2(pJ.x, pJ.y);
+            pJ = V2(tmp.x, tmp.y);
+
+            r32 tmp2 = kAB;
+            kAB = kCA;
+            kCA = tmp2;
+            
+            if (pJ.x == outline2.right || pJ.x == outline2.left)
+                {
+                    two_below2 = false;
+                }
+        }
+    
+    s32 offset1 = wnd_pitch*round32(outline1.bottom) +
+        round32(outline1.left)*wnd_bytpp;
+    s32 height1 = round32(wndrect_height(outline1));
+    s32 width1 = round32(wndrect_width(outline1));
+
+    s32 offset2 = wnd_pitch*round32(outline2.bottom) +
+        round32(outline2.left)*wnd_bytpp;
+    s32 height2 = round32(wndrect_height(outline2));
+    s32 width2 = round32(wndrect_width(outline2));
+
+    v3 a1 = V3(A.x, A.y, A.z);
+    a1 = sub3(B, a1);
+    v3 b1 = V3(A.x, A.y, A.z);
+    b1 = sub3(C, b1);
+
+    v3 a2 = V3(I.x, I.y, I.z);
+    a2 = sub3(J, a2);
+    v3 b2 = V3(I.x, I.y, I.z);
+    b2 = sub3(K, b2);
+
+    v3 n1 = V3(a1.y*b1.z - a1.z*b1.y,
+               a1.x*b1.z - a1.z*b1.x,
+               a1.x*b1.y - a1.y*b1.x);
+    v3 n2 = V3(a2.y*b2.z - a2.z*b2.y,
+               a2.x*b2.z - a2.z*b2.x,
+               a2.x*b2.y - a2.y*b2.x);
+
+    r32 d1 = n1.x*A.x + n1.y*A.y + n1.z*A.z;
+    r32 d2 = n2.x*I.x + n2.y*I.y + n2.z*I.z;
+    
+    // also dividing by 0 when calculating k...
+    for (s32 i = 0; i < height1; i++)
+        {
+            u32* row = (u32*)(wnd_buffer + wnd_pitch*i + offset1);
+            for (s32 j = 0; j < width1; j++)
+                {
+                    b32 inside = true;
+                    r32* zbuffer_point = (r32*)(zbuffer + wnd_pitch*i + wnd_bytpp*j + offset1);
+                    r32 z = (d1 - n1.x*(outline1.left+j) - n1.y*(outline1.bottom+i)) / n1.z;
+
+                    r32 yAB = kAB*(outline1.left + j - pA.x) + pA.y;
+                    r32 yBC = kBC*(outline1.left + j - pB.x) + pB.y;
+                    r32 yCA = kCA*(outline1.left + j - pC.x) + pC.y;
+
+                    // the problem is AB, BC, CA, need to be sorted in some way...
+                    if (two_below1)
+                        {
+                            if (outline1.bottom + i < yAB)
+                                {
+                                    inside = false;
+                                }
+                            if (outline1.bottom + i < yBC)
+                                {
+                                    inside = false;
+                                }
+                            if (outline1.bottom + i > yCA)
+                                {
+                                    inside = false;
+                                }
+                        }
+                    else
+                        {
+                            if (outline1.bottom + i < yAB)
+                                {
+                                    inside = false;
+                                }
+                            if (outline1.bottom + i > yBC)
+                                {
+                                    inside = false;
+                                }
+                            if (outline1.bottom + i > yCA)
+                                {
+                                    inside = false;
+                                }
+                        }
+                        
+                    if (inside)
+                        {
+                            if (z < *zbuffer_point)
+                                {
+                                    *row = color1;
+                                    *zbuffer_point = z;
+                                }
+                        }
+                    row++;
+                }
+        }
+
+    // ---------------------------------------------------------------
+    for (s32 i = 0; i < height2; i++)
+        {
+            u32* row = (u32*)(wnd_buffer + wnd_pitch*i + offset2);
+            for (s32 j = 0; j < width2; j++)
+                {
+                    b32 inside = true;
+                    r32* zbuffer_point = (r32*)(zbuffer + wnd_pitch*i + wnd_bytpp*j + offset2);
+                    r32 z = (d2 - n2.x*(outline2.left+j) - n2.y*(outline2.bottom+i)) / n2.z;
+                    
+                    r32 yIJ = kIJ*(outline2.left + j - pI.x) + pI.y;
+                    r32 yJK = kJK*(outline2.left + j - pJ.x) + pJ.y;
+                    r32 yKI = kKI*(outline2.left + j - pK.x) + pK.y;
+
+                    // the problem is AB, BC, CA, need to be sorted in some way...
+                    if (two_below2)
+                        {
+                            if (outline2.bottom + i < yIJ)
+                                {
+                                    inside = false;
+                                }
+                            if (outline2.bottom + i < yJK)
+                                {
+                                    inside = false;
+                                }
+                            if (outline2.bottom + i > yKI)
+                                {
+                                    inside = false;
+                                }
+                        }
+                    else
+                        {
+                            if (outline2.bottom + i < yIJ)
+                                {
+                                    inside = false;
+                                }
+                            if (outline2.bottom + i > yJK)
+                                {
+                                    inside = false;
+                                }
+                            if (outline2.bottom + i > yKI)
+                                {
+                                    inside = false;
+                                }
+                        }
+
+                        
+                    if (inside)
+                        {
+                            if (z < *zbuffer_point)
+                                {
+                                    *row = color2;
+                                    *zbuffer_point = z;
+                                }
+                        }
+                    row++;
+                }
+        }
+
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    *row = Gamestate->farclip; // smth else??
+                    row++;
+                }
+        }
+
+    /* draw_wndline_aa(pA, pB, color); */
+    /* draw_wndline_aa(pB, pC, color); */
+    /* draw_wndline_aa(pC, pA, color); */
+    
+
+}
+
 
 void zbuffering_test(void)
 {
@@ -150,7 +469,7 @@ void draw_triangle_test(void)
     wndrect outline = Wndrect(pA.x, pA.y, pA.x, pA.y);
 
     if (pA.x < outline.left)   outline.left = pA.x;
-    if (pA.y < outline.bottom) outline.bottom = pA.y; // this rounded from 351.smth to 350 ??
+    if (pA.y < outline.bottom) outline.bottom = pA.y;
     if (pA.x > outline.right)  outline.right = pA.x;
     if (pA.y > outline.top)    outline.top = pA.y;
 

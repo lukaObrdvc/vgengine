@@ -89,7 +89,8 @@ global_variable platform_provides* memory_base;
 typedef enum
     {
         BRUSH_NONE = 0,
-        BRUSH_SCANLINE = 1
+        BRUSH_SCANLINE = 1,
+        BRUSH_SCANLINE2 = 2
     } BRUSH;
 
 typedef enum

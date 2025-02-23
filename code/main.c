@@ -787,6 +787,11 @@ void init_game_state(void)
                                                   ((u32)0 << 16) |
                                                   ((u32)0 << 8) |   
                                                   0);        
+
+            Gamestate->brushes[BRUSH_SCANLINE2] = (((u32)255 << 24) |
+                                                   ((u32)0 << 16) |
+                                                   ((u32)0 << 8) |   
+                                                   255);        
             
             for (s32 i = 0; i < concentric_count; i++)
                 {
