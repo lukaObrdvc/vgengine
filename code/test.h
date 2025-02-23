@@ -1,5 +1,173 @@
-#define CURRENTLY_TESTING static_camera_test
+#define CURRENTLY_TESTING draw_triangle_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
+
+// next steps:
+//  make input and camera control (use mouse) better, and clamp ffs
+//  figure out how to rasterize a triangle
+//  do z-buffering
+//  meshes, and proper order of rendering them??
+//
+// then you have an actual renderer that can render anything basically,
+// so you just extend it with some stuff like:
+//  texture-mapping and filtering
+//  lighting
+//  creating of polygons/entities
+//  better way to represent information (like maybe quaternions orsmth...)
+//  some memory management?
+//  threading, SIMD ?
+//  UI, debug system ?
+//  clean up some details (hotloading for example...)
+//  figure out how to do art a little bit orsmth.....
+//
+// then you start hardware rendering.......
+
+
+void draw_triangle_test(void)
+{
+
+    fill_background();
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z);
+    
+    v3 A = V3(-50, -10, 10);
+    v3 B = V3(60, 10, 10);
+    //v3 C = V3(0, 70, 10);
+    v3 C = V3(-70, 70, 10);
+
+    A = add3(A, screen_center);
+    B = add3(B, screen_center);
+    C = add3(C, screen_center);
+
+    v2 pA = project(A, PERSPECTIVE);
+    v2 pB = project(B, PERSPECTIVE);
+    v2 pC = project(C, PERSPECTIVE);
+
+    r32 kAB = (pA.y - pB.y) / (pA.x - pB.x);
+    r32 kBC = (pB.y - pC.y) / (pB.x - pC.x);
+    r32 kCA = (pC.y - pA.y) / (pC.x - pA.x);
+
+    wndrect outline = Wndrect(pA.x, pA.y, pA.x, pA.y);
+
+    if (pA.x < outline.left)   outline.left = pA.x;
+    if (pA.y < outline.bottom) outline.bottom = pA.y; // this rounded from 351.smth to 350 ??
+    if (pA.x > outline.right)  outline.right = pA.x;
+    if (pA.y > outline.top)    outline.top = pA.y;
+
+    if (pB.x < outline.left)   outline.left = pB.x;
+    if (pB.y < outline.bottom) outline.bottom = pB.y;
+    if (pB.x > outline.right)  outline.right = pB.x;
+    if (pB.y > outline.top)    outline.top = pB.y;
+
+    if (pC.x < outline.left)   outline.left = pC.x;
+    if (pC.y < outline.bottom) outline.bottom = pC.y;
+    if (pC.x > outline.right)  outline.right = pC.x;
+    if (pC.y > outline.top)    outline.top = pC.y;
+
+    b32 two_below = true;
+    if (pA.y == outline.bottom)
+        {
+            v2 tmp = pA;
+            pA = V2(pB.x, pB.y);  // can you do pA = pB ??
+            pB = V2(tmp.x, tmp.y);
+
+            r32 tmp2 = kCA;
+            kCA = kBC;
+            kBC = tmp2;
+            
+            if (pB.x == outline.right || pB.x == outline.left)
+                {
+                    two_below = false;
+                }
+        }
+    else if (pB.y == outline.bottom)
+        {            
+            if (pB.x == outline.right || pB.x == outline.left)
+                {
+                    two_below = false;
+                }
+        }
+    else if (pC.y == outline.bottom)
+        {
+            v2 tmp = pC;
+            pC = V2(pB.x, pB.y);
+            pB = V2(tmp.x, tmp.y);
+
+            r32 tmp2 = kAB;
+            kAB = kCA;
+            kCA = tmp2;
+            
+            if (pB.x == outline.right || pB.x == outline.left)
+                {
+                    two_below = false;
+                }
+        }
+    
+    s32 offset = wnd_pitch*round32(outline.bottom) +
+        round32(outline.left)*wnd_bytpp;
+    s32 height = round32(wndrect_height(outline));
+    s32 width = round32(wndrect_width(outline));
+
+    // also dividing by 0 when calculating k...
+    for (s32 i = 0; i < height; i++)
+        {
+            u32* row = (u32*)(wnd_buffer + wnd_pitch*i + offset);
+            for (s32 j = 0; j < width; j++)
+                {
+                    b32 inside = true;
+
+                    r32 yAB = kAB*(outline.left + j - pA.x) + pA.y;
+                    r32 yBC = kBC*(outline.left + j - pB.x) + pB.y;
+                    r32 yCA = kCA*(outline.left + j - pC.x) + pC.y;
+
+                    // the problem is AB, BC, CA, need to be sorted in some way...
+                    if (two_below)
+                        {
+                            if (outline.bottom + i < yAB)
+                                {
+                                    inside = false;
+                                }
+                            if (outline.bottom + i < yBC)
+                                {
+                                    inside = false;
+                                }
+                            if (outline.bottom + i > yCA)
+                                {
+                                    inside = false;
+                                }
+                        }
+                    else
+                        {
+                            if (outline.bottom + i < yAB)
+                                {
+                                    inside = false;
+                                }
+                            if (outline.bottom + i > yBC)
+                                {
+                                    inside = false;
+                                }
+                            if (outline.bottom + i > yCA)
+                                {
+                                    inside = false;
+                                }
+                        }
+                        
+                    if (inside)
+                        {
+                            *row = color;
+                        }
+                    row++;
+                }
+        }
+
+    /* draw_wndline_aa(pA, pB, color); */
+    /* draw_wndline_aa(pB, pC, color); */
+    /* draw_wndline_aa(pC, pA, color); */
+    
+}
+
 
 
 void static_camera_test(void)
