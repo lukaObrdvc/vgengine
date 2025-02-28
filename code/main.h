@@ -9,56 +9,35 @@ typedef b32 (*fp_dbg_write_file) (u8*, void*, u32);
 
 // @TODO figure out byte sizes of these fields for alignment optimization and to not waste space
 
-/* // @Failure do I want unsigned here? */
-/* typedef struct Cursor */
-/* { */
-/*     u32 x; */
-/*     u32 y; */
-/* } cursor; */
-
-typedef enum
+typedef enum tagMOUSECODE
     {
-        M_NONE,
-        M1,
-        M2,
-        M3
-    } mouse_key_code;
+        MOUSE_NONE  = 0,
+        MOUSE_MOVED = (1 << 0),
+        MOUSE_M1    = (1 << 1),
+        MOUSE_M2    = (1 << 2),
+        MOUSE_M3    = (1 << 3),
+    } MOUSECODE;
 
-typedef struct
-{
-    v2 cursor;
-    b32 mouse_moved;
-    b32 is_down;
-    mouse_key_code code;
-} mouse;
-
-typedef enum Key_code
+typedef enum tagKEYCODe
     {
-        KEY_NONE,
-        KEY_UP,
-        KEY_RIGHT,
-        KEY_DOWN,
-        KEY_LEFT,
-        KEY_W,
-        KEY_S,
-        KEY_A,
-        KEY_D,
-        KEY_Q,
-        KEY_E,
-        KEY_I,
-        KEY_K,
-        KEY_J,
-        KEY_L,
-        KEY_U,
-        KEY_O
-    } key_code;
-
-typedef struct Keyboard_key
-{
-    key_code code;
-    b32 is_down;
-    b32 was_down;
-} key;
+        KEY_NONE  = 0,
+        KEY_LEFT  = (1 << 0),
+        KEY_UP    = (1 << 1), 
+        KEY_RIGHT = (1 << 2), 
+        KEY_DOWN  = (1 << 3), 
+        KEY_W     = (1 << 4), 
+        KEY_S     = (1 << 5), 
+        KEY_A     = (1 << 6), 
+        KEY_D     = (1 << 7), 
+        KEY_Q     = (1 << 8), 
+        KEY_E     = (1 << 9), 
+        KEY_I     = (1 << 10),
+        KEY_K     = (1 << 11),
+        KEY_J     = (1 << 12),
+        KEY_L     = (1 << 13),
+        KEY_U     = (1 << 14),
+        KEY_O     = (1 << 15)
+    } KEYCODE;
 
 // @TODO how do I keep track of sizes of memories??
 typedef struct
@@ -113,12 +92,17 @@ typedef struct
     b32 inited;
     b32 tested_once;
 
-    v2 cursor;
 
     s32 wndbuffer_width;  // access through macro
     s32 wndbuffer_height; // access through macro
 
-    // @TODO these can designed better probably
+    // @TODO methinks VK combines mouse keys with keyboard keys.....
+    u64 keyflags;
+    u8 keymap[256]; // @Note 254 is the max VK code
+    u8 mouseflags;
+    v2 cursor;
+
+    // @TODO these can be designed better probably
     r32 eye_x;
     r32 eye_y;
     r32 screen_z;
@@ -188,5 +172,9 @@ typedef struct
 #define GetBrush(type) (Gamestate->brushes[(type)])
 // @Note maybe not a good idea
 #define SetBrush(type, color) Gamestate->brushes[(type)] = (color)
+
+// @Note converting when highest bit is 1 will result into wrapping to
+// negative, but we don't care since we only use it in if statements ?
+#define ExtractKey(keyflags, keycode) ((b64) ((keyflags) & (keycode)) )
 
 #endif

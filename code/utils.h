@@ -17,6 +17,7 @@ typedef float r32;
 typedef double r64;
 
 typedef s32 b32;
+typedef s64 b64;
 
 #ifdef __cplusplus
 #define literal(t) t

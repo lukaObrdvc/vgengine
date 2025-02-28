@@ -3,8 +3,8 @@
 
 // next steps:
 //  make input and camera control (use mouse) better, and clamp ffs
-//  figure out how to rasterize a triangle
-//  do z-buffering
+//  /figure out how to rasterize a triangle (just flesh it out a bit...)
+//  /do z-buffering
 //  meshes, and proper order of rendering them??
 //
 // then you have an actual renderer that can render anything basically,
@@ -670,7 +670,7 @@ void rotate_cube_test(void)
     v3 bD = V3(-60, -60, 60);
 
     // assume I will offset my_point into screen_center
-    // so don't test for it's Z
+    // so don't test for it Z
     if (screen_center.z >= wnd_nearclip &&
         screen_center.z <= wnd_farclip)
         {

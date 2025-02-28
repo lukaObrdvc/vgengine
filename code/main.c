@@ -189,7 +189,7 @@ void draw_clamped_zbuffered_wndrect(wndrect rect, r32 z, pxl color)
         round32(rect.left)*wnd_bytpp;
     s32 height = round32(wndrect_height(rect));
     s32 width = round32(wndrect_width(rect));
-    
+
     for (s32 i = 0; i < height; i++)
         {
             pxl* row = (pxl*)(wnd_buffer + wnd_pitch*i + offset);
@@ -578,131 +578,131 @@ void draw_wndrect_outline(wndrect rect, s32 thickness, pxl color)
     draw_clamped_wndrect(rect_top, color);    
 }
 
-// @TODO make this work when multiple keys are down at the same time ??
-void process_frame_input(key curr_frame_key,
-                         b32 used_key,
-                         mouse curr_frame_mouse,
-                         b32 used_mouse)
+void process_input(u64 curr_keyflags_to_set,
+                   u64 curr_keyflags_to_unset,
+                   u8 curr_mouseflags_to_set,
+                   u8 curr_mouseflags_to_unset,
+                   v2 curr_cursor)
 {
-    if (used_key)
+    Gamestate->cursor = curr_cursor;
+    
+    // @TODO figure out if it's better to use if statements, or divide
+    // an extracted key (shift righ...) to get a 0 or 1, and multiply
+    // with that value instead of using if statements....
+    
+    u64 prev_kflags = Gamestate->keyflags;
+    Gamestate->keyflags |= curr_keyflags_to_set;
+    Gamestate->keyflags &= ~curr_keyflags_to_unset;
+    u64 kflags = Gamestate->keyflags;
+    u64 kflags_trans = kflags ^ prev_kflags;
+    u64 kflags_trans_to_up = kflags_trans & prev_kflags;
+    u64 kflags_trans_to_down = kflags_trans & (~prev_kflags);
+    
+    u8 prev_mflags = Gamestate->mouseflags;
+    Gamestate->mouseflags |= curr_mouseflags_to_set;
+    Gamestate->mouseflags &= ~curr_mouseflags_to_unset;
+    u8 mflags = Gamestate->mouseflags;
+    u8 mflags_trans = mflags ^ prev_mflags;
+    u8 mflags_trans_to_up = mflags_trans & prev_mflags;
+    u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
+
+    if (ExtractKey(kflags, KEY_UP))
         {
-            switch(curr_frame_key.code)
-                {            
-                case KEY_UP:
-                    {
-                        Gamestate->wnd_center_y+= 20;
-                        Gamestate->dbg_render_y_offset+= 10;
-                    } break;
-                case KEY_DOWN:
-                    {
-                        Gamestate->wnd_center_y-= 20;
-                        Gamestate->dbg_render_y_offset-= 10;
-                    } break;
-                case KEY_LEFT:
-                    {
-                        Gamestate->wnd_center_x-= 20;
-                        Gamestate->dbg_render_x_offset-= 10;
-                    } break;
-                case KEY_RIGHT:
-                    {
-                        Gamestate->wnd_center_x+= 20;
-                        Gamestate->dbg_render_x_offset+= 10;
-                    } break;
+            Gamestate->wnd_center_y+= 20;
+            Gamestate->dbg_render_y_offset+= 10;
+        }
+    if (ExtractKey(kflags, KEY_UP))
+        {
+            Gamestate->wnd_center_y-= 20;
+            Gamestate->dbg_render_y_offset-= 10;
+        }
+    if (ExtractKey(kflags, KEY_UP))
+        {
+            Gamestate->wnd_center_x-= 20;
+            Gamestate->dbg_render_x_offset-= 10;
+        }
+    if (ExtractKey(kflags, KEY_UP))
+        {
+            Gamestate->wnd_center_x+= 20;
+            Gamestate->dbg_render_x_offset+= 10;
+        }
+    
+    if (ExtractKey(kflags, KEY_W))
+        {
+            Gamestate->camera.roll += PI/256;
+        }
+    if (ExtractKey(kflags, KEY_S))
+        {
+            Gamestate->camera.roll -= PI/256;            
+        }
+    if (ExtractKey(kflags, KEY_A))
+        {
+            Gamestate->camera.pitch += PI/256;
+        }
+    if (ExtractKey(kflags, KEY_D))
+        {
+            Gamestate->camera.pitch -= PI/256;
+        }
+    if (ExtractKey(kflags, KEY_Q))
+        {
+            Gamestate->camera.yaw += PI/256;
+        }
+    if (ExtractKey(kflags, KEY_E))
+        {
+            Gamestate->camera.yaw -= PI/256;
+        }
+    
+    if (ExtractKey(kflags, KEY_I))
+        {
+            Gamestate->camera.fpoint.y += 5;
+        }
+    if (ExtractKey(kflags, KEY_K))
+        {
+            Gamestate->camera.fpoint.y -= 5;
+        }
+    if (ExtractKey(kflags, KEY_J))
+        {
+            Gamestate->camera.fpoint.x += 5;
+        }
+    if (ExtractKey(kflags, KEY_L))
+        {
+            Gamestate->camera.fpoint.x -= 5;
+        }
+    if (ExtractKey(kflags, KEY_U))
+        {
+            Gamestate->camera.fpoint.z += 5;
+        }
+    if (ExtractKey(kflags, KEY_O))
+        {
+            Gamestate->camera.fpoint.z -= 5;
+        }
 
-
-                    
-                case KEY_W:
-                    {
-                        Gamestate->camera.roll += PI/256;
-                    } break;
-                case KEY_S:
-                    {
-                        Gamestate->camera.roll -= PI/256;
-                    } break;
-                case KEY_A:
-                    {
-                        Gamestate->camera.pitch += PI/256;
-                    } break;
-                case KEY_D:
-                    {
-                        Gamestate->camera.pitch -= PI/256;
-                    } break;
-                case KEY_Q:
-                    {
-                        Gamestate->camera.yaw += PI/256;
-                    } break;
-                case KEY_E:
-                    {
-                        Gamestate->camera.yaw -= PI/256;
-                    } break;
-
-                    
-                case KEY_I:
-                    {
-                        Gamestate->camera.fpoint.y += 5;
-                    } break;
-                case KEY_K:
-                    {
-                        Gamestate->camera.fpoint.y -= 5;
-                    } break;
-                case KEY_J:
-                    {
-                        Gamestate->camera.fpoint.x += 5;
-                    } break;
-                case KEY_L:
-                    {
-                        Gamestate->camera.fpoint.x -= 5;
-                    } break;
-                case KEY_U:
-                    {
-                        Gamestate->camera.fpoint.z += 5;
-                    } break;
-                case KEY_O:
-                    {
-                        Gamestate->camera.fpoint.z -= 5;
-                    } break;
-
-                    
-                default:
-                    {}
+    
+    if (ExtractKey(mflags, MOUSE_M1))
+        {
+            Gamestate->square_length += 50;
+            Gamestate->concentric_spread_x+=10;
+            Gamestate->concentric_spread_y+=4;
+            Gamestate->line_scaling_factor += 0.1f;
+            Gamestate->rect_scaling_factor += 0.1f;
+            for (s32 i = 0; i < Gamestate->concentric_count; i++)
+                {
+                    Gamestate->concentric_z_values[i]++;
+                }
+        }
+    if (ExtractKey(mflags, MOUSE_M2))
+        {
+            Gamestate->square_length -= 50;
+            Gamestate->concentric_spread_x-=10;
+            Gamestate->concentric_spread_y-=4;
+            Gamestate->line_scaling_factor -= 0.1f;
+            Gamestate->rect_scaling_factor -= 0.1f;
+            for (s32 i = 0; i < Gamestate->concentric_count; i++)
+                {
+                    Gamestate->concentric_z_values[i]--;
                 }
         }
     
-    if (used_mouse)
-        {
-            if (curr_frame_mouse.code == M1 && curr_frame_mouse.is_down)
-                {
-                    Gamestate->square_length += 50;
-                    Gamestate->concentric_spread_x+=10;
-                    Gamestate->concentric_spread_y+=4;
-                    Gamestate->line_scaling_factor += 0.1f;
-                    Gamestate->rect_scaling_factor += 0.1f;
-                    for (s32 i = 0; i < Gamestate->concentric_count; i++)
-                        {
-                            Gamestate->concentric_z_values[i]++;
-                        }
-                }
-            if (curr_frame_mouse.code == M2 && curr_frame_mouse.is_down)
-                {
-                    Gamestate->square_length -= 50;
-                    Gamestate->concentric_spread_x-=10;
-                    Gamestate->concentric_spread_y-=4;
-                    Gamestate->line_scaling_factor -= 0.1f;
-                    Gamestate->rect_scaling_factor -= 0.1f;
-                    for (s32 i = 0; i < Gamestate->concentric_count; i++)
-                        {
-                            Gamestate->concentric_z_values[i]--;
-                        }
-                }
-            Gamestate->cursor = curr_frame_mouse.cursor;
-        }
-
-    // @TODO do I need to invalidate think about it...
-    // @Fail is this invalidation desirable    
-    /* frame_key.code = KEY_NONE; */
-    /* mouse_frame_key.code = M_NONE; */
-    /* mouse_frame_key.is_down = false; */
-    /* mouse_frame_key.mouse_moved = false;     */
 }
 
 void platform_init_memory_base(void* memory_base_ptr)
@@ -710,6 +710,7 @@ void platform_init_memory_base(void* memory_base_ptr)
     memory_base = (platform_provides*) memory_base_ptr;
 }
 
+// @TODO you can probably export this and call it once
 void init_game_state(void)
 {
     if (!Gamestate->inited)
@@ -726,12 +727,16 @@ void init_game_state(void)
                     .inited = true,
                     .tested_once = 0,
 
+                    // @Note do I want this now??
                     .cursor = V2(init_wnd_center_x,
                                  init_wnd_center_y),
                 
                     .wndbuffer_width = init_wnd_width,
                     .wndbuffer_height = init_wnd_height,
 
+                    .keyflags = 0;
+                    .mouseflags = 0;
+                    
                     .eye_x = init_wnd_center_x,
                     .eye_y = init_wnd_center_y,
                     .screen_z = 30.0f,   // was 0.6f
@@ -756,6 +761,28 @@ void init_game_state(void)
                     .rect_scaling_factor = 1 };
 
 
+            
+            // @TODO you should probably have a default for everything but whatever
+            Gamestate->keymap[0x25] = KEY_LEFT;
+            Gamestate->keymap[0x26] = KEY_UP;
+            Gamestate->keymap[0x27] = KEY_RIGHT;
+            Gamestate->keymap[0x28] = KEY_DOWN;
+
+            Gamestate->keymap[0x57] = KEY_W;
+            Gamestate->keymap[0x53] = KEY_S;
+            Gamestate->keymap[0x41] = KEY_A;
+            Gamestate->keymap[0x44] = KEY_D;
+            Gamestate->keymap[0x51] = KEY_Q;
+            Gamestate->keymap[0x45] = KEY_E;
+
+            Gamestate->keymap[0x49] = KEY_I;
+            Gamestate->keymap[0x4B] = KEY_K;
+            Gamestate->keymap[0x4A] = KEY_J;
+            Gamestate->keymap[0x4C] = KEY_L;
+            Gamestate->keymap[0x55] = KEY_U;
+            Gamestate->keymap[0x4F] = KEY_O;
+
+            
             for (s32 i = 0; i < wnd_height; i++)
                 {
                     r32* row = (r32*)(zbuffer + i*wnd_pitch);
@@ -805,7 +832,7 @@ void init_game_state(void)
 #include "test.h"
 
 void update_and_render(void)
-{    
+{
     init_game_state();
     test();    
 }

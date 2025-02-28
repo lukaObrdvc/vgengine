@@ -16,6 +16,13 @@
 global_variable b32 running = true;
 global_variable b32 valid_dll = false;
 
+#define MAX_KEY_MESSAGES 16
+global_variable u64 curr_keyflags_to_set = 0;
+global_variable u64 curr_keyflags_to_unset = 0;
+global_variable u8 curr_mouseflags_to_set = 0;
+global_variable u8 curr_mouseflags_to_unset = MOUSE_MOVED;
+global_variable v2 curr_cursor = zero2();
+
 
 void init_memory_base_stub(void* memory_base)
 {
@@ -31,12 +38,12 @@ void* update_and_render_stub()
 typedef void* (*fp_update_and_render) ();
 fp_update_and_render update_and_render = update_and_render_stub;
 
-void process_frame_input_stub(key k, b32 tk, mouse m, b32 tm)
+void process_input_stub(key k, b32 tk, mouse m, b32 tm)
 {
     return;
 }
-typedef void (*fp_process_frame_input) (key, b32, mouse, b32);
-fp_process_frame_input process_frame_input = process_frame_input_stub;
+typedef void (*fp_process_input) (key, b32, mouse, b32);
+fp_process_input process_input = process_input_stub;
 
 HMODULE load_game()
 {
@@ -49,14 +56,14 @@ HMODULE load_game()
             valid_dll = true;
             init_memory_base = (fp_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
             update_and_render = (fp_update_and_render) GetProcAddress(dll, "update_and_render");
-            process_frame_input = (fp_process_frame_input) GetProcAddress(dll, "process_frame_input");
+            process_input = (fp_process_input) GetProcAddress(dll, "process_input");
         }
     else
         {
             valid_dll = false;
             init_memory_base = init_memory_base_stub;
             update_and_render = update_and_render_stub;
-            process_frame_input = process_frame_input_stub;
+            process_input = process_input_stub;
         }
 
     if (!init_memory_base)
@@ -69,10 +76,10 @@ HMODULE load_game()
             valid_dll = false;
             update_and_render = update_and_render_stub;
         }
-    if (!process_frame_input)
+    if (!process_input)
         {
             valid_dll = false;
-            process_frame_input = process_frame_input_stub;
+            process_input = process_input_stub;
         }
 
     return dll;
@@ -85,7 +92,7 @@ void unload_game(HMODULE dll)
     valid_dll = false;
     init_memory_base = init_memory_base_stub;
     update_and_render = update_and_render_stub;
-    process_frame_input = process_frame_input_stub;
+    process_input = process_input_stub;
 }
 
 typedef struct Window_rect_dims
@@ -183,11 +190,6 @@ void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPIN
 LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
-
-    b32 used_key = false;
-    b32 used_mouse = false;
-    key curr_frame_key = {0};
-    mouse curr_frame_mouse = {0};
     
     switch(message)
         {
@@ -203,142 +205,57 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
                 /* realloc_window_bitmap_buffer(rect.width, rect.height); */
             } break;
 
-        case WM_KEYDOWN:
         case WM_KEYUP:
-        case WM_SYSKEYDOWN:
-        case WM_SYSKEYUP:
             {
-                // @Note just let windows figure out info about
-                // keys, include a header, then just have one
-                // call from game layer where you pass it
-                // all relevant infomation at the end
-
+                curr_keyflags_to_unset |= (u64)(1 << Gamestate->keymap[(u8)wParam]);
+            } break;
+        case WM_KEYDOWN:
+        /* case WM_SYSKEYDOWN: */
+        /* case WM_SYSKEYUP: */
+            {
                 //@Note I need to know key code, is_down, was_down
                 // ... and potentially repeat_count and syskey ...
                 
-                //u16 repeat_count = lParam & 0x0000FFFF;
+                u16 repeat_count = lParam & 0x0000FFFF;
+
+                // @TODO figure out how to map when having more than 64 flags for keys
+                curr_keyflags_to_set |= (u64)(1 << Gamestate->keymap[(u8)wParam]);
                 
-                // @Note frame_key is a global
+                // curr_frame_key.is_down = (message == WM_KEYDOWN);
+                // curr_frame_key.was_down = lParam & 0x40000000;
 
-                switch(wParam)
-                    {
-                    case VK_UP:
-                        {
-                            curr_frame_key.code = KEY_UP;
-                        } break;
-                    case VK_DOWN:
-                        {
-                            curr_frame_key.code = KEY_DOWN;
-                        } break;
-                    case VK_RIGHT:
-                        {
-                            curr_frame_key.code = KEY_RIGHT;
-                        } break;
-                    case VK_LEFT:
-                        {
-                            curr_frame_key.code = KEY_LEFT;
-                        } break;
-                        
-                    case 'W':
-                        {
-                            curr_frame_key.code = KEY_W;
-                        } break;
-                    case 'S':
-                        {
-                            curr_frame_key.code = KEY_S;
-                        } break;
-                    case 'A':
-                        {
-                            curr_frame_key.code = KEY_A;
-                        } break;
-                    case 'D':
-                        {
-                            curr_frame_key.code = KEY_D;
-                        } break;
-                    case 'Q':
-                        {
-                            curr_frame_key.code = KEY_Q;
-                        } break;
-                    case 'E':
-                        {
-                            curr_frame_key.code = KEY_E;
-                        } break;
-
-                    case 'I':
-                        {
-                            curr_frame_key.code = KEY_I;
-                        } break;
-                    case 'K':
-                        {
-                            curr_frame_key.code = KEY_K;
-                        } break;
-                    case 'J':
-                        {
-                            curr_frame_key.code = KEY_J;
-                        } break;
-                    case 'L':
-                        {
-                            curr_frame_key.code = KEY_L;
-                        } break;
-                    case 'U':
-                        {
-                            curr_frame_key.code = KEY_U;
-                        } break;
-                    case 'O':
-                        {
-                            curr_frame_key.code = KEY_O;
-                        } break;
-
-                        
-                    default:
-                        {}                      
-                    }
-
-                curr_frame_key.is_down = (message == WM_KEYDOWN);
-                curr_frame_key.was_down = lParam & 0x40000000;
-
-                used_key = true;
-                
-                if ((message == WM_SYSKEYUP && wParam == VK_F4) || (wParam == VK_ESCAPE))
-                    {
-                        running = false;
-                    }
+                /* if ((message == WM_SYSKEYUP && wParam == VK_F4) || (wParam == VK_ESCAPE)) */
+                /*     { */
+                /*         running = false; */
+                /*     } */
             } break;
 
         case WM_MOUSEMOVE:
             {
-                // @Note cursor_, mouse_frame_key is a global
-                curr_frame_mouse.cursor = literal(v2) { .x =lParam & 0x0000FFFF,
-                                                        .y =(lParam & 0xFFFF0000) >> 16 };
-                curr_frame_mouse.mouse_moved = true;
-
-                used_mouse = true;
-                // @Fail what if you get WM_MOUSEMOVE after WM_LBUTTONDOWN, and you reset the mouse_key.code but
-                // you need to change that code value maybe ??
+                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_mouseflags_to_set |= MOUSE_MOVED;
             } break;
-            
+
+            // @TODO figure out if I need to make a cursor for these two (4...)
+        case WM_LBUTTONUP:
+            {
+                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_mouseflags_to_unset |= MOUSE_M1;
+            } break;
         case WM_LBUTTONDOWN:
-            //case WM_LBUTTONUP:
             {
-                curr_frame_mouse.cursor = literal(v2) { .x =lParam & 0x0000FFFF,
-                                                        .y =(lParam & 0xFFFF0000) >> 16 };
-
-                curr_frame_mouse.code = M1;
-                curr_frame_mouse.is_down = true;
-
-                used_mouse = true;
+                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_mouseflags_to_set |= MOUSE_M1;
             } break;
-
-        case WM_RBUTTONDOWN:
-            //case WM_RBUTTONUP:
+        case WM_RBUTTONUP:
             {
-                curr_frame_mouse.cursor = literal(v2) { .x =lParam & 0x0000FFFF,
-                                                        .y =(lParam & 0xFFFF0000) >> 16 };
-
-                curr_frame_mouse.code = M2;
-                curr_frame_mouse.is_down = true;
-
-                used_mouse = true;
+                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_mouseflags_to_unset |= MOUSE_M2;
+            } break;
+        case WM_RBUTTONDOWN:
+            {
+                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_mouseflags_to_set |= MOUSE_M2;
             } break;
             
         case WM_CLOSE:
@@ -363,12 +280,6 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
             }            
         }
 
-    // @IMPORTANT I have no idea how these messages work, whether
-    // they will process multiple messages at once
-    process_frame_input(curr_frame_key,
-                        used_key,
-                        curr_frame_mouse,
-                        used_mouse);
     
     return result;
 }
@@ -395,7 +306,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     u64 temp_memory_capacity = total_memory_capacity - perm_memory_capacity;
     void* base_ptr = VirtualAlloc(0, total_memory_capacity, MEM_COMMIT, PAGE_READWRITE);
 
-#define memory_base ((platform_provides*)base_ptr)    
+    // @Note the following line should be able to replace the #define
+    memory_base = (platform_provides*)base_ptr;
+    // #define memory_base ((platform_provides*)base_ptr)
     
     platform_provides provides = {
         .perm_mem = (u8*)base_ptr + sizeof(platform_provides),
@@ -489,6 +402,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             TranslateMessage(&message);
             DispatchMessage(&message);
 
+            process_input(curr_keyflags_to_set,
+                          curr_keyflags_to_unset,
+                          curr_mouseflags_to_set,
+                          curr_mouseflags_to_unset,
+                          curr_cursor);
             update_and_render();
             
             window_buffer_info.bmiHeader.biWidth = wnd_width;
@@ -508,6 +426,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                            rect.width,
                                            rect.height);
             ReleaseDC(window, dc);
+
+            curr_keyflags_to_set = 0;
+            curr_keyflags_to_unset = 0;
+            curr_mouseflags_to_set = 0;
+            curr_mouseflags_to_unset = MOUSE_MOVED;
 
             // @TODO better caching and calculation and precision of these counters
             u64 end_cycle_count = __rdtsc();
