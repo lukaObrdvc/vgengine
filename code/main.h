@@ -11,11 +11,11 @@ typedef b32 (*fp_dbg_write_file) (u8*, void*, u32);
 
 typedef enum tagMOUSECODE
     {
-        MOUSE_NONE  = 0,
-        MOUSE_MOVED = (1 << 0),
-        MOUSE_M1    = (1 << 1),
-        MOUSE_M2    = (1 << 2),
-        MOUSE_M3    = (1 << 3),
+        MOUSE_NONE = 0,
+        MOUSE_MOVE = (1 << 0), // @Noted MOUSE_MOVED is defined in windows...
+        MOUSE_M1   = (1 << 1),
+        MOUSE_M2   = (1 << 2),
+        MOUSE_M3   = (1 << 3)
     } MOUSECODE;
 
 typedef enum tagKEYCODe

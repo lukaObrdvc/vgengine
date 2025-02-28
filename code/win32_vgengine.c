@@ -20,8 +20,8 @@ global_variable b32 valid_dll = false;
 global_variable u64 curr_keyflags_to_set = 0;
 global_variable u64 curr_keyflags_to_unset = 0;
 global_variable u8 curr_mouseflags_to_set = 0;
-global_variable u8 curr_mouseflags_to_unset = MOUSE_MOVED;
-global_variable v2 curr_cursor = zero2();
+global_variable u8 curr_mouseflags_to_unset = MOUSE_MOVE;
+global_variable v2 curr_cursor = {0}; // zero2() ??
 
 
 void init_memory_base_stub(void* memory_base)
@@ -38,11 +38,11 @@ void* update_and_render_stub()
 typedef void* (*fp_update_and_render) ();
 fp_update_and_render update_and_render = update_and_render_stub;
 
-void process_input_stub(key k, b32 tk, mouse m, b32 tm)
+void process_input_stub(u64 kts, u64 ktus, u8 mts, u8 mtus, v2 c)
 {
     return;
 }
-typedef void (*fp_process_input) (key, b32, mouse, b32);
+typedef void (*fp_process_input) (u64, u64, u8, u8, v2);
 fp_process_input process_input = process_input_stub;
 
 HMODULE load_game()
@@ -233,7 +233,7 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
         case WM_MOUSEMOVE:
             {
                 curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
-                curr_mouseflags_to_set |= MOUSE_MOVED;
+                curr_mouseflags_to_set |= MOUSE_MOVE;
             } break;
 
             // @TODO figure out if I need to make a cursor for these two (4...)
@@ -430,7 +430,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             curr_keyflags_to_set = 0;
             curr_keyflags_to_unset = 0;
             curr_mouseflags_to_set = 0;
-            curr_mouseflags_to_unset = MOUSE_MOVED;
+            curr_mouseflags_to_unset = MOUSE_MOVE;
 
             // @TODO better caching and calculation and precision of these counters
             u64 end_cycle_count = __rdtsc();

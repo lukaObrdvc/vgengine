@@ -611,17 +611,17 @@ void process_input(u64 curr_keyflags_to_set,
             Gamestate->wnd_center_y+= 20;
             Gamestate->dbg_render_y_offset+= 10;
         }
-    if (ExtractKey(kflags, KEY_UP))
+    if (ExtractKey(kflags, KEY_DOWN))
         {
             Gamestate->wnd_center_y-= 20;
             Gamestate->dbg_render_y_offset-= 10;
         }
-    if (ExtractKey(kflags, KEY_UP))
+    if (ExtractKey(kflags, KEY_LEFT))
         {
             Gamestate->wnd_center_x-= 20;
             Gamestate->dbg_render_x_offset-= 10;
         }
-    if (ExtractKey(kflags, KEY_UP))
+    if (ExtractKey(kflags, KEY_RIGHT))
         {
             Gamestate->wnd_center_x+= 20;
             Gamestate->dbg_render_x_offset+= 10;
@@ -734,8 +734,8 @@ void init_game_state(void)
                     .wndbuffer_width = init_wnd_width,
                     .wndbuffer_height = init_wnd_height,
 
-                    .keyflags = 0;
-                    .mouseflags = 0;
+                    .keyflags = 0,
+                    .mouseflags = 0,
                     
                     .eye_x = init_wnd_center_x,
                     .eye_y = init_wnd_center_y,
@@ -763,24 +763,25 @@ void init_game_state(void)
 
             
             // @TODO you should probably have a default for everything but whatever
-            Gamestate->keymap[0x25] = KEY_LEFT;
-            Gamestate->keymap[0x26] = KEY_UP;
-            Gamestate->keymap[0x27] = KEY_RIGHT;
-            Gamestate->keymap[0x28] = KEY_DOWN;
+            // @TODO is this a good way to set a keymap, just setting powers of two.............
+            Gamestate->keymap[0x25] = 0;
+            Gamestate->keymap[0x26] = 1; 
+            Gamestate->keymap[0x27] = 2; 
+            Gamestate->keymap[0x28] = 3; 
 
-            Gamestate->keymap[0x57] = KEY_W;
-            Gamestate->keymap[0x53] = KEY_S;
-            Gamestate->keymap[0x41] = KEY_A;
-            Gamestate->keymap[0x44] = KEY_D;
-            Gamestate->keymap[0x51] = KEY_Q;
-            Gamestate->keymap[0x45] = KEY_E;
+            Gamestate->keymap[0x57] = 4;   
+            Gamestate->keymap[0x53] = 5; 
+            Gamestate->keymap[0x41] = 6; 
+            Gamestate->keymap[0x44] = 7; 
+            Gamestate->keymap[0x51] = 8; 
+            Gamestate->keymap[0x45] = 9; 
 
-            Gamestate->keymap[0x49] = KEY_I;
-            Gamestate->keymap[0x4B] = KEY_K;
-            Gamestate->keymap[0x4A] = KEY_J;
-            Gamestate->keymap[0x4C] = KEY_L;
-            Gamestate->keymap[0x55] = KEY_U;
-            Gamestate->keymap[0x4F] = KEY_O;
+            Gamestate->keymap[0x49] = 10;   
+            Gamestate->keymap[0x4B] = 11;
+            Gamestate->keymap[0x4A] = 12;
+            Gamestate->keymap[0x4C] = 13;
+            Gamestate->keymap[0x55] = 14;
+            Gamestate->keymap[0x4F] = 15;
 
             
             for (s32 i = 0; i < wnd_height; i++)
