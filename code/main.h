@@ -62,6 +62,8 @@ global_variable platform_provides* memory_base;
 #define DBG_READ_FILE memory_base->dbg_read_file
 #define DBG_WRITE_FILE memory_base->dbg_write_file
 
+
+
 #define CONCENTRIC_MAX 50 // must be positive integer less than 256
 #define MAX_BRUSHES 16
 
@@ -86,8 +88,9 @@ typedef struct
     r32 roll;
 } Camera;
 
+
 #pragma pack(push, 1)
-typedef struct
+typedef struct tagGame_state
 {
     b32 inited;
     b32 tested_once;
@@ -158,6 +161,7 @@ typedef struct
 // @Note better name?
 // @TODO do I make one for converting a wndrect (has to switch top and bottom)
 #define to_yisdown(y) (wnd_height - (y))
+#define to_yisup(y)   (wnd_height - (y))
 //#define wndrect_yisdown(y)
 
 // cast to r32* after you offset...
@@ -175,6 +179,7 @@ typedef struct
 
 // @Note converting when highest bit is 1 will result into wrapping to
 // negative, but we don't care since we only use it in if statements ?
+// @Note maybe make this an inline function instead?
 #define ExtractKey(keyflags, keycode) ((b64) ((keyflags) & (keycode)) )
 
 #endif

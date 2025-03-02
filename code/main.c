@@ -476,9 +476,9 @@ void dbg_draw_square_around_cursor(r32 square_length)
     r32 right  = Gamestate->cursor.x + half_square_length;
     r32 top    = Gamestate->cursor.y + half_square_length;
 
-    r32 tmp = top;
-    top = to_yisdown(bottom);
-    bottom = to_yisdown(tmp);
+    /* r32 tmp = top; */
+    /* top = to_yisdown(bottom); */
+    /* bottom = to_yisdown(tmp); */
     
     wndrect rect = Wndrect(left, bottom, right, top);
     rect = clamp_wndrect(rect);
@@ -575,20 +575,26 @@ void draw_wndrect_outline(wndrect rect, s32 thickness, pxl color)
     draw_clamped_wndrect(rect_left, color);
     draw_clamped_wndrect(rect_bottom, color);
     draw_clamped_wndrect(rect_right, color);
-    draw_clamped_wndrect(rect_top, color);    
+    draw_clamped_wndrect(rect_top, color);
 }
 
-void process_input(u64 curr_keyflags_to_set,
-                   u64 curr_keyflags_to_unset,
-                   u8 curr_mouseflags_to_set,
-                   u8 curr_mouseflags_to_unset,
-                   v2 curr_cursor)
+b32 process_input(u64 curr_keyflags_to_set,
+                  u64 curr_keyflags_to_unset,
+                  u8 curr_mouseflags_to_set,
+                  u8 curr_mouseflags_to_unset,
+                  v2 curr_cursor)
 {
-    Gamestate->cursor = curr_cursor;
+
+    b32 result = true;
+
+    // need to make WASD work in the direction camera is facing
+    // moving by Y can be the same because we don't want to ever yaw
+    // distance between prev and curr cursor gives you roll and pitch
+    // by x component and y component;
+    // but if you wanted to yaw (do it through keys)
+    // then moving by Y is not the same
     
-    // @TODO figure out if it's better to use if statements, or divide
-    // an extracted key (shift righ...) to get a 0 or 1, and multiply
-    // with that value instead of using if statements....
+    // @TODO fix moving faster diagonally if you care...
     
     u64 prev_kflags = Gamestate->keyflags;
     Gamestate->keyflags |= curr_keyflags_to_set;
@@ -605,6 +611,19 @@ void process_input(u64 curr_keyflags_to_set,
     u8 mflags_trans = mflags ^ prev_mflags;
     u8 mflags_trans_to_up = mflags_trans & prev_mflags;
     u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
+
+    Camera camera = Gamestate->camera;
+    curr_cursor.y = to_yisup(curr_cursor.y);
+    /* if (ExtractKey(mflags_trans_to_up, MOUSE_MOVE)) // this does not work.... */
+    /* { */
+    v2 cursor_difference = transpose2(curr_cursor, zero2(), Gamestate->cursor); // V2(wnd_width/2.0f, wnd_height/2.0f)
+    r32 roll_camera_by = cursor_difference.y;
+    r32 pitch_camera_by = cursor_difference.x;
+    Gamestate->camera.roll += roll_camera_by / 256;
+    Gamestate->camera.pitch += pitch_camera_by / 256;
+    /* } */
+    v2 prev_cursor = Gamestate->cursor;
+    Gamestate->cursor = curr_cursor;
 
     if (ExtractKey(kflags, KEY_UP))
         {
@@ -627,58 +646,71 @@ void process_input(u64 curr_keyflags_to_set,
             Gamestate->dbg_render_x_offset+= 10;
         }
     
+    /* if (ExtractKey(kflags, KEY_W)) */
+    /*     { */
+    /*         Gamestate->camera.roll += PI/256; */
+    /*     } */
+    /* if (ExtractKey(kflags, KEY_S)) */
+    /*     { */
+    /*         Gamestate->camera.roll -= PI/256;             */
+    /*     } */
+    /* if (ExtractKey(kflags, KEY_A)) */
+    /*     { */
+    /*         Gamestate->camera.pitch += PI/256; */
+    /*     } */
+    /* if (ExtractKey(kflags, KEY_D)) */
+    /*     { */
+    /*         Gamestate->camera.pitch -= PI/256; */
+    /*     } */
+// figure out keys for these four
+    /* if (ExtractKey(kflags, KEY_Q)) */
+    /*     { */
+    /*         Gamestate->camera.yaw += PI/256; */
+    /*     } */
+    /* if (ExtractKey(kflags, KEY_E)) */
+    /*     { */
+    /*         Gamestate->camera.yaw -= PI/256; */
+    /*     } */
+    
+    /* if (ExtractKey(kflags, KEY_I)) */
+    /*     { */
+    /*         Gamestate->camera.fpoint.y += 5; */
+    /*     } */
+    /* if (ExtractKey(kflags, KEY_K)) */
+    /*     { */
+    /*         Gamestate->camera.fpoint.y -= 5; */
+    /*     } */
+
+    v3 camera_movement = zero3();
     if (ExtractKey(kflags, KEY_W))
         {
-            Gamestate->camera.roll += PI/256;
+            camera_movement.z += 0.5;
+            /* Gamestate->camera.fpoint.x += 0.5; */
         }
     if (ExtractKey(kflags, KEY_S))
         {
-            Gamestate->camera.roll -= PI/256;            
+            camera_movement.z -= 0.5;
+            /* Gamestate->camera.fpoint.x -= 0.5; */
         }
     if (ExtractKey(kflags, KEY_A))
         {
-            Gamestate->camera.pitch += PI/256;
+            camera_movement.x -= 5;
+            /* Gamestate->camera.fpoint.z += 0.5; */
         }
     if (ExtractKey(kflags, KEY_D))
         {
-            Gamestate->camera.pitch -= PI/256;
-        }
-    if (ExtractKey(kflags, KEY_Q))
-        {
-            Gamestate->camera.yaw += PI/256;
-        }
-    if (ExtractKey(kflags, KEY_E))
-        {
-            Gamestate->camera.yaw -= PI/256;
-        }
-    
-    if (ExtractKey(kflags, KEY_I))
-        {
-            Gamestate->camera.fpoint.y += 5;
-        }
-    if (ExtractKey(kflags, KEY_K))
-        {
-            Gamestate->camera.fpoint.y -= 5;
-        }
-    if (ExtractKey(kflags, KEY_J))
-        {
-            Gamestate->camera.fpoint.x += 5;
-        }
-    if (ExtractKey(kflags, KEY_L))
-        {
-            Gamestate->camera.fpoint.x -= 5;
-        }
-    if (ExtractKey(kflags, KEY_U))
-        {
-            Gamestate->camera.fpoint.z += 5;
-        }
-    if (ExtractKey(kflags, KEY_O))
-        {
-            Gamestate->camera.fpoint.z -= 5;
+            camera_movement.x += 5;
+            /* Gamestate->camera.fpoint.z -= 0.5; */
         }
 
+    camera_movement = rotate3(camera_movement,
+                              Gamestate->camera.yaw,
+                              Gamestate->camera.pitch,
+                              Gamestate->camera.roll);
+    Gamestate->camera.fpoint = add3(Gamestate->camera.fpoint, camera_movement);
+
     
-    if (ExtractKey(mflags, MOUSE_M1))
+    if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
         {
             Gamestate->square_length += 50;
             Gamestate->concentric_spread_x+=10;
@@ -690,7 +722,7 @@ void process_input(u64 curr_keyflags_to_set,
                     Gamestate->concentric_z_values[i]++;
                 }
         }
-    if (ExtractKey(mflags, MOUSE_M2))
+    if (ExtractKey(mflags_trans_to_up, MOUSE_M2))
         {
             Gamestate->square_length -= 50;
             Gamestate->concentric_spread_x-=10;
@@ -702,7 +734,8 @@ void process_input(u64 curr_keyflags_to_set,
                     Gamestate->concentric_z_values[i]--;
                 }
         }
-    
+
+    return result;
 }
 
 void platform_init_memory_base(void* memory_base_ptr)
@@ -719,8 +752,6 @@ void init_game_state(void)
             s32 init_wnd_height    = 720;
             s32 init_wnd_center_x  = 640;
             s32 init_wnd_center_y  = 360;
-            
-            Assert(sizeof(game_state) + wnd_bytesize <= memory_base->perm_mem_cap);
             
             *(Gamestate) = literal(game_state) {
 
@@ -794,7 +825,7 @@ void init_game_state(void)
                         }
                 }
             
-            Gamestate->camera.fpoint = V3(680, 360, 5);
+            Gamestate->camera.fpoint = V3(640, 360, 5); // was 680
             Gamestate->camera.yaw    = 0;
             Gamestate->camera.pitch  = 0;
             //Gamestate->camera.pitch  = PI/4;
@@ -818,8 +849,8 @@ void init_game_state(void)
 
             Gamestate->brushes[BRUSH_SCANLINE2] = (((u32)255 << 24) |
                                                    ((u32)0 << 16) |
-                                                   ((u32)0 << 8) |   
-                                                   255);        
+                                                   ((u32)0 << 8) |
+                                                   255);
             
             for (s32 i = 0; i < concentric_count; i++)
                 {

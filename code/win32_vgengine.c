@@ -21,7 +21,7 @@ global_variable u64 curr_keyflags_to_set = 0;
 global_variable u64 curr_keyflags_to_unset = 0;
 global_variable u8 curr_mouseflags_to_set = 0;
 global_variable u8 curr_mouseflags_to_unset = MOUSE_MOVE;
-global_variable v2 curr_cursor = {0}; // zero2() ??
+global_variable v2 curr_cursor = {640, 360}; // zero2()?
 
 
 void init_memory_base_stub(void* memory_base)
@@ -38,11 +38,11 @@ void* update_and_render_stub()
 typedef void* (*fp_update_and_render) ();
 fp_update_and_render update_and_render = update_and_render_stub;
 
-void process_input_stub(u64 kts, u64 ktus, u8 mts, u8 mtus, v2 c)
+b32 process_input_stub(u64 kts, u64 ktus, u8 mts, u8 mtus, v2 c)
 {
-    return;
+    return false;
 }
-typedef void (*fp_process_input) (u64, u64, u8, u8, v2);
+typedef b32 (*fp_process_input) (u64, u64, u8, u8, v2);
 fp_process_input process_input = process_input_stub;
 
 HMODULE load_game()
@@ -327,6 +327,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     
     int window_offset_x = 50;
     int window_offset_y = 50;
+
+    wnd_width = 1280;
+    wnd_height = 720;
     
     WNDCLASS registered_window_infostruct = {
         .style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
@@ -361,6 +364,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         .bmiHeader.biPlanes = 1,
         .bmiHeader.biBitCount = bytes_per_pixel*8,
         .bmiHeader.biCompression = BI_RGB };
+
+    SetCursorPos(640 + window_offset_x,
+                 360 + window_offset_y);
     
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
@@ -390,7 +396,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
             LARGE_INTEGER begin_time_count;
             QueryPerformanceCounter(&begin_time_count);
-            
+
+            // @TODO do this in a while loop actually....
+            // actually then you have to somehow remove WM_PAINT
+            // from the queue because it is not removed by default....
             MSG message;
             PeekMessage(&message, 0, 0, 0, PM_REMOVE);
 
@@ -398,19 +407,34 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                 {
                     running = false;
                 }
-            
+
+            /* MSG message; */
+            /* while (PeekMessage(&message, 0, 0, 0, PM_REMOVE)) */
+            /*     { */
+            /*         if (message.message == WM_QUIT) */
+            /*             { */
+            /*                 //running = false; */
+            /*                 break; */
+            /*             } */
             TranslateMessage(&message);
             DispatchMessage(&message);
-
-            process_input(curr_keyflags_to_set,
-                          curr_keyflags_to_unset,
-                          curr_mouseflags_to_set,
-                          curr_mouseflags_to_unset,
-                          curr_cursor);
+            /*     } */
+            b32 camera_mode = process_input(curr_keyflags_to_set,
+                                            curr_keyflags_to_unset,
+                                            curr_mouseflags_to_set,
+                                            curr_mouseflags_to_unset,
+                                            curr_cursor); // can use get cursor pos instead of messages
             update_and_render();
-            
+
             window_buffer_info.bmiHeader.biWidth = wnd_width;
             window_buffer_info.bmiHeader.biHeight = -wnd_height;
+
+            /* if (camera_mode) */
+            /*     { */
+            /*         SetCursorPos(wnd_width/2.0f + window_offset_x, */
+            /*                      wnd_height/2.0f + window_offset_y); // include header if you want to round32 ... */
+            /*     } */
+            
             
             // @TODO figure out if I need to have two different types of
             // resizing, one that resizes the buffer, and the other
