@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING zbuffering_triangles_test
+#define CURRENTLY_TESTING clipping_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // next steps:
@@ -20,6 +20,95 @@
 //  figure out how to do art a little bit orsmth.....
 //
 // then you start hardware rendering.......
+
+void clipping_test(void)
+{
+    fill_background();
+
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z);
+
+    /* v3 screen_center = V3(60, */
+    /*                       200, */
+    /*                       Gamestate->screen_z); */
+    
+    v3 A = V3(-50, -10, -15);
+    v3 B = V3(60, 10, -15);
+    v3 C = V3(-70, 70, -15);
+
+    A = add3(A, screen_center);
+    B = add3(B, screen_center);
+    C = add3(C, screen_center);
+
+    v2 pA = project(A, PERSPECTIVE);
+    v2 pB = project(B, PERSPECTIVE);
+    v2 pC = project(C, PERSPECTIVE);
+
+    line l1 = {.P=pA, .Q=pB};
+    line l2 = {.P=pB, .Q=pC};
+    line l3 = {.P=pC, .Q=pA};
+
+    if (clip_line(&l1))
+        {
+            draw_wndline_aa(l1.P, l1.Q, color);
+        }
+    if (clip_line(&l2))
+        {
+            draw_wndline_aa(l2.P, l2.Q, color);
+        }
+    if (clip_line(&l3))
+        {
+            draw_wndline_aa(l3.P, l3.Q, color);
+        }
+    
+}
+
+void moving_camera_test(void)
+{
+    fill_background();
+    
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          Gamestate->screen_z);
+
+    v3 A = V3(-30,  30, 5);
+    v3 B = V3( 30,  30, 5);
+    v3 C = V3( 30, -30, 5);
+    v3 D = V3(-30, -30, 5);
+
+    A = add3(A, screen_center);
+    B = add3(B, screen_center);
+    C = add3(C, screen_center);
+    D = add3(D, screen_center);
+
+    v2 pA = project(A, PERSPECTIVE);
+    v2 pB = project(B, PERSPECTIVE);
+    v2 pC = project(C, PERSPECTIVE);
+    v2 pD = project(D, PERSPECTIVE);
+
+    /* pA = clamp2(pA); */
+    /* pB = clamp2(pB); */
+    /* pC = clamp2(pC); */
+    /* pD = clamp2(pD); */
+
+    v2 tmp = pA;
+    pA = clamp_line(pA, pB);
+    pB = clamp_line(pB, pC);
+    pC = clamp_line(pC, pD);
+    pD = clamp_line(pD, tmp);
+    
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    draw_wndline_aa(pA, pB, color);
+    draw_wndline_aa(pB, pC, color);
+    draw_wndline_aa(pC, pD, color);
+    draw_wndline_aa(pD, pA, color);
+    
+}
+
+
 
 void zbuffering_triangles_test(void)
 {
@@ -760,7 +849,9 @@ void rotate3_test(void)
             my_point = add3(my_point, screen_center);
 
             v2 projected_screen_center = project(screen_center, PERSPECTIVE);
+            projected_screen_center = clamp2(projected_screen_center); // added
             v2 projected_my_point = project(my_point, PERSPECTIVE);
+            projected_my_point = clamp2(projected_my_point); // added
 
             v2 tmp = projected_my_point;
 

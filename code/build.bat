@@ -1,7 +1,8 @@
 @echo off
 
 REM -wd4013 is iffy, I don't get it......
-set WarningFlags=-W4 -WX -wd4100 -wd4091 -wd4459 -wd4996 -wd4189 -wd4201 -wd4804 -wd4244 -wd4013 -wd4101 -wd4715
+REM sometimes useful warnings: 4701
+set WarningFlags=-W4 -WX -wd4100 -wd4091 -wd4459 -wd4996 -wd4189 -wd4201 -wd4804 -wd4244 -wd4013 -wd4101 -wd4715 -wd4701
 set CompilerFlags=/std:c17 /Zc:preprocessor /TC -Oi -Zi -MT -GR -EHa -nologo
 set LinkerFlags=-incremental:no -opt:ref
 set Imports=user32.lib gdi32.lib kernel32.lib winmm.lib

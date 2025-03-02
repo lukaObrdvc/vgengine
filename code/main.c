@@ -43,6 +43,124 @@ inline r32 slope2(v2 vec1, v2 vec2)
 // which you do by clamping towards the other end of the line, not
 // perpendicularly towards the window
 
+typedef union tagLine
+{
+    struct
+    {
+        r32 x0;
+        r32 y0;
+        r32 x1;
+        r32 y1;
+    };
+    struct
+    {
+        v2 P;
+        v2 Q;
+    };
+} line;
+
+typedef enum tagREGIONCODE
+    {
+        REGIONCODE_INSIDE = 0,
+        REGIONCODE_LEFT   = (1 << 0),
+        REGIONCODE_RIGHT  = (1 << 1),
+        REGIONCODE_BOTTOM = (1 << 2),
+        REGIONCODE_TOP    = (1 << 3)
+    } REGIONCODE;
+
+inline u8 ObtainRegionFlags(v2 point)
+{
+    u8 result = REGIONCODE_INSIDE;
+
+    if (point.x < 0)
+        {
+            result |= (u8)REGIONCODE_LEFT;
+        }
+    else if (point.x >= wnd_width)
+        {
+            result |= (u8)REGIONCODE_RIGHT;
+        }
+    if (point.y < 0)
+        {
+            result |= (u8)REGIONCODE_BOTTOM;
+        }
+    else if (point.y >= wnd_height)
+        {
+            result |= (u8)REGIONCODE_TOP;
+        }
+
+    return result;
+}
+
+b32 clip_line(line* Line)
+{
+    b32 to_draw = false;
+
+    u8 P_rflags = ObtainRegionFlags(Line->P);
+    u8 Q_rflags = ObtainRegionFlags(Line->Q);
+
+    while (true)
+        {
+            if (!(P_rflags | Q_rflags))   // both inside viewport, draw
+                {
+                    to_draw = true;
+                    break;
+                }
+            else if (P_rflags & Q_rflags) // both outside viewport, don't draw
+                {
+                    break;
+                }
+            else                          // one outside, clip then iterate
+                {
+                    r32 ClippedX, ClippedY;
+                    u8 rflags;
+                    if (P_rflags > Q_rflags) // figure out which is outside
+                        {
+                            rflags = P_rflags;
+                        }
+                    else
+                        {
+                            rflags = Q_rflags;
+                        }
+                    
+                    if (rflags & REGIONCODE_TOP) // clip
+                        {
+                            ClippedX = Line->x0 + (Line->x1 - Line->x0) * (wnd_height-1 - Line->y0) / (Line->y1 - Line->y0);
+                            ClippedY = wnd_height-1;
+                        }
+                    else if (rflags & REGIONCODE_BOTTOM)
+                        {
+                            ClippedX = Line->x0 + (Line->x1 - Line->x0) * (0 - Line->y0) / (Line->y1 - Line->y0);
+                            ClippedY = 0;
+                        }
+                    else if (rflags & REGIONCODE_RIGHT)
+                        {
+                            ClippedX = wnd_width-1;
+                            ClippedY = Line->y0 + (Line->y1 - Line->y0) * (wnd_width-1 - Line->x0) / (Line->x1 - Line->x0);
+                        }
+                    else if (rflags & REGIONCODE_LEFT)
+                        {
+                            ClippedX = 0;
+                            ClippedY = Line->y0 + (Line->y1 - Line->y0) * (0 - Line->x0) / (Line->x1 - Line->x0);
+                        }
+
+                    if (rflags == P_rflags) // update
+                        {
+                            Line->P.x = ClippedX;
+                            Line->P.y = ClippedY;
+                            P_rflags = ObtainRegionFlags(Line->P);
+                        }
+                    else
+                        {
+                            Line->Q.x = ClippedX;
+                            Line->Q.y = ClippedY;
+                            Q_rflags = ObtainRegionFlags(Line->Q);
+                        }
+                }
+        }
+    
+    return to_draw;
+}
 
 v2 clamp_line(v2 vec, v2 other)
 {
@@ -351,9 +469,14 @@ void draw_wndline_aa(v2 P0, v2 P1, u32 color)
             yoffset = wnd_pitch;
         }
 
+    // clip xstart and xend here
+    // also clip intersectY every iteration
+    // the tricky part is probably figuring out all of the proper swaps...
+    
     for (s32 x = xstart; x <= xend; x++)
         {
             // @IMPORTANT do we actually want to use 256 instead of 255, and in that case we can shift instead...
+         
             
             u32* drawing_point1 = (u32*)(wnd_buffer + floor32(intersectY) * yoffset + x * xoffset);
             u32* drawing_point2 = (u32*)(wnd_buffer + (floor32(intersectY) - 1) * yoffset + x * xoffset);
@@ -585,7 +708,7 @@ b32 process_input(u64 curr_keyflags_to_set,
                   v2 curr_cursor)
 {
 
-    b32 result = true;
+    b32 result = false;
 
     // need to make WASD work in the direction camera is facing
     // moving by Y can be the same because we don't want to ever yaw
@@ -612,37 +735,42 @@ b32 process_input(u64 curr_keyflags_to_set,
     u8 mflags_trans_to_up = mflags_trans & prev_mflags;
     u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
 
-    Camera camera = Gamestate->camera;
     curr_cursor.y = to_yisup(curr_cursor.y);
-    /* if (ExtractKey(mflags_trans_to_up, MOUSE_MOVE)) // this does not work.... */
-    /* { */
-    v2 cursor_difference = transpose2(curr_cursor, zero2(), Gamestate->cursor); // V2(wnd_width/2.0f, wnd_height/2.0f)
-    r32 roll_camera_by = cursor_difference.y;
-    r32 pitch_camera_by = cursor_difference.x;
-    Gamestate->camera.roll += roll_camera_by / 256;
-    Gamestate->camera.pitch += pitch_camera_by / 256;
-    /* } */
-    v2 prev_cursor = Gamestate->cursor;
     Gamestate->cursor = curr_cursor;
+    if (result)
+        {
+            Camera camera = Gamestate->camera;
+    
+            /* if (ExtractKey(mflags_trans_to_up, MOUSE_MOVE)) // this does not work.... */
+            /* { */
+            v2 cursor_difference = transpose2(curr_cursor, zero2(), Gamestate->cursor); // V2(wnd_width/2.0f, wnd_height/2.0f)
+            r32 roll_camera_by = cursor_difference.y;
+            r32 pitch_camera_by = -cursor_difference.x;
+            Gamestate->camera.roll += roll_camera_by / 256;
+            Gamestate->camera.pitch += pitch_camera_by / 256;
+            /* } */
+            v2 prev_cursor = Gamestate->cursor;
 
+        }
+    
     if (ExtractKey(kflags, KEY_UP))
         {
-            Gamestate->wnd_center_y+= 20;
+            Gamestate->wnd_center_y+= 5;
             Gamestate->dbg_render_y_offset+= 10;
         }
     if (ExtractKey(kflags, KEY_DOWN))
         {
-            Gamestate->wnd_center_y-= 20;
+            Gamestate->wnd_center_y-= 5;
             Gamestate->dbg_render_y_offset-= 10;
         }
     if (ExtractKey(kflags, KEY_LEFT))
         {
-            Gamestate->wnd_center_x-= 20;
+            Gamestate->wnd_center_x-= 5;
             Gamestate->dbg_render_x_offset-= 10;
         }
     if (ExtractKey(kflags, KEY_RIGHT))
         {
-            Gamestate->wnd_center_x+= 20;
+            Gamestate->wnd_center_x+= 5;
             Gamestate->dbg_render_x_offset+= 10;
         }
     
@@ -684,12 +812,12 @@ b32 process_input(u64 curr_keyflags_to_set,
     v3 camera_movement = zero3();
     if (ExtractKey(kflags, KEY_W))
         {
-            camera_movement.z += 0.5;
+            camera_movement.z += 5;
             /* Gamestate->camera.fpoint.x += 0.5; */
         }
     if (ExtractKey(kflags, KEY_S))
         {
-            camera_movement.z -= 0.5;
+            camera_movement.z -= 5;
             /* Gamestate->camera.fpoint.x -= 0.5; */
         }
     if (ExtractKey(kflags, KEY_A))
@@ -703,11 +831,15 @@ b32 process_input(u64 curr_keyflags_to_set,
             /* Gamestate->camera.fpoint.z -= 0.5; */
         }
 
-    camera_movement = rotate3(camera_movement,
-                              Gamestate->camera.yaw,
-                              Gamestate->camera.pitch,
-                              Gamestate->camera.roll);
-    Gamestate->camera.fpoint = add3(Gamestate->camera.fpoint, camera_movement);
+    
+    if (result)
+        {
+            camera_movement = rotate3(camera_movement,
+                                      Gamestate->camera.yaw,
+                                      Gamestate->camera.pitch,
+                                      Gamestate->camera.roll);
+            Gamestate->camera.fpoint = add3(Gamestate->camera.fpoint, camera_movement);
+        }
 
     
     if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
@@ -771,7 +903,7 @@ void init_game_state(void)
                     .eye_x = init_wnd_center_x,
                     .eye_y = init_wnd_center_y,
                     .screen_z = 30.0f,   // was 0.6f
-                    .new_screen_z = 30.0f,
+                    .new_screen_z = 10.0f,
                     .nearclip = -500.0f,  // was 0.7f
                     .farclip = 500.0f,  // was 9.8f
 

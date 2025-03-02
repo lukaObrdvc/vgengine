@@ -9,6 +9,7 @@ typedef b32 (*fp_dbg_write_file) (u8*, void*, u32);
 
 // @TODO figure out byte sizes of these fields for alignment optimization and to not waste space
 
+// @TODO do I use defines instead of enums at this point??
 typedef enum tagMOUSECODE
     {
         MOUSE_NONE = 0,
