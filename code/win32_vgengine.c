@@ -424,6 +424,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                             curr_mouseflags_to_set,
                                             curr_mouseflags_to_unset,
                                             curr_cursor); // can use get cursor pos instead of messages
+            if (camera_mode)
+                {
+                    ShowCursor(false);
+                }
+            else
+                {
+                    ShowCursor(true);
+                }
             update_and_render();
 
             window_buffer_info.bmiHeader.biWidth = wnd_width;

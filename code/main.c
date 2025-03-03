@@ -416,6 +416,165 @@ v2 project(v3 point, PROJECTION P)
     return result;
 }
 
+v3 project_new2(v3 point, PROJECTION P)
+{
+    v3 result = zero3();
+
+    Camera camera = Gamestate->camera;
+    
+    point = transpose3(point, zero3(), camera.fpoint);
+    point = rotate3(point, camera.yaw, camera.pitch, camera.roll);
+    result.z = point.z;
+    
+    switch (P)
+        {
+        case ORTHOGRAPHIC:
+            {
+                result.x = point.x;
+                result.y = point.y;
+            } break;
+        case PERSPECTIVE:
+            {
+                r32 scaling_factor = Gamestate->new_screen_z / point.z;
+                
+                result.x = Gamestate->eye_x + scaling_factor * point.x;
+                result.y = Gamestate->eye_y + scaling_factor * point.y;
+            } break;
+        default:
+            {
+                InvalidDefaultCase;
+            }
+        }
+    
+    return result;
+}
+
+void draw_wndline_zbuffered_aa(v2 P0, v2 P1, r32 z, u32 color)
+{
+    b32 steep = abs(P1.y - P0.y) > abs(P1.x - P0.x);
+
+    if (steep)
+        {
+            r32 tmp = P0.x;
+            P0.x = P0.y;
+            P0.y = tmp;
+
+            tmp = P1.x;
+            P1.x = P1.y;
+            P1.y = tmp;
+        }
+    if (P0.x > P1.x)
+        {
+            r32 tmp = P0.x;
+            P0.x = P1.x;
+            P1.x = tmp;
+            
+            tmp = P0.y;
+            P0.y = P1.y;
+            P1.y = tmp;
+        }
+
+    r32 dx = P1.x - P0.x;
+    r32 dy = P1.y - P0.y;
+    r32 k = dy / dx;
+    if (dx == 0.0f)
+        {
+            k = 1; // why exactly?
+        }
+
+    s32 xstart = floor32(P0.x); // round here?
+    s32 xend = floor32(P1.x);
+    r32 intersectY = P0.y;
+
+    s32 xoffset;
+    s32 yoffset;
+    
+    if (steep)
+        {
+            xoffset = wnd_pitch;
+            yoffset = wnd_bytpp;
+        }
+    else
+        {
+            xoffset = wnd_bytpp;
+            yoffset = wnd_pitch;
+        }
+
+    // clip xstart and xend here
+    // also clip intersectY every iteration
+    // the tricky part is probably figuring out all of the proper swaps...
+    
+    for (s32 x = xstart; x <= xend; x++)
+        {
+            r32* Z = (r32*)(zbuffer + floor32(intersectY)*yoffset + x*xoffset);
+            if (z < *Z ||     // this stuff was other way when Z was other way, also >= on first condition
+                z > Gamestate->nearclip ||
+                z < Gamestate->farclip)
+                {
+                    continue;
+                }
+            else
+                {
+                    *Z = z;
+                }
+            
+            // @IMPORTANT do we actually want to use 256 instead of 255, and in that case we can shift instead...
+         
+            
+            u32* drawing_point1 = (u32*)(wnd_buffer + floor32(intersectY) * yoffset + x * xoffset);
+            u32* drawing_point2 = (u32*)(wnd_buffer + (floor32(intersectY) - 1) * yoffset + x * xoffset);
+
+            r32 alpha1 = 1 - decimal32(intersectY);
+            r32 alpha2 = decimal32(intersectY);
+
+            u32 color1 = *drawing_point1;
+            u32 color2 = *drawing_point2;
+                    
+            r32 r1 = ((u8)((color1 & 0x00FF0000) >> 16)) / 255.0;
+            r32 g1 = ((u8)((color1 & 0x0000FF00) >> 8)) / 255.0;
+            r32 b1 = ((u8)(color1 & 0x000000FF)) / 255.0;
+
+            r32 r2 = ((u8)((color2 & 0x00FF0000) >> 16)) / 255.0;
+            r32 g2 = ((u8)((color2 & 0x0000FF00) >> 8)) / 255.0;
+            r32 b2 = ((u8)(color2 & 0x000000FF)) / 255.0;
+
+            r32 rc = ((u8)((color & 0x00FF0000) >> 16)) / 255.0;
+            r32 gc = ((u8)((color & 0x0000FF00) >> 8)) / 255.0;
+            r32 bc = ((u8)(color & 0x000000FF)) / 255.0;
+                    
+            r1 = lerp(rc, r1, alpha1);
+            g1 = lerp(gc, g1, alpha1);
+            b1 = lerp(bc, b1, alpha1);
+
+            r2 = lerp(rc, r2, alpha2);
+            g2 = lerp(gc, g2, alpha2);
+            b2 = lerp(bc, b2, alpha2);
+
+            u32 R1 = (u32)(r1 * 255);
+            u32 G1 = (u32)(g1 * 255);
+            u32 B1 = (u32)(b1 * 255);
+
+            u32 R2 = (u32)(r2 * 255);
+            u32 G2 = (u32)(g2 * 255);
+            u32 B2 = (u32)(b2 * 255);
+                    
+            u32 final1 = ((255 << 24) |
+                          (R1 << 16) |
+                          (G1 << 8) |   
+                          B1);        
+
+            u32 final2 = ((255 << 24) |
+                          (R2 << 16) |
+                          (G2 << 8) |   
+                          B2);        
+
+            *drawing_point1 = final1;
+            *drawing_point2 = final2;
+                    
+            intersectY += k;
+        }
+}
+
 // here goes anti-aliased line draw.....
 
 void draw_wndline_aa(v2 P0, v2 P1, u32 color)
@@ -707,8 +866,8 @@ b32 process_input(u64 curr_keyflags_to_set,
                   u8 curr_mouseflags_to_unset,
                   v2 curr_cursor)
 {
-
-    b32 result = false;
+    // dude am I doing zbuffering correctly, maybe that's the problem??
+    b32 result = true;
 
     // need to make WASD work in the direction camera is facing
     // moving by Y can be the same because we don't want to ever yaw
@@ -736,22 +895,22 @@ b32 process_input(u64 curr_keyflags_to_set,
     u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
 
     curr_cursor.y = to_yisup(curr_cursor.y);
-    Gamestate->cursor = curr_cursor;
-    if (result)
+    if (result && false)
         {
             Camera camera = Gamestate->camera;
     
             /* if (ExtractKey(mflags_trans_to_up, MOUSE_MOVE)) // this does not work.... */
             /* { */
             v2 cursor_difference = transpose2(curr_cursor, zero2(), Gamestate->cursor); // V2(wnd_width/2.0f, wnd_height/2.0f)
-            r32 roll_camera_by = cursor_difference.y;
-            r32 pitch_camera_by = -cursor_difference.x;
-            Gamestate->camera.roll += roll_camera_by / 256;
-            Gamestate->camera.pitch += pitch_camera_by / 256;
+            r32 roll_camera_by = -cursor_difference.y;
+            r32 pitch_camera_by = cursor_difference.x; // was -
+            Gamestate->camera.roll += roll_camera_by / kilobytes(30); // was 30
+            Gamestate->camera.pitch += pitch_camera_by / kilobytes(30);
             /* } */
             v2 prev_cursor = Gamestate->cursor;
 
         }
+    Gamestate->cursor = curr_cursor;
     
     if (ExtractKey(kflags, KEY_UP))
         {
@@ -774,22 +933,22 @@ b32 process_input(u64 curr_keyflags_to_set,
             Gamestate->dbg_render_x_offset+= 10;
         }
     
-    /* if (ExtractKey(kflags, KEY_W)) */
-    /*     { */
-    /*         Gamestate->camera.roll += PI/256; */
-    /*     } */
-    /* if (ExtractKey(kflags, KEY_S)) */
-    /*     { */
-    /*         Gamestate->camera.roll -= PI/256;             */
-    /*     } */
-    /* if (ExtractKey(kflags, KEY_A)) */
-    /*     { */
-    /*         Gamestate->camera.pitch += PI/256; */
-    /*     } */
-    /* if (ExtractKey(kflags, KEY_D)) */
-    /*     { */
-    /*         Gamestate->camera.pitch -= PI/256; */
-    /*     } */
+    if (ExtractKey(kflags_trans_to_up, KEY_I))
+        {
+            Gamestate->camera.roll -= PI/2;
+        }
+    if (ExtractKey(kflags_trans_to_up, KEY_K))
+        {
+            Gamestate->camera.roll += PI/2;
+        }
+    if (ExtractKey(kflags_trans_to_up, KEY_J))
+        {
+            Gamestate->camera.pitch -= PI/2;
+        }
+    if (ExtractKey(kflags_trans_to_up, KEY_L))
+        {
+            Gamestate->camera.pitch += PI/2;
+        }
 // figure out keys for these four
     /* if (ExtractKey(kflags, KEY_Q)) */
     /*     { */
@@ -809,38 +968,48 @@ b32 process_input(u64 curr_keyflags_to_set,
     /*         Gamestate->camera.fpoint.y -= 5; */
     /*     } */
 
+    Camera camera = Gamestate->camera;
     v3 camera_movement = zero3();
     if (ExtractKey(kflags, KEY_W))
         {
-            camera_movement.z += 5;
-            /* Gamestate->camera.fpoint.x += 0.5; */
+            camera_movement.z -= 2.0f;// 0.01f;
+            /* Gamestate->camera.pitch -= PI/4; */
+            /* Gamestate->camera.fpoint.x -= 0.5; */
         }
     if (ExtractKey(kflags, KEY_S))
         {
-            camera_movement.z -= 5;
+            camera_movement.z += 2.0f;//0.01f;
             /* Gamestate->camera.fpoint.x -= 0.5; */
         }
     if (ExtractKey(kflags, KEY_A))
         {
-            camera_movement.x -= 5;
+            /* camera_movement.x -= 2.0f; */
+            camera_movement.x -= 2.0f;
             /* Gamestate->camera.fpoint.z += 0.5; */
         }
     if (ExtractKey(kflags, KEY_D))
         {
-            camera_movement.x += 5;
+            camera_movement.x += 2.0f; // was 2
             /* Gamestate->camera.fpoint.z -= 0.5; */
         }
 
     
     if (result)
         {
+            /* camera_movement = transpose3(camera_movement, zero3(), Gamestate->camera.fpoint); */
+            /* camera_movement.x += Gamestate->eye_x; */
+            /* camera_movement.y += Gamestate->eye_y; */
+
             camera_movement = rotate3(camera_movement,
                                       Gamestate->camera.yaw,
                                       Gamestate->camera.pitch,
                                       Gamestate->camera.roll);
             Gamestate->camera.fpoint = add3(Gamestate->camera.fpoint, camera_movement);
         }
-
+    /* camera = Gamestate->camera; */
+    /* //Gamestate->camera.fpoint.z *= -1; */
+    /* Gamestate->camera.pitch *= 1; */
+    /* camera = Gamestate->camera; */
     
     if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
         {
@@ -902,10 +1071,10 @@ void init_game_state(void)
                     
                     .eye_x = init_wnd_center_x,
                     .eye_y = init_wnd_center_y,
-                    .screen_z = 30.0f,   // was 0.6f
-                    .new_screen_z = 10.0f,
-                    .nearclip = -500.0f,  // was 0.7f
-                    .farclip = 500.0f,  // was 9.8f
+                    .screen_z = 30.0f,   // was 0.6f ; 30
+                    .new_screen_z = -0.5f,        // ; 10 ; 0.5
+                    .nearclip = -0.7f,  // was 0.7f ; -500 ; 0.7
+                    .farclip = -10000.0f,  // was 9.8f ; 500 ; 100
 
                     .wnd_center_x = init_wnd_center_x,
                     .wnd_center_y = init_wnd_center_y,
@@ -957,7 +1126,7 @@ void init_game_state(void)
                         }
                 }
             
-            Gamestate->camera.fpoint = V3(640, 360, 5); // was 680
+            Gamestate->camera.fpoint = V3(640, 360, 0); // was 680  ; z=5
             Gamestate->camera.yaw    = 0;
             Gamestate->camera.pitch  = 0;
             //Gamestate->camera.pitch  = PI/4;

@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING clipping_test
+#define CURRENTLY_TESTING clipping_and_camera_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // next steps:
@@ -21,6 +21,70 @@
 //
 // then you start hardware rendering.......
 
+
+// @IMPORTANT we are not nearclipping, so the back of the world is
+// projected upside down onto the screen
+void clipping_and_camera_test(void)
+{
+    fill_background();
+
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+
+    v3 screen_center = V3(Gamestate->wnd_center_x,
+                          Gamestate->wnd_center_y,
+                          0);
+    
+    v3 A = V3(-50, -10, -20);
+    v3 B = V3(60, 10, -20);
+    v3 C = V3(-70, 70, -20);
+
+    /* v3 A = V3(-5000, -1000, -50); */
+    /* v3 B = V3(6000, 1000, -50); */
+    /* v3 C = V3(-7000, 7000, -50); */
+
+    A = add3(A, screen_center);
+    B = add3(B, screen_center);
+    C = add3(C, screen_center);
+
+    v3 pA = project_new2(A, PERSPECTIVE);
+    v3 pB = project_new2(B, PERSPECTIVE);
+    v3 pC = project_new2(C, PERSPECTIVE);
+
+    v2 pA2 = V2(pA.x, pA.y);
+    v2 pB2 = V2(pB.x, pB.y);
+    v2 pC2 = V2(pC.x, pC.y);
+    
+    line l1 = {.P=pA2, .Q=pB2};
+    line l2 = {.P=pB2, .Q=pC2};
+    line l3 = {.P=pC2, .Q=pA2};
+
+    if (clip_line(&l1))
+        {
+            draw_wndline_zbuffered_aa(l1.P, l1.Q, pA.z, color);
+        }
+    if (clip_line(&l2))
+        {
+            draw_wndline_zbuffered_aa(l2.P, l2.Q, pA.z, color);
+        }
+    if (clip_line(&l3))
+        {
+            draw_wndline_zbuffered_aa(l3.P, l3.Q, pA.z, color);
+        }
+
+    
+    
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    *row = Gamestate->farclip;
+                    row++;
+                }
+        }
+
+}
+
 void clipping_test(void)
 {
     fill_background();
@@ -30,10 +94,6 @@ void clipping_test(void)
     v3 screen_center = V3(Gamestate->wnd_center_x,
                           Gamestate->wnd_center_y,
                           Gamestate->screen_z);
-
-    /* v3 screen_center = V3(60, */
-    /*                       200, */
-    /*                       Gamestate->screen_z); */
     
     v3 A = V3(-50, -10, -15);
     v3 B = V3(60, 10, -15);

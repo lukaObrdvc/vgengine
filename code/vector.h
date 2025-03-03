@@ -5,13 +5,13 @@
 
 // @TODO do the union trick on these
 
-typedef struct
+typedef struct tagV2
 {
     r32 x;
     r32 y;
 } v2;
 
-typedef struct
+typedef struct tagV3
 {
     r32 x;
     r32 y;
