@@ -419,7 +419,7 @@ v2 project(v3 point, PROJECTION P)
     return result;
 }
 
-inline r32 EdgeFunction(v2 c, v3 b, v3 a)
+inline r32 EdgeFunction(v3 c, v3 b, v3 a)
 {
     return (c.x-a.x)*(b.y-a.y)-(c.y-a.y)*(b.x-a.x);
 }
@@ -436,34 +436,100 @@ inline wndrect ObtainTriangleBBox(v3 p0, v3 p1, v3 p2)
     return result;
 }
         
-void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color)
+void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
 {
     wndrect bbox = ObtainTriangleBBox(p0, p1, p2);
+    r32 area = EdgeFunction(p2, p1, p0);
 
     for (s32 j = floor32(bbox.bottom); j < floor32(bbox.top); j++)
         {
             
             for (s32 i = floor32(bbox.left); i < floor32(bbox.right); i++)
                 {
-                    r32 z = -5; // use barycentric coords
-                    r32* zbuffer_point = &z;
-
-                    v2 p = V2(i+0.5f, j+0.5f);
+                    v3 p = V3(i+0.5f, j+0.5f, 0);
                     r32 w0 = EdgeFunction(p, p2, p1);
                     r32 w1 = EdgeFunction(p, p0, p2);
                     r32 w2 = EdgeFunction(p, p1, p0);
 
                     // maybe y is inverted or something is inverted.??
-                    if (w0 >= 0 && w1 >= 0 && w2 >= 0)
+                    if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test
                         {
-                            /* if (z <= *zbuffer_point && false) */
-                                /* { */
-                            *((u32*)(wnd_buffer+j*wnd_pitch+i*wnd_bytpp)) = color;
-                                    /* *zbuffer_point = z; */
-                                /* } */
+                            w0 /= area; // these are barycentric coords
+                            w1 /= area;
+                            w2 /= area;
+
+                            r32 z = 1/(w0/p0.z+w1/p1.z+w2/p2.z);
+                            r32* zbuffer_point = (r32*)(zbuffer+wnd_pitch*j+wnd_bytpp*i);
+
+                            u32 r = (u32)(w0*255);
+                            u32 g = (u32)(w1*255);
+                            u32 b = (u32)(w2*255);
+
+                            u32 intColor = (((u32)255 << 24) | (r << 16) | (g << 8) | b);
+                            
+                            if (z >= *zbuffer_point)
+                                {
+                                    *((u32*)(wnd_buffer+j*wnd_pitch+i*wnd_bytpp)) = (inv ? intColor : color);
+                                    *zbuffer_point = z;
+                                }
                         }
                 }
         }
+}
+
+typedef union tagTriangle
+{
+    struct
+    {
+        v3 A;
+        v3 B;
+        v3 C;
+    };
+    v3 v[3];
+} triangle;
+
+triangle TriangleWorldToRaster(triangle tri)
+{
+    triangle result;
+
+    v3 A = tri.A;
+    v3 B = tri.B;
+    v3 C = tri.C;
+    
+    r32 Near = Gamestate->cameraParams._near;
+
+    r32 invA = Near/A.z;
+    r32 invB = Near/B.z;
+    r32 invC = Near/C.z;
+    v3 A_s = V3(A.x*invA, A.y*invA, A.z);
+    v3 B_s = V3(B.x*invB, B.y*invB, B.z);
+    v3 C_s = V3(C.x*invC, C.y*invC, C.z);
+    
+    r32 Fov = Gamestate->cameraParams.fov;
+    r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
+
+    r32 r = -Near*tan(to_rad(Fov/2));
+    r32 l = -r;
+    r32 t = r/aspect_ratio;
+    r32 b = -t;
+
+    v3 A_ndc = V3(A_s.x/r, A_s.y/t, A_s.z);
+    v3 B_ndc = V3(B_s.x/r, B_s.y/t, B_s.z);
+    v3 C_ndc = V3(C_s.x/r, C_s.y/t, C_s.z);
+
+    /* v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (1-(A_ndc.y+1)/2)*(wnd_height-1), A_ndc.z); */
+    /* v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (1-(B_ndc.y+1)/2)*(wnd_height-1), B_ndc.z); */
+    /* v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (1-(C_ndc.y+1)/2)*(wnd_height-1), C_ndc.z); */
+
+    v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (A_ndc.y+1)/2*(wnd_height-1), A_ndc.z);
+    v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z);
+    v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);
+
+    result.A = A_r;
+    result.B = B_r;
+    result.C = C_r;
+    
+    return result;
 }
 
 v3 project_new2(v3 point, PROJECTION P)

@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING rasterize_triangle_test
+#define CURRENTLY_TESTING zb_triangle_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 
@@ -42,6 +42,57 @@
 //  figure out how to do art a little bit orsmth.....
 //
 // then you start hardware rendering.......
+
+
+
+void zb_triangle_test(void)
+{
+    fill_background();
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+
+    v3 A = V3(-50, -10, -160); // A->C->B = clockwise winding
+    v3 B = V3(60, 10, -200);
+    v3 C = V3(-70, 70, -160);
+
+    v3 A2 = A;
+    v3 B2 = B;
+    v3 C2 = C;
+
+    A2.z = -200;
+    C2.z = -120;
+
+#if 1
+    r32 angle = Gamestate->line_angle;
+    A = rotate3(A, angle, 0, 0);
+    B = rotate3(B, angle, 0, 0);
+    C = rotate3(C, angle, 0, 0);
+
+    A2 = rotate3(A2, -(angle+PI/4), 0, 0);
+    B2 = rotate3(B2, -(angle+PI/4), 0, 0);
+    C2 = rotate3(C2, -(angle+PI/4), 0, 0);
+#endif
+    triangle t = {A, B, C};
+    t = TriangleWorldToRaster(t);
+    triangle t2 = {A2, B2, C2};
+    t2 = TriangleWorldToRaster(t2);
+        
+    RasterizeTriangle(t.A, t.C, t.B, color, true);
+    RasterizeTriangle(t2.A, t2.C, t2.B, color, false);
+
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    *row = Gamestate->cameraParams._far;
+                    row++;
+                }
+        }
+#if 1
+    Gamestate->line_angle += PI / 256;
+#endif
+}
+
 
 void rasterize_triangle_test(void)
 {
@@ -96,8 +147,18 @@ void rasterize_triangle_test(void)
     v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z);
     v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);
 
-    RasterizeTriangle(A_r, C_r, B_r, color);
-    Gamestate->line_angle += PI / 256;    
+    RasterizeTriangle(A_r, C_r, B_r, color, true);
+    Gamestate->line_angle += PI / 256;
+
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    *row = Gamestate->cameraParams._far;
+                    row++;
+                }
+        }    
 }
 
 
