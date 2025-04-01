@@ -9,10 +9,6 @@
 #include "utils.h"
 #include "main.h"
 
-// @IMPORTANT nocheckin this shite is the problem methinks, did not
-// compile on win32 program........?
-//typedef struct v2 v2;
-
 global_variable b32 running = true;
 global_variable b32 valid_dll = false;
 

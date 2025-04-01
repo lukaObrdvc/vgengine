@@ -1,5 +1,27 @@
-#define CURRENTLY_TESTING clipping_and_camera_test
+#define CURRENTLY_TESTING rasterize_triangle_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
+
+
+// draw_sqaure_around_cursor_test
+// perspective_projection_test
+// clipping_test
+// line_side_by_side_test
+// rotate_cube_test
+// zbuffering_test
+// zbuffering_triangles_test
+
+
+    // camera transform
+// proper triangle rasterization
+// meshes
+// polygon clipping
+
+// texture mapping onto polygons
+// lighting
+// --> hardware rendering
+
+
+
 
 // next steps:
 //  make input and camera control (use mouse) better, and clamp ffs
@@ -20,6 +42,63 @@
 //  figure out how to do art a little bit orsmth.....
 //
 // then you start hardware rendering.......
+
+void rasterize_triangle_test(void)
+{
+    // not sure about sign of Z throughout, and stuff..
+
+    fill_background();
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+
+    r32 Near = Gamestate->cameraParams._near;
+    v3 triangle_base = V3(wnd_width/2.0,
+                          wnd_height/2.0,
+                          Near-10);
+
+    // what about explicitly figuring out winding?
+    v3 A = V3(-50, -10, -160); // A->C->B = clockwise winding
+    v3 B = V3(60, 10, -160);
+    v3 C = V3(-70, 70, -160);
+
+    r32 angle = Gamestate->line_angle;
+    A = rotate3(A, angle, 0, 0);
+    B = rotate3(B, angle, 0, 0);
+    C = rotate3(C, angle, 0, 0);
+    
+    /* A = add3(A, triangle_base); */
+    /* B = add3(B, triangle_base); */
+    /* C = add3(C, triangle_base); */
+
+    r32 invA = Near/A.z;
+    r32 invB = Near/B.z;
+    r32 invC = Near/C.z;
+    v3 A_s = V3(A.x*invA, A.y*invA, A.z);
+    v3 B_s = V3(B.x*invB, B.y*invB, B.z);
+    v3 C_s = V3(C.x*invC, C.y*invC, C.z);
+    
+    r32 Fov = Gamestate->cameraParams.fov;
+    r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
+
+    r32 r = -Near*tan(to_rad(Fov/2));
+    r32 l = -r;
+    r32 t = r/aspect_ratio;
+    r32 b = -t;
+
+    v3 A_ndc = V3(A_s.x/r, A_s.y/t, A_s.z);
+    v3 B_ndc = V3(B_s.x/r, B_s.y/t, B_s.z);
+    v3 C_ndc = V3(C_s.x/r, C_s.y/t, C_s.z);
+
+    /* v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (1-(A_ndc.y+1)/2)*(wnd_height-1), A_ndc.z); */
+    /* v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (1-(B_ndc.y+1)/2)*(wnd_height-1), B_ndc.z); */
+    /* v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (1-(C_ndc.y+1)/2)*(wnd_height-1), C_ndc.z); */
+
+    v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (A_ndc.y+1)/2*(wnd_height-1), A_ndc.z);
+    v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z);
+    v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);
+
+    RasterizeTriangle(A_r, C_r, B_r, color);
+    Gamestate->line_angle += PI / 256;    
+}
 
 
 // @IMPORTANT we are not nearclipping, so the back of the world is
@@ -46,6 +125,13 @@ void clipping_and_camera_test(void)
     B = add3(B, screen_center);
     C = add3(C, screen_center);
 
+    // I believe this is the problem here
+    // and I'm processing my input correctly....
+
+
+    // YOU ARE SIMPLY NOT DOING ROTATION PROPERLY
+    // AND MAKING AN INVERSE ROTATION YOU HAVE TO
+    // TRANSPOSE INSTEAD.....
     v3 pA = project_new2(A, PERSPECTIVE);
     v3 pB = project_new2(B, PERSPECTIVE);
     v3 pC = project_new2(C, PERSPECTIVE);
@@ -53,7 +139,7 @@ void clipping_and_camera_test(void)
     v2 pA2 = V2(pA.x, pA.y);
     v2 pB2 = V2(pB.x, pB.y);
     v2 pC2 = V2(pC.x, pC.y);
-    
+        
     line l1 = {.P=pA2, .Q=pB2};
     line l2 = {.P=pB2, .Q=pC2};
     line l3 = {.P=pC2, .Q=pA2};
@@ -95,14 +181,14 @@ void clipping_test(void)
                           Gamestate->wnd_center_y,
                           Gamestate->screen_z);
     
-    v3 A = V3(-50, -10, -15);
-    v3 B = V3(60, 10, -15);
-    v3 C = V3(-70, 70, -15);
+    v3 A = V3(-50, -10, 5); // was -15 on z
+    v3 B = V3(60, 10, 5);
+    v3 C = V3(-70, 70, 5);
 
     A = add3(A, screen_center);
     B = add3(B, screen_center);
     C = add3(C, screen_center);
-
+    
     v2 pA = project(A, PERSPECTIVE);
     v2 pB = project(B, PERSPECTIVE);
     v2 pC = project(C, PERSPECTIVE);
@@ -188,6 +274,14 @@ void zbuffering_triangles_test(void)
     v3 I = V3(-80, 30, 11);
     v3 J = V3(80, -30, 3);
     v3 K = V3(80, 30, 11);
+
+    A.z += 10;
+    B.z += 10;
+    C.z += 10;
+
+    I.z += 10;
+    J.z += 10;
+    K.z += 10;
     
     A = add3(A, screen_center);
     B = add3(B, screen_center);
@@ -553,9 +647,9 @@ void zbuffering_test(void)
     rect2 = clamp_wndrect(rect2);
     rect3 = clamp_wndrect(rect3);
     
-    pxl color1 = {.R = 0, .G = 255, .B = 0, .A = 255};
-    pxl color2 = {.R = 0, .G = 0, .B = 255, .A = 255};
-    pxl color3 = {.R = 255, .G = 0, .B = 0, .A = 255};
+    pxl color1 = {.R = 0, .G = 255, .B = 0, .A = 255}; // zelena plavi
+    pxl color2 = {.R = 0, .G = 0, .B = 255, .A = 255}; // plava crveni
+    pxl color3 = {.R = 255, .G = 0, .B = 0, .A = 255}; // crvena zeleni
 
     // do z-buffering here:
     //   find equation of a plane for rect1 and rect2
@@ -806,9 +900,9 @@ void rotate_cube_test(void)
     
     v3 screen_center = V3(Gamestate->wnd_center_x,
                           Gamestate->wnd_center_y,
-                          Gamestate->screen_z + 140);
+                          Gamestate->screen_z + 140); // was + 140
 
-    v3 A = V3(-60, 60, -60);
+    v3 A = V3(-60, 60, -60); // was -60 here and 60 down on z
     v3 B = V3(60, 60, -60);
     v3 C = V3(60, -60, -60);
     v3 D = V3(-60, -60, -60);

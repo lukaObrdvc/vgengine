@@ -274,7 +274,6 @@ inline wndrect clamp_wndrect(wndrect rect)
 
 // @TODO probably put this into .c instead and don't inline
 
-
                          //   z         y         x
 inline v3 rotate3(v3 vec, r32 yaw, r32 pitch, r32 roll)
 {
@@ -294,6 +293,10 @@ inline v3 rotate3(v3 vec, r32 yaw, r32 pitch, r32 roll)
     r32 cG = cos(roll);
 
     
+    /* result.x = x * (cA*cB) + y * (cA*sB*sG-sA*cG) + z * (cA*sB*cG+sA*sG); */
+    /* result.y = x * (sA*cB) + y * (sA*sB*sG+cA*cG) + z * (sA*sB*cG-cA*sG); */
+    /* result.z = x * (-sB)   + y * (cB*sG)          + z * (cB*cG); */
+
     result.x = x * (cA*cB) + y * (cA*sB*sG-sA*cG) + z * (cA*sB*cG+sA*sG);
     result.y = x * (sA*cB) + y * (sA*sB*sG+cA*cG) + z * (sA*sB*cG-cA*sG);
     result.z = x * (-sB)   + y * (cB*sG)          + z * (cB*cG);
@@ -416,12 +419,60 @@ v2 project(v3 point, PROJECTION P)
     return result;
 }
 
+inline r32 EdgeFunction(v2 c, v3 b, v3 a)
+{
+    return (c.x-a.x)*(b.y-a.y)-(c.y-a.y)*(b.x-a.x);
+}
+
+inline wndrect ObtainTriangleBBox(v3 p0, v3 p1, v3 p2)
+{
+    wndrect result;
+
+    result.left   = min(min(p0.x, p1.x), p2.x);
+    result.right  = max(max(p0.x, p1.x), p2.x);
+    result.bottom = min(min(p0.y, p1.y), p2.y);
+    result.top    = max(max(p0.y, p1.y), p2.y);
+
+    return result;
+}
+        
+void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color)
+{
+    wndrect bbox = ObtainTriangleBBox(p0, p1, p2);
+
+    for (s32 j = floor32(bbox.bottom); j < floor32(bbox.top); j++)
+        {
+            
+            for (s32 i = floor32(bbox.left); i < floor32(bbox.right); i++)
+                {
+                    r32 z = -5; // use barycentric coords
+                    r32* zbuffer_point = &z;
+
+                    v2 p = V2(i+0.5f, j+0.5f);
+                    r32 w0 = EdgeFunction(p, p2, p1);
+                    r32 w1 = EdgeFunction(p, p0, p2);
+                    r32 w2 = EdgeFunction(p, p1, p0);
+
+                    // maybe y is inverted or something is inverted.??
+                    if (w0 >= 0 && w1 >= 0 && w2 >= 0)
+                        {
+                            /* if (z <= *zbuffer_point && false) */
+                                /* { */
+                            *((u32*)(wnd_buffer+j*wnd_pitch+i*wnd_bytpp)) = color;
+                                    /* *zbuffer_point = z; */
+                                /* } */
+                        }
+                }
+        }
+}
+
 v3 project_new2(v3 point, PROJECTION P)
 {
     v3 result = zero3();
 
     Camera camera = Gamestate->camera;
-    
+
+    // this transform is not good.....
     point = transpose3(point, zero3(), camera.fpoint);
     point = rotate3(point, camera.yaw, camera.pitch, camera.roll);
     result.z = point.z;
@@ -435,10 +486,17 @@ v3 project_new2(v3 point, PROJECTION P)
             } break;
         case PERSPECTIVE:
             {
+                if (point.z > Gamestate->nearclip)
+                    {
+                        break;
+                    }
                 r32 scaling_factor = Gamestate->new_screen_z / point.z;
                 
                 result.x = Gamestate->eye_x + scaling_factor * point.x;
                 result.y = Gamestate->eye_y + scaling_factor * point.y;
+                
+                /* result.x = scaling_factor * point.x; */
+                /* result.y = scaling_factor * point.y; */
             } break;
         default:
             {
@@ -867,7 +925,7 @@ b32 process_input(u64 curr_keyflags_to_set,
                   v2 curr_cursor)
 {
     // dude am I doing zbuffering correctly, maybe that's the problem??
-    b32 result = true;
+    b32 result = false;
 
     // need to make WASD work in the direction camera is facing
     // moving by Y can be the same because we don't want to ever yaw
@@ -911,7 +969,8 @@ b32 process_input(u64 curr_keyflags_to_set,
 
         }
     Gamestate->cursor = curr_cursor;
-    
+
+    // probably better to not use macro, just use &
     if (ExtractKey(kflags, KEY_UP))
         {
             Gamestate->wnd_center_y+= 5;
@@ -1065,16 +1124,20 @@ void init_game_state(void)
                 
                     .wndbuffer_width = init_wnd_width,
                     .wndbuffer_height = init_wnd_height,
+                    
+                    .cameraParams._near = -1, // do we want -1?
+                    .cameraParams._far = -500, // -?
+                    .cameraParams.fov = 120, // in degrees I quess?
 
                     .keyflags = 0,
                     .mouseflags = 0,
                     
                     .eye_x = init_wnd_center_x,
                     .eye_y = init_wnd_center_y,
-                    .screen_z = 30.0f,   // was 0.6f ; 30
-                    .new_screen_z = -0.5f,        // ; 10 ; 0.5
-                    .nearclip = -0.7f,  // was 0.7f ; -500 ; 0.7
-                    .farclip = -10000.0f,  // was 9.8f ; 500 ; 100
+                    .screen_z = 0.5f,   // was 0.6f ; 30
+                    .new_screen_z = 30.0f,        // - 0.5  ; 10 ; 0.5
+                    .nearclip = 0.7f,  // was  -     ; 0.7f ; -500 ; 0.7
+                    .farclip = 10000.0f,  // was  -  ;  9.8f ; 500 ; 100
 
                     .wnd_center_x = init_wnd_center_x,
                     .wnd_center_y = init_wnd_center_y,
@@ -1121,7 +1184,7 @@ void init_game_state(void)
                     r32* row = (r32*)(zbuffer + i*wnd_pitch);
                     for (s32 j = 0; j < wnd_width; j++)
                         {
-                            *row = Gamestate->farclip; // smth else??
+                            *row = Gamestate->cameraParams._far; // smth else??
                             row++;
                         }
                 }
@@ -1167,6 +1230,6 @@ void init_game_state(void)
 void update_and_render(void)
 {
     init_game_state();
-    test();    
+    test();
 }
 

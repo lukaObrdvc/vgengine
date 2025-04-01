@@ -90,6 +90,19 @@ typedef struct
 } Camera;
 
 
+typedef struct tagCamera_parameters
+{
+    // canvas is implicitly at the near clipping plane;
+    
+    // canvas center x,y are 0 relative to camera space origin;
+    // eye is positioned at origin in camera space;
+    // camera is looking down negative Z in camera space;
+    // camera aspect ratio is implicitly 1
+    r32 _near; // near clipping plane is on z=-1 in camera space
+    r32 _far;
+    r32 fov; // horizontal=vertical since aspect ratio is 1
+} camera_parameters;
+
 #pragma pack(push, 1)
 typedef struct tagGame_state
 {
@@ -99,6 +112,8 @@ typedef struct tagGame_state
 
     s32 wndbuffer_width;  // access through macro
     s32 wndbuffer_height; // access through macro
+    /* r32 aspectRatio; */
+    camera_parameters cameraParams;
 
     // @TODO methinks VK combines mouse keys with keyboard keys.....
     u64 keyflags;
