@@ -1,3 +1,5 @@
+#include <stdarg.h>
+
 #include "utils.h"
 #include "math.h"
 #include "vector.h"
@@ -438,6 +440,9 @@ inline wndrect ObtainTriangleBBox(v3 p0, v3 p1, v3 p2)
         
 void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
 {
+    // perspective-correct interpolation
+    // top-left rule
+    // anti-aliasing
     wndrect bbox = ObtainTriangleBBox(p0, p1, p2);
     r32 area = EdgeFunction(p2, p1, p0);
 

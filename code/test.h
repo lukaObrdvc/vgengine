@@ -71,6 +71,9 @@ void zb_triangle_test(void)
     B2 = rotate3(B2, -(angle+PI/4), 0, 0);
     C2 = rotate3(C2, -(angle+PI/4), 0, 0);
 #endif
+
+    // basically just do the camera transform here..
+    
     triangle t = {A, B, C};
     t = TriangleWorldToRaster(t);
     triangle t2 = {A2, B2, C2};
