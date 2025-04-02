@@ -1,26 +1,12 @@
-#define CURRENTLY_TESTING zb_triangle_test
+#define CURRENTLY_TESTING orbiting_camera_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
-
-// draw_sqaure_around_cursor_test
-// perspective_projection_test
-// clipping_test
-// line_side_by_side_test
-// rotate_cube_test
-// zbuffering_test
-// zbuffering_triangles_test
-
-
-    // camera transform
-// proper triangle rasterization
 // meshes
 // polygon clipping
 
 // texture mapping onto polygons
 // lighting
 // --> hardware rendering
-
-
 
 
 // next steps:
@@ -43,7 +29,100 @@
 //
 // then you start hardware rendering.......
 
+void orbiting_camera_test(void)
+{
+    fill_background();
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
 
+    v3 A = V3(-50, -10, -160); // A->C->B = clockwise winding
+    v3 B = V3(60, 10, -200);
+    v3 C = V3(-70, 70, -160);
+
+    v3 A2 = A;
+    v3 B2 = B;
+    v3 C2 = C;
+
+    A2.z = -200;
+    C2.z = -120;
+
+#define RotCamera 1
+#define RotTriangles 1
+#define ChangeAngle 0
+#define LogToFile 0
+    
+    m4 WtoC = M4Unit();
+    v3 orbiting_point = V3(0, 0, 180); // assuming it's in 0,0,-180 coordsys
+
+    r32 angle = Gamestate->line_angle;
+    r32 camera_angle = Gamestate->camera_angle;
+
+#if RotCamera
+    orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
+#endif
+    orbiting_point = M4Mul(orbiting_point, M4Tlate(V3(0, 0, -180)));
+    m4 T = M4Tlate(orbiting_point);
+#if RotCamera
+    m4 R = M4RotY(camera_angle);
+#else
+    m4 R = M4RotY(0);
+#endif
+    WtoC = M4Compose(3, WtoC, R, T);
+    
+#if RotTriangles
+    A = rotate3(A, angle, 0, 0);
+    B = rotate3(B, angle, 0, 0);
+    C = rotate3(C, angle, 0, 0);
+
+    A2 = rotate3(A2, -(angle+PI/4), 0, 0);
+    B2 = rotate3(B2, -(angle+PI/4), 0, 0);
+    C2 = rotate3(C2, -(angle+PI/4), 0, 0);
+#endif
+
+    /* WtoC.m[3][0] = - WtoC.m[3][0]; */
+#if LogToFile    
+    char debug_str[1024];
+
+    MatrixToStr(debug_str, WtoC);
+    
+    b32 err = DBG_WRITE_FILE("W:\\Projects\\vgengine\\data\\log_camera.txt",
+                             debug_str, 256);
+#endif    
+    A = M4Mul(A, WtoC);
+    B = M4Mul(B, WtoC);
+    C = M4Mul(C, WtoC);
+
+    A2 = M4Mul(A2, WtoC);
+    B2 = M4Mul(B2, WtoC);
+    C2 = M4Mul(C2, WtoC);
+    
+    triangle t = {A, B, C};
+    t = TriangleWorldToRaster(t);
+    triangle t2 = {A2, B2, C2};
+    t2 = TriangleWorldToRaster(t2);
+        
+    RasterizeTriangle(t.A, t.C, t.B, color, true);
+    RasterizeTriangle(t2.A, t2.C, t2.B, color, false);
+
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    *row = Gamestate->cameraParams._far-500;
+                    row++;
+                }
+        }
+#if ChangeAngle
+    Gamestate->line_angle += PI / 256;
+#endif
+
+    Gamestate->log_to_file_once = false;
+    
+#undef RotCamera
+#undef RotTriangles
+#undef ChangeAngle
+#undef LogToFile
+}
 
 void zb_triangle_test(void)
 {

@@ -130,6 +130,9 @@ typedef struct tagGame_state
     r32 farclip;
     Camera camera;
 
+    r32 camera_angle;
+    b32 log_to_file_once;
+
     u32 brushes[MAX_BRUSHES];
 
     // @Note this is what the input changes,

@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "utils.h"
 #include "math.h"
@@ -9,6 +10,19 @@
 #include "main.h"
 
 // @TODO I think making a origin as alias of v3 is useful visually
+
+inline void MatrixToStr(u8* buff, m4 M)
+{
+    s32 pos = 0;
+    for (s32 i = 0; i < 4; i++)
+        {
+            for (s32 j = 0; j < 4; j++)
+                {
+                    pos += sprintf(buff+pos, "%8.2f", M.m[i][j]);
+                }
+            pos += sprintf(buff+pos, "\n");
+        }
+}
 
 inline r32 slope2(v2 vec1, v2 vec2)
 {
@@ -1041,6 +1055,12 @@ b32 process_input(u64 curr_keyflags_to_set,
         }
     Gamestate->cursor = curr_cursor;
 
+    if (ExtractKey(kflags, KEY_D))
+        {
+            Gamestate->camera_angle += PI/256;
+            Gamestate->log_to_file_once = true;
+        }
+    
     // probably better to not use macro, just use &
     if (ExtractKey(kflags, KEY_UP))
         {
@@ -1199,6 +1219,9 @@ void init_game_state(void)
                     .cameraParams._near = -1, // do we want -1?
                     .cameraParams._far = -500, // -?
                     .cameraParams.fov = 120, // in degrees I quess?
+
+                    .camera_angle = 0,
+                    .log_to_file_once = false,
 
                     .keyflags = 0,
                     .mouseflags = 0,

@@ -290,25 +290,25 @@ inline m4 M4(r32 m00, r32 m01, r32 m02, r32 m03,
     return result;
 }
 
-inline v4 M4Mul(v4 v, m4 M)
+inline v3 M4Mul(v3 v, m4 M)
 {
-    v4 result;
+    v3 result;
 
-    result.x = v.x*M.m[0][0] + v.y*M.m[1][0] + v.z*M.m[2][0] + v.w*M.m[3][0];
-    result.y = v.x*M.m[0][1] + v.y*M.m[1][1] + v.z*M.m[2][1] + v.w*M.m[3][1];
-    result.z = v.x*M.m[0][2] + v.y*M.m[1][2] + v.z*M.m[2][2] + v.w*M.m[3][2];
-    result.w = v.x*M.m[0][3] + v.y*M.m[1][3] + v.z*M.m[2][3] + v.w*M.m[3][3];
+    result.x = v.x*M.m[0][0] + v.y*M.m[1][0] + v.z*M.m[2][0] + M.m[3][0];
+    result.y = v.x*M.m[0][1] + v.y*M.m[1][1] + v.z*M.m[2][1] + M.m[3][1];
+    result.z = v.x*M.m[0][2] + v.y*M.m[1][2] + v.z*M.m[2][2] + M.m[3][2];
+    /* result.w = v.x*M.m[0][3] + v.y*M.m[1][3] + v.z*M.m[2][3] + v.w*M.m[3][3]; */
 
     return result;
 }
 
 inline m4 M4MulM4p(m4* m1, m4* m2)
 {
-    m4 result;
+    m4 result = {0}; // @TODO make an M4Zero();
 
-    for (s32 i=0; i < 4; i++)
+    for (s32 i=0; i < 4; i++) // by row
         {
-            for (s32 j=0; j < 4; j++)
+            for (s32 j=0; j < 4; j++) // by col
                 {
                     for (s32 k=0; k < 4; k++)
                         {
@@ -458,9 +458,9 @@ inline m4 M4Unit()
     return result;
 }
 
-inline m4 M4Tlate(m4 m, v3 v) // maybe one that adds upon previous?
+inline m4 M4Tlate(v3 v) // maybe one that adds upon previous?
 {
-    m4 result;
+    m4 result = M4Unit();
 
     result.m[3][0]=v.x;
     result.m[3][1]=v.y;
