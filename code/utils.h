@@ -75,7 +75,7 @@ inline u64 gigabytes(u32 n)
     return ((u64)n)*1024*1024*1024;
 }
 
-#define arr_count(arr) (sizeof((arr))/sizeof((arr)[0]))
+#define ArrCount(arr) (sizeof((arr))/sizeof((arr)[0]))
 #define clamp(value, min, max) if ((value) < (min)) (value) = (min);   \
     else if ((value) > (max)) (value) = (max)
 

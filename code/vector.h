@@ -302,6 +302,7 @@ inline v3 M4Mul(v3 v, m4 M)
     return result;
 }
 
+// @TODO optimization when one matrix is M4Unit
 inline m4 M4MulM4p(m4* m1, m4* m2)
 {
     m4 result = {0}; // @TODO make an M4Zero();
@@ -469,6 +470,7 @@ inline m4 M4Tlate(v3 v) // maybe one that adds upon previous?
     return result;
 }
 
+// these are maybe useless
 inline m4 M4SetX(m4 m, v3 v)
 {
     m4 result;

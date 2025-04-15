@@ -1,57 +1,40 @@
 #define CURRENTLY_TESTING orbiting_camera_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
-// meshes
-// polygon clipping
-
-// texture mapping onto polygons
-// lighting
-// --> hardware rendering
-
-
-// next steps:
-//  make input and camera control (use mouse) better, and clamp ffs
-//  /figure out how to rasterize a triangle (just flesh it out a bit...)
-//  /do z-buffering
-//  meshes, and proper order of rendering them??
-//
-// then you have an actual renderer that can render anything basically,
-// so you just extend it with some stuff like:
-//  texture-mapping and filtering
-//  lighting
-//  creating of polygons/entities
-//  better way to represent information (like maybe quaternions orsmth...)
 //  some memory management?
 //  threading, SIMD ?
 //  UI, debug system ?
 //  clean up some details (hotloading for example...)
 //  figure out how to do art a little bit orsmth.....
-//
-// then you start hardware rendering.......
+
+void basic_mesh_test(void)
+{
+
+    
+    
+}
 
 void orbiting_camera_test(void)
 {
     fill_background();
     u32 color = Gamestate->brushes[BRUSH_SCANLINE];
 
-    v3 A = V3(-50, -10, -160); // A->C->B = clockwise winding
-    v3 B = V3(60, 10, -200);
-    v3 C = V3(-70, 70, -160);
+    v3 A = V3(-50, -20, -120); // A->C->B = clockwise winding
+    v3 B = V3(60, 0, -150);
+    v3 C = V3(-70, 60, -200);
 
-    v3 A2 = A;
-    v3 B2 = B;
-    v3 C2 = C;
-
-    A2.z = -200;
-    C2.z = -120;
+    v3 A2 = V3(-50, -20, -200);
+    v3 B2 = V3(60, 0, -150);
+    v3 C2 = V3(-70, 60, -120);
 
 #define RotCamera 1
 #define RotTriangles 1
-#define ChangeAngle 0
+#define ChangeAngle 1
 #define LogToFile 0
+#define ORBIT_OFFS 180
     
     m4 WtoC = M4Unit();
-    v3 orbiting_point = V3(0, 0, 180); // assuming it's in 0,0,-180 coordsys
+    v3 orbiting_point = V3(0, 0, ORBIT_OFFS); // assuming it's in 0,0,-180 coordsys
 
     r32 angle = Gamestate->line_angle;
     r32 camera_angle = Gamestate->camera_angle;
@@ -59,7 +42,7 @@ void orbiting_camera_test(void)
 #if RotCamera
     orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
 #endif
-    orbiting_point = M4Mul(orbiting_point, M4Tlate(V3(0, 0, -180)));
+    orbiting_point = M4Mul(orbiting_point, M4Tlate(V3(0, 0, -ORBIT_OFFS)));
     m4 T = M4Tlate(orbiting_point);
 #if RotCamera
     m4 R = M4RotY(camera_angle);
@@ -84,7 +67,7 @@ void orbiting_camera_test(void)
 
     MatrixToStr(debug_str, WtoC);
     
-    b32 err = DBG_WRITE_FILE("W:\\Projects\\vgengine\\data\\log_camera.txt",
+    b32 err = DBG_WRITE_FILE("W:\\Projects\\vgengine\\data\\logs\\log_camera.txt",
                              debug_str, 256);
 #endif    
     A = M4Mul(A, WtoC);
@@ -99,9 +82,19 @@ void orbiting_camera_test(void)
     t = TriangleWorldToRaster(t);
     triangle t2 = {A2, B2, C2};
     t2 = TriangleWorldToRaster(t2);
-        
-    RasterizeTriangle(t.A, t.C, t.B, color, true);
-    RasterizeTriangle(t2.A, t2.C, t2.B, color, false);
+
+    // when rotating behind the triangles, they are getting culled
+    // because winding is reversed, how fix this?
+    if (Gamestate->reverse_winding)
+        {
+            RasterizeTriangle(t.B, t.C, t.A, color, true);
+            RasterizeTriangle(t2.B, t2.C, t2.A, color, false);
+        }
+    else
+        {
+            RasterizeTriangle(t.A, t.C, t.B, color, true);
+            RasterizeTriangle(t2.A, t2.C, t2.B, color, false);
+        }
 
     for (s32 i = 0; i < wnd_height; i++)
         {

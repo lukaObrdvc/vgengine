@@ -132,6 +132,7 @@ typedef struct tagGame_state
 
     r32 camera_angle;
     b32 log_to_file_once;
+    b32 reverse_winding;
 
     u32 brushes[MAX_BRUSHES];
 

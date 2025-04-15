@@ -1,13 +1,21 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "project.h"
+
 #include "utils.h"
+#include "Allocator.h"
+
 #include "math.h"
 #include "vector.h"
 #include "pixel.h"
 #include "renderer.h"
 
+#include "MeshLoader.h"
+
 #include "main.h"
+
+// about 5.8 MB will be unused when windowed on low resolution..
 
 // @TODO I think making a origin as alias of v3 is useful visually
 
@@ -1055,9 +1063,28 @@ b32 process_input(u64 curr_keyflags_to_set,
         }
     Gamestate->cursor = curr_cursor;
 
+    if (ExtractKey(kflags_trans_to_up, KEY_U))
+        {
+            if (Gamestate->reverse_winding)
+                {
+                    Gamestate->reverse_winding = false;
+                }
+            else
+                {
+                    Gamestate->reverse_winding = true;
+                }
+            /* Gamestate->reverse_winding = ~Gamestate->reverse_winding; */
+        }
+    
     if (ExtractKey(kflags, KEY_D))
         {
             Gamestate->camera_angle += PI/256;
+            Gamestate->log_to_file_once = true;
+        }
+
+    if (ExtractKey(kflags, KEY_A))
+        {
+            Gamestate->camera_angle -= PI/256;
             Gamestate->log_to_file_once = true;
         }
     
@@ -1222,6 +1249,7 @@ void init_game_state(void)
 
                     .camera_angle = 0,
                     .log_to_file_once = false,
+                    .reverse_winding = false,
 
                     .keyflags = 0,
                     .mouseflags = 0,

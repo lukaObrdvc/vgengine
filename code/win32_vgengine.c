@@ -15,9 +15,9 @@ global_variable b32 valid_dll = false;
 #define MAX_KEY_MESSAGES 16
 global_variable u64 curr_keyflags_to_set = 0;
 global_variable u64 curr_keyflags_to_unset = 0;
-global_variable u8 curr_mouseflags_to_set = 0;
-global_variable u8 curr_mouseflags_to_unset = MOUSE_MOVE;
-global_variable v2 curr_cursor = {640, 360}; // zero2()?
+global_variable u8  curr_mouseflags_to_set = 0;
+global_variable u8  curr_mouseflags_to_unset = MOUSE_MOVE;
+global_variable v2  curr_cursor = {640, 360}; // zero2()?
 
 
 void init_memory_base_stub(void* memory_base)
