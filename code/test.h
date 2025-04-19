@@ -1,17 +1,76 @@
 #define CURRENTLY_TESTING orbiting_camera_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
-//  some memory management?
-//  threading, SIMD ?
-//  UI, debug system ?
-//  clean up some details (hotloading for example...)
-//  figure out how to do art a little bit orsmth.....
+// you need to laod a mesh from disk into memory
+// then you need to draw a mesh
+// you then need to do clipping of a mesh
+// store extra geometry in a fixed size storage while doing clipping
+// tesselate that geometry and put it in a new mesh (fixed size storage..)
+// draw extra geometry
 
 void basic_mesh_test(void)
 {
+
+    // @TODO ... meshes
+    // write file that represents a mesh
+    // read file that represents a mesh
+    // push contents into the end of temp_mem, and get a handle back
+    // now draw a mesh based on handle
+
+    // actually we will skip all the file operations for now, just
+    // hardcode it for now
+
+    Mesh cube;
+    v3* vertices;
+    u16* indices;
     
+    /*
+      front:  back:
+      1 2     5 6       
+      0 3     4 7
+      
+      left:   right:
+      5 1     6 2        
+      4 0     7 3
+      
+      down:   up:
+      0 3     5 6     
+      4 7     1 2   */
     
+    v3 s_vertices[8] = {
+        V3(-10, -10, -150) , V3(-10, 10, -150) , // 0 1
+        V3(10, 10, -150)   , V3(10, -10, -150) , // 2 3
+        V3(-10, -10, -170) , V3(-10, 10, -170) , // 4 5
+        V3(10, 10, -170)   , V3(10, -10, -170)   // 6 7
+    };
+    u16 s_indices[12] = {
+        0, 1, 3,   3, 1, 2,   4, 5, 7,   7, 5, 6,
+        4, 5, 0,   0, 5, 1,   7, 6, 3,   3, 6, 2,
+        4, 0, 7,   7, 0, 3,   1, 5, 2,   2, 5, 6
+    };
+
+    vertices = s_vertices;
+    indices = s_indices;
     
+    cube.vertices = vertices;
+    cube.indices = indices;
+
+    *Assets = cube;
+
+    Mesh* mesh = Assets;
+
+    for (int i = 0; i < ArrCount(s_indices)/3; i = i + 3)
+        {
+            u16 i0 = mesh->indices[i];
+            u16 i1 = mesh->indices[i+1];
+            u16 i2 = mesh->indices[i+2];
+            
+            v3 A = mesh->vertices[i0];
+            v3 B = mesh->vertices[i1];
+            v3 C = mesh->vertices[i2];
+            
+            RasterizeTriangle(A, B, C, color, true);
+        }
 }
 
 void orbiting_camera_test(void)

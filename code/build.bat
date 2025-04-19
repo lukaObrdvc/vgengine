@@ -25,6 +25,7 @@ if "%DEVELOPER%"=="1" (
    set Defines=-DBUILD_DEVELOPER=0
 )
 
+REM maybe excessive........
 if "%USE_DLL%"=="1"   (
    set Defines=%Defines% -DBUILD_USE_DLL=1
    set Exports=%Exports% /EXPORT:platform_init_memory_base

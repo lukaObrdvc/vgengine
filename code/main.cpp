@@ -32,7 +32,6 @@
 
 #include "MeshLoader.h"
 
-/* #include "main.h" */
 #include "new_mani.h"
 
 

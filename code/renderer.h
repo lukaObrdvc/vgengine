@@ -65,7 +65,7 @@ typedef struct tagMesh
 {
     v3* vertices;
     u16* indices;
-} mesh;
+} Mesh;
 
 // we can say that if clipping->triangulation leads to additional geometry,
 // append triangles to end of mesh arrays, and stop rasterization of

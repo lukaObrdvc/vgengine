@@ -138,8 +138,11 @@ typedef struct tagGame_state
 
 
 #define ENGINE_MEMORY ((EngineMemory*)((u8*)(platformAPI) + sizeof(PlatformAPI)))
+#define PERM_MEM      (ENGINE_MEMORY->perm_mem)
+#define TEMP_MEM      (ENGINE_MEMORY->perm_mem)
 
-#define Gamestate    ((game_state*)(ENGINE_MEMORY->perm_mem))
+#define Gamestate    ((game_state*)(PERM_MEM))
+#define Assets       ((Mesh*)(TEMP_MEM))
 
 #define wnd_width    (Gamestate->wndbuffer_width)
 #define wnd_height   (Gamestate->wndbuffer_height)
@@ -147,7 +150,7 @@ typedef struct tagGame_state
 #define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)      // cache in scope ?
 
 #define wnd_pitch    (-wnd_width*wnd_bytpp)                // cache in scope ?
-#define wnd_buffer   (((u8*)(ENGINE_MEMORY->perm_mem) + \
+#define wnd_buffer   (((u8*)(PERM_MEM) +                \
                        sizeof(game_state) +             \
                        wnd_bytesize + wnd_pitch))
 
@@ -180,7 +183,7 @@ typedef struct tagGame_state
 //#define wndrect_yisdown(y)
 
 // cast to r32* after you offset...
-#define zbuffer (((u8*)(ENGINE_MEMORY->perm_mem) +    \
+#define zbuffer (((u8*)(PERM_MEM) +                   \
                   sizeof(game_state) +                \
                   wnd_bytesize +                      \
                   wnd_bytesize + wnd_pitch))
