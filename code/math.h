@@ -1,7 +1,6 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include <math.h>
 
 // @TODO <math.h> has r32 sqrt(r32) function which I'm using for now,
 // same for sin, cos

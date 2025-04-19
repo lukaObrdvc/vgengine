@@ -2,8 +2,11 @@
 
 #if USE_DLL
 
-#include "utils.h"
+#include <stdio.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <math.h>
+#include "utils.h"
 #include "vector.h"
 
 #include "platform.h"
@@ -13,6 +16,6 @@
 #endif
 
 #if PLATFORM_WINDOWS
-#include "windows.c"
+#include "windows.cpp"
 #endif
 

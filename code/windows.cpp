@@ -4,9 +4,6 @@
 #include <Memoryapi.h>
 #include <DSound.h>
 
-#if USE_DLL
-#include <stdio.h>
-#endif
 #include <intrin.h>
 #include <malloc.h> // @TODO do I need this?
 
@@ -298,7 +295,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 #if USE_DLL
     HMODULE dll = load_game();
     WIN32_FIND_DATA find_data;
-    HANDLE dll_filehandle = FindFirstFile((LPCSTR)"W:\\Projects\\vgengine\\exe\\main.dll", &find_data);
+    HANDLE dll_filehandle = FindFirstFile((LPCSTR)ACTUAL_DLL, &find_data);
     FindClose(dll_filehandle);
     FILETIME dll_filetime_prev = find_data.ftLastWriteTime;
     FILETIME dll_filetime_curr;
@@ -389,11 +386,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                );
     
     // default resolution is 1087x584, UL=(0,0)
-    BITMAPINFO window_buffer_info = {
-        .bmiHeader.biSize = sizeof(window_buffer_info.bmiHeader),
-        .bmiHeader.biPlanes = 1,
-        .bmiHeader.biBitCount = bytes_per_pixel*8,
-        .bmiHeader.biCompression = BI_RGB };
+    BITMAPINFO window_buffer_info = {0};
+    window_buffer_info.bmiHeader.biSize = sizeof(window_buffer_info.bmiHeader);
+    window_buffer_info.bmiHeader.biPlanes = 1;
+    window_buffer_info.bmiHeader.biBitCount = bytes_per_pixel*8;
+    window_buffer_info.bmiHeader.biCompression = BI_RGB;
 
     SetCursorPos(640 + window_offset_x,
                  360 + window_offset_y);

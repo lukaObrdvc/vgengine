@@ -5,6 +5,8 @@
 
 // @TODO do the union trick on these
 
+#define sqr(n) ((n)*(n))
+
 typedef struct tagV2
 {
     r32 x;
@@ -449,13 +451,21 @@ inline m4 M4RotZ(r32 a)
 
 inline m4 M4Scale(v3 v)
 {
-    m4 result = { .m[0][0]=v.x, .m[1][1]=v.y, .m[2][2]=v.z, .m[3][3]=1 };
+    m4 result = {0};
+    result.m[0][0] = v.x;
+    result.m[1][1] = v.y;
+    result.m[2][2] = v.z;
+    result.m[3][3] = 1;
     return result;
 }
 
 inline m4 M4Unit()
 {
-    m4 result = { .m[0][0]=1, .m[1][1]=1, .m[2][2]=1, .m[3][3]=1 };
+    m4 result = {0};
+    result.m[0][0] = 1;
+    result.m[1][1] = 1;
+    result.m[2][2] = 1;
+    result.m[3][3] = 1;    
     return result;
 }
 

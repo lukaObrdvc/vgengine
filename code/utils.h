@@ -1,8 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "stdint.h"
-
 typedef int8_t s8;
 typedef int16_t s16;
 typedef int32_t s32;
@@ -25,8 +23,8 @@ typedef s64 b64;
 #define literal(t) (t)
 #endif
 
-#define true 1
-#define false 0
+/* #define true 1 */
+/* #define false 0 */
 
 #define global_variable
 // #define local_persist static           (we do not even use this...)
@@ -35,7 +33,7 @@ typedef s64 b64;
 #ifdef DEBUG
 #define Assert(expr) if(!((b32)(expr))) {*((s32*)0) = 0;}
 #else
-#define Assert(expr)
+#define Assert(expr) ((void)0)
 #endif
 
 #define InvalidCodePath Assert(0)

@@ -13,6 +13,8 @@
 /* #include <stdlib.h> */
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <math.h>
 
 
 #include "utils.h"
@@ -34,7 +36,7 @@
 #include "engine.h"
 #endif
 
-#include "engine.c"
+#include "engine.cpp"
 #if !USE_DLL
-#include "platform.c"
+#include "platform.cpp"
 #endif

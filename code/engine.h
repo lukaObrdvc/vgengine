@@ -52,7 +52,7 @@ b32 process_input(u64, u64, u8, u8, v2);
 
 #define UPDATE_AND_RENDER() update_and_render()
 /* #define PLATFORM_INIT_MEMORY_BASE(memoryBase) platform_init_memory_base((memoryBase)) */
-#define PLATFORM_INIT_MEMORY_BASE(memoryBase)
+#define PLATFORM_INIT_MEMORY_BASE(memoryBase) ((void)0)
 #define PROCESS_INPUT(kts, ktus, mts, mtus, c) process_input((kts), (ktus), (mts), (mtus), (c))
 
 #endif

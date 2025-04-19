@@ -893,7 +893,8 @@ void dbg_render(s8 x_offset, s8 y_offset)
                     u8 g = j + x_offset;
                     u8 b = i + y_offset;
 
-                    *row = literal(pxl) {.R=0, .G=g, .B=b, .A=255};
+                    /* *row = literal(pxl) {.R=0, .G=g, .B=b, .A=255}; */
+                    *row = PXL(0, g, b, 255);
                     row++;
                 }
         }    
@@ -1231,51 +1232,50 @@ void init_game_state(void)
             s32 init_wnd_center_x  = 640;
             s32 init_wnd_center_y  = 360;
             
-            *(Gamestate) = literal(game_state) {
 
-                    .inited = true,
-                    .tested_once = 0,
+            Gamestate->inited = true;
+            Gamestate->tested_once = 0;
 
-                    // @Note do I want this now??
-                    .cursor = V2(init_wnd_center_x,
-                                 init_wnd_center_y),
-                
-                    .wndbuffer_width = init_wnd_width,
-                    .wndbuffer_height = init_wnd_height,
-                    
-                    .cameraParams._near = -1, // do we want -1?
-                    .cameraParams._far = -500, // -?
-                    .cameraParams.fov = 120, // in degrees I quess?
+            // @Note do I want this now??
+            Gamestate->cursor = V2(init_wnd_center_x,
+                                   init_wnd_center_y);
 
-                    .camera_angle = 0,
-                    .log_to_file_once = false,
-                    .reverse_winding = false,
+            Gamestate->wndbuffer_width = init_wnd_width;
+            Gamestate->wndbuffer_height = init_wnd_height;
 
-                    .keyflags = 0,
-                    .mouseflags = 0,
-                    
-                    .eye_x = init_wnd_center_x,
-                    .eye_y = init_wnd_center_y,
-                    .screen_z = 0.5f,   // was 0.6f ; 30
-                    .new_screen_z = 30.0f,        // - 0.5  ; 10 ; 0.5
-                    .nearclip = 0.7f,  // was  -     ; 0.7f ; -500 ; 0.7
-                    .farclip = 10000.0f,  // was  -  ;  9.8f ; 500 ; 100
+            Gamestate->cameraParams._near = -1; // do we want -1?
+            Gamestate->cameraParams._far = -500; // -?
+            Gamestate->cameraParams.fov = 120; // in degrees I quess?
 
-                    .wnd_center_x = init_wnd_center_x,
-                    .wnd_center_y = init_wnd_center_y,
-                    
-                    .dbg_render_x_offset = 0, 
-                    .dbg_render_y_offset = 0, 
-                    .square_length = 10,       
-                    .concentric_thickness = 5,
-                    .concentric_count = 10,     // must be less than CONCENTRIC_MAX
-                    .concentric_spread_x = 50, 
-                    .concentric_spread_y = 50,
-                    .concentric_current_z = 0,
-                    .line_angle = 0,
-                    .line_scaling_factor = 1,
-                    .rect_angle = 0,
-                    .rect_scaling_factor = 1 };
+            Gamestate->camera_angle = 0;
+            Gamestate->log_to_file_once = false;
+            Gamestate->reverse_winding = false;
+
+            Gamestate->keyflags = 0;
+            Gamestate->mouseflags = 0;
+
+            Gamestate->eye_x = init_wnd_center_x;
+            Gamestate->eye_y = init_wnd_center_y;
+            Gamestate->screen_z = 0.5f;   // was 0.6f ; 30
+            Gamestate->new_screen_z = 30.0f;        // - 0.5  ; 10 ; 0.5
+            Gamestate->nearclip = 0.7f;  // was  -     ; 0.7f ; -500 ; 0.7
+            Gamestate->farclip = 10000.0f;  // was  -  ;  9.8f ; 500 ; 100
+
+            Gamestate->wnd_center_x = init_wnd_center_x;
+            Gamestate->wnd_center_y = init_wnd_center_y;
+
+            Gamestate->dbg_render_x_offset = 0; 
+            Gamestate->dbg_render_y_offset = 0; 
+            Gamestate->square_length = 10;       
+            Gamestate->concentric_thickness = 5;
+            Gamestate->concentric_count = 10;     // must be less than CONCENTRIC_MAX
+            Gamestate->concentric_spread_x = 50; 
+            Gamestate->concentric_spread_y = 50;
+            Gamestate->concentric_current_z = 0;
+            Gamestate->line_angle = 0;
+            Gamestate->line_scaling_factor = 1;
+            Gamestate->rect_angle = 0;
+            Gamestate->rect_scaling_factor = 1;
 
 
             

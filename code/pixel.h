@@ -29,6 +29,15 @@ typedef struct Pxl
     u8 A;
 } pxl;
 
+pxl PXL(u8 r, u8 g, u8 b, u8 a)
+{
+    pxl result;
+    result.R = r;
+    result.G = g;
+    result.B = b;
+    result.A = a;
+    return result;
+}
 
 typedef struct Pxl_n
 {

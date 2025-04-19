@@ -783,9 +783,9 @@ void zbuffering_test(void)
     rect2 = clamp_wndrect(rect2);
     rect3 = clamp_wndrect(rect3);
     
-    pxl color1 = {.R = 0, .G = 255, .B = 0, .A = 255}; // zelena plavi
-    pxl color2 = {.R = 0, .G = 0, .B = 255, .A = 255}; // plava crveni
-    pxl color3 = {.R = 255, .G = 0, .B = 0, .A = 255}; // crvena zeleni
+    pxl color1 = PXL(0, 255, 0, 255); // zelena plavi
+    pxl color2 = PXL(0, 0, 255, 255); // plava crveni
+    pxl color3 = PXL(255, 0, 0, 255); // crvena zeleni
 
     // do z-buffering here:
     //   find equation of a plane for rect1 and rect2
@@ -1301,7 +1301,7 @@ void scanlines_concentric_test(void)
                     C2 = clamp_line(C2, D2);
                     D2 = clamp_line(D2, tmp);
 
-                    BRUSH brush = GetBrush(BRUSH_SCANLINE);
+                    u32 brush = GetBrush(BRUSH_SCANLINE);
 
                     // first test for edist2 for lines, then draw if true
                     draw_wndline_aa(A2, B2, brush);
@@ -1317,7 +1317,7 @@ void draw_rotated_line_test(void)
     // @TODO prevent drawing along left and top wndrect edges when coords are 0...
     fill_background();
     
-    pxl color      = {.R = 0, .G = 0, .B = 0, .A = 0};
+    pxl color      = PXL(0, 0, 0, 0);
     v2 origin      = V2(Gamestate->wnd_center_x,
                         Gamestate->wnd_center_y);
     v2 offset_line = V2(100, 0);
@@ -1349,7 +1349,7 @@ void perspective_projection_test(void)
     Gamestate->concentric_current_z = 0;
     r32* concentric_z_values = Gamestate->concentric_z_values;
 
-    pxl color     = {.R=0, .G=0, .B=0, .A=255};
+    pxl color     = PXL(0, 0, 0, 255);
     r32 thickness = Gamestate->concentric_thickness;    
     v2  origin    = V2(Gamestate->wnd_center_x,
                        Gamestate->wnd_center_y);
@@ -1384,7 +1384,7 @@ void perspective_projection_test(void)
 
 void concentric_test(void)
 {
-    pxl color     = {.R=0, .G=0, .B=0, .A=255};
+    pxl color     = PXL(0, 0, 0, 255);
     r32 thickness = Gamestate->concentric_thickness;    
     v2  origin    = V2(Gamestate->wnd_center_x,
                        Gamestate->wnd_center_y);
@@ -1414,7 +1414,7 @@ void concentric_test(void)
 void draw_rotated_rect_test(void)
 {
     fill_background();
-    pxl color = {.R = 0, .G = 0, .B = 0, .A = 0};
+    pxl color = PXL(0, 0, 0, 0);
     r32 rect_scaling_factor = Gamestate->rect_scaling_factor;
     v2 origin = V2(Gamestate->wnd_center_x,
                    Gamestate->wnd_center_y);
