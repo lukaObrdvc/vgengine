@@ -28,8 +28,8 @@ void orbiting_camera_test(void)
     v3 C2 = V3(-70, 60, -120);
 
 #define RotCamera 1
-#define RotTriangles 1
-#define ChangeAngle 1
+#define RotTriangles 0
+#define ChangeAngle 0
 #define LogToFile 0
 #define ORBIT_OFFS 180
     
@@ -1447,8 +1447,8 @@ void draw_sqaure_around_cursor_test(void)
 void file_test(void)
 {
     u32 readsize;
-    DBG_READ_FILE((u8*)"W:\\cardcrafter\\data\\readtest.txt", (u8*)memory_base->temp_mem, &readsize);
-    DBG_WRITE_FILE((u8*)"W:\\cardcrafter\\data\\writetest.txt", (u8*)memory_base->temp_mem, readsize);
+    READ_FILE((u8*)"W:\\cardcrafter\\data\\readtest.txt", (u8*)ENGINE_MEMORY->temp_mem, &readsize);
+    WRITE_FILE((u8*)"W:\\cardcrafter\\data\\writetest.txt", (u8*)ENGINE_MEMORY->temp_mem, readsize);
     TEST_ONLY_ONCE
 }
 

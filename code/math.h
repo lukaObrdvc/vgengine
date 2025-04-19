@@ -96,7 +96,7 @@ inline r32 lerp(r32 low, r32 high, r32 step)
     // @Note low+step*(high-low);
 }
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #endif
