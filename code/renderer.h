@@ -104,4 +104,19 @@ typedef struct tagMesh
 //     next frame just do everything again
 
 
+inline u32 color_make(float r, float g, float b, float a)
+{
+    u32 R = (u32)floor32(r*255);
+    u32 G = (u32)floor32(g*255);
+    u32 B = (u32)floor32(b*255);
+    u32 A = (u32)floor32(a*255);
+
+    u32 result;
+
+    result = ((A << 24) | (R << 16) | (G << 8) | B);
+    
+    return result;
+    
+}
+
 #endif

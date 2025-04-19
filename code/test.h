@@ -10,6 +10,8 @@
 
 void basic_mesh_test(void)
 {
+    // @TODO add invert_winding, and camera stuff, and rotation
+    
 
     // @TODO ... meshes
     // write file that represents a mesh
@@ -20,21 +22,36 @@ void basic_mesh_test(void)
     // actually we will skip all the file operations for now, just
     // hardcode it for now
 
+    fill_background();
+
+    u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
+    u32 b_color = color_make(1.0f, 1.0f, 1.0f, 1.0f);
+    u32 l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
+    u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
+    u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
+    u32 u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
+
+    u32 colors[6] = {
+        f_color, b_color,
+        l_color, r_color,
+        d_color, u_color
+    };
+    
     Mesh cube;
     v3* vertices;
     u16* indices;
     
     /*
       front:  back:
-      1 2     5 6       
+      1 2     5 6
       0 3     4 7
       
       left:   right:
-      5 1     6 2        
+      5 1     6 2
       4 0     7 3
       
       down:   up:
-      0 3     5 6     
+      0 3     5 6
       4 7     1 2   */
     
     v3 s_vertices[8] = {
@@ -43,7 +60,7 @@ void basic_mesh_test(void)
         V3(-10, -10, -170) , V3(-10, 10, -170) , // 4 5
         V3(10, 10, -170)   , V3(10, -10, -170)   // 6 7
     };
-    u16 s_indices[12] = {
+    u16 s_indices[36] = {
         0, 1, 3,   3, 1, 2,   4, 5, 7,   7, 5, 6,
         4, 5, 0,   0, 5, 1,   7, 6, 3,   3, 6, 2,
         4, 0, 7,   7, 0, 3,   1, 5, 2,   2, 5, 6
@@ -59,8 +76,16 @@ void basic_mesh_test(void)
 
     Mesh* mesh = Assets;
 
+    int j = -1;
+    u32 color = f_color;
     for (int i = 0; i < ArrCount(s_indices)/3; i = i + 3)
         {
+            if (i % 2 == 0)
+                {
+                    j++;
+                    color = colors[j];
+                }
+            
             u16 i0 = mesh->indices[i];
             u16 i1 = mesh->indices[i+1];
             u16 i2 = mesh->indices[i+2];
@@ -69,7 +94,19 @@ void basic_mesh_test(void)
             v3 B = mesh->vertices[i1];
             v3 C = mesh->vertices[i2];
             
-            RasterizeTriangle(A, B, C, color, true);
+            RasterizeTriangle(A, B, C, color, false);
+        }
+
+    
+    
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
+                {
+                    *row = Gamestate->cameraParams._far-500;
+                    row++;
+                }
         }
 }
 

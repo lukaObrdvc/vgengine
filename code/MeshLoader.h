@@ -18,11 +18,11 @@ void mesh_loader_save(u8* fileName, Mesh* mesh)
     
 }
 
-Mesh* mesh_loader_load(u8* fileName)
-{
+/* Mesh* mesh_loader_load(u8* fileName) */
+/* { */
 
-    // save into temp_mem here
+/*     // save into temp_mem here */
     
-}
+/* } */
 
 #endif
