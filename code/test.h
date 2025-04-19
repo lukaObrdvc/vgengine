@@ -35,7 +35,7 @@ void orbiting_camera_test(void)
     
     m4 WtoC = M4Unit();
     v3 orbiting_point = V3(0, 0, ORBIT_OFFS); // assuming it's in 0,0,-180 coordsys
-
+    
     r32 angle = Gamestate->line_angle;
     r32 camera_angle = Gamestate->camera_angle;
 
