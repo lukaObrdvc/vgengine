@@ -9,7 +9,7 @@
 
 void basic_mesh_test(void)
 {
-
+    
     
     
 }
@@ -87,6 +87,7 @@ void orbiting_camera_test(void)
     // because winding is reversed, how fix this?
     if (Gamestate->reverse_winding)
         {
+            dbg_print("reverse winding\n");
             RasterizeTriangle(t.B, t.C, t.A, color, true);
             RasterizeTriangle(t2.B, t2.C, t2.A, color, false);
         }

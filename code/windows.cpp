@@ -523,7 +523,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             sprintf(debug_str,"%f fps : %f ms : %I64d cycles\n", fps, ms_per_frame, cycles_per_frame );
 
             // @Note turned off for now
-            OutputDebugStringA(debug_str);
+            // OutputDebugStringA(debug_str);
 
             //Sleep(200);
         }

@@ -16,6 +16,11 @@
 #include <stdint.h>
 #include <math.h>
 
+#if !USE_DLL
+#define dbg_print(str) OutputDebugString(str);
+#else
+#define dbg_print(str) ((void)0)
+#endif
 
 #include "utils.h"
 #include "Allocator.h"
