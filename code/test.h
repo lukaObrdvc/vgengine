@@ -29,7 +29,7 @@ void orbiting_camera_test(void)
 
 #define RotCamera 1
 #define RotTriangles 0
-#define ChangeAngle 0
+#define ChangeAngle 1
 #define LogToFile 0
 #define ORBIT_OFFS 180
     

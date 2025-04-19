@@ -293,10 +293,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     // @Failure failure points??
     
     timeBeginPeriod(1);
+    init_keymap();
 
 #if USE_DLL
-    init_keymap();
-    
     HMODULE dll = load_game();
     WIN32_FIND_DATA find_data;
     HANDLE dll_filehandle = FindFirstFile((LPCSTR)"W:\\Projects\\vgengine\\exe\\main.dll", &find_data);
