@@ -139,7 +139,7 @@ typedef struct tagGame_state
 
 #define ENGINE_MEMORY ((EngineMemory*)((u8*)(platformAPI) + sizeof(PlatformAPI)))
 #define PERM_MEM      (ENGINE_MEMORY->perm_mem)
-#define TEMP_MEM      (ENGINE_MEMORY->perm_mem)
+#define TEMP_MEM      (ENGINE_MEMORY->temp_mem)
 
 #define Gamestate    ((game_state*)(PERM_MEM))
 #define Assets       ((Mesh*)(TEMP_MEM))

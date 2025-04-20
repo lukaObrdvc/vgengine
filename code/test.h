@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING orbiting_camera_test
+#define CURRENTLY_TESTING basic_mesh_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // you need to laod a mesh from disk into memory
@@ -61,24 +61,53 @@ void basic_mesh_test(void)
         V3(10, 10, -170)   , V3(10, -10, -170)   // 6 7
     };
     u16 s_indices[36] = {
-        0, 1, 3,   3, 1, 2,   4, 5, 7,   7, 5, 6,
-        4, 5, 0,   0, 5, 1,   7, 6, 3,   3, 6, 2,
-        4, 0, 7,   7, 0, 3,   1, 5, 2,   2, 5, 6
+        3, 1, 0,   2, 1, 3,   4, 5, 7,   7, 5, 6,
+        0, 5, 4,   1, 5, 0,   7, 6, 3,   3, 6, 2,
+        7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2
     };
+
+#define RotateVertices 1
+#define ChangeVerticeAngles 1
+#define ORBIT_OFFS 180
+
+    m4 WtoC = M4Unit();
+    v3 orbiting_point = V3(0, 0, ORBIT_OFFS);
+    
+    r32 angle = Gamestate->line_angle;
+    r32 camera_angle = Gamestate->camera_angle;
+    
+    orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
+    orbiting_point = M4Mul(orbiting_point, M4Tlate(V3(0, 0, -ORBIT_OFFS)));
+    m4 T = M4Tlate(orbiting_point);
+    m4 R = M4RotY(camera_angle);
+    WtoC = M4Compose(3, WtoC, R, T);
+    
+#if RotateVertices
+    for (int i = 0; i < 8; i++)
+        {
+            s_vertices[i] = rotate3(s_vertices[i], angle, 0, 0);
+        }
+#endif
+
+    for (int i = 0; i < 8; i++)
+        {
+            s_vertices[i] = M4Mul(s_vertices[i], WtoC);
+        }
 
     vertices = s_vertices;
     indices = s_indices;
     
     cube.vertices = vertices;
     cube.indices = indices;
-
+    
     *Assets = cube;
 
     Mesh* mesh = Assets;
 
+    int b = 0;
     int j = -1;
     u32 color = f_color;
-    for (int i = 0; i < ArrCount(s_indices)/3; i = i + 3)
+    for (int i = 0; i < ArrCount(s_indices)/3; i++)
         {
             if (i % 2 == 0)
                 {
@@ -86,28 +115,45 @@ void basic_mesh_test(void)
                     color = colors[j];
                 }
             
-            u16 i0 = mesh->indices[i];
-            u16 i1 = mesh->indices[i+1];
-            u16 i2 = mesh->indices[i+2];
+            u16 i0 = mesh->indices[b];
+            u16 i1 = mesh->indices[b+1];
+            u16 i2 = mesh->indices[b+2];
             
             v3 A = mesh->vertices[i0];
             v3 B = mesh->vertices[i1];
             v3 C = mesh->vertices[i2];
             
-            RasterizeTriangle(A, B, C, color, false);
+            triangle t = {A, B, C};
+            t = TriangleWorldToRaster(t);
+            
+            if (Gamestate->reverse_winding)
+                {
+                    RasterizeTriangle(t.A, t.B, t.C, color, false);
+                }
+            else
+                {
+                    RasterizeTriangle(t.C, t.B, t.A, color, false);
+                }
+            b += 3;
         }
-
-    
     
     for (s32 i = 0; i < wnd_height; i++)
         {
             r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            for (s32 k = 0; k < wnd_width; k++)
                 {
                     *row = Gamestate->cameraParams._far-500;
                     row++;
                 }
         }
+
+#if ChangeVerticeAngles
+    Gamestate->line_angle += PI / 256;
+#endif
+
+#undef RotateVertices
+#undef ChangeVerticeAngles
+#undef ORBIT_OFFS
 }
 
 void orbiting_camera_test(void)
@@ -134,7 +180,7 @@ void orbiting_camera_test(void)
     
     r32 angle = Gamestate->line_angle;
     r32 camera_angle = Gamestate->camera_angle;
-
+    
 #if RotCamera
     orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
 #endif
