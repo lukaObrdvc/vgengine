@@ -1066,15 +1066,29 @@ b32 process_input(u64 curr_keyflags_to_set,
     
     if (ExtractKey(kflags, KEY_D))
         {
+            Gamestate->camera_offs_x += 1.0f;
+            
             Gamestate->camera_angle += PI/256;
             Gamestate->log_to_file_once = true;
         }
 
     if (ExtractKey(kflags, KEY_A))
         {
+            Gamestate->camera_offs_x -= 1.0f;
+            
             Gamestate->camera_angle -= PI/256;
             Gamestate->log_to_file_once = true;
         }
+
+    if (ExtractKey(kflags, KEY_W))
+        {
+            Gamestate->camera_offs_y += 1.0f;
+        }
+    
+    if (ExtractKey(kflags, KEY_S))
+        {
+            Gamestate->camera_offs_y -= 1.0f;            
+        }    
     
     // probably better to not use macro, just use &
     if (ExtractKey(kflags, KEY_UP))
@@ -1265,6 +1279,9 @@ void init_game_state(void)
             Gamestate->line_scaling_factor = 1;
             Gamestate->rect_angle = 0;
             Gamestate->rect_scaling_factor = 1;
+            
+            Gamestate->camera_offs_x = 0;
+            Gamestate->camera_offs_y = 0;
 
 
             

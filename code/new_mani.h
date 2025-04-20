@@ -132,6 +132,9 @@ typedef struct tagGame_state
     r32 line_scaling_factor;
     r32 rect_angle;
     r32 rect_scaling_factor;
+
+    r32 camera_offs_x;
+    r32 camera_offs_y;
     
 } game_state;
 #pragma pack(pop)
