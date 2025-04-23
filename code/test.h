@@ -10,6 +10,9 @@
 
 void mesh_clipping_test(void)
 {
+    // @IMPORTANT: you need to change to using a 4x4 projection matrix
+    // if you want to implement the clipping algorithm
+    
     // @TODO am I doing the camera transform correctly orwhat, it
     // kind of stretches on the screen.........
     
@@ -102,7 +105,9 @@ void mesh_clipping_test(void)
             v3 C = mesh->vertices[i2];
             
             triangle t = {A, B, C};
+
             t = TriangleWorldToRaster(t);
+            // @TODO do clipping here, tesselate, then draw extra geometry
             
             if (Gamestate->reverse_winding)
                 {
@@ -342,12 +347,16 @@ void orbiting_camera_test(void)
     A2 = M4Mul(A2, WtoC);
     B2 = M4Mul(B2, WtoC);
     C2 = M4Mul(C2, WtoC);
+
+    // vertices are now in camera space
     
     triangle t = {A, B, C};
     t = TriangleWorldToRaster(t);
     triangle t2 = {A2, B2, C2};
     t2 = TriangleWorldToRaster(t2);
 
+    // vertices are now in raster space
+    
     // when rotating behind the triangles, they are getting culled
     // because winding is reversed, how fix this?
     if (Gamestate->reverse_winding)

@@ -1,0 +1,423 @@
+
+code/babag.rdbg,0
+
+code/build.bat,497
+set WarningFlags=-W4 -WX -wd4100 -wd4091 -wd4459 -wd4996 -wd4189 -wd4201 -wd4804 -wd4244 -wd4013WarningFlags4,56
+set CompilerFlags=/std:c17 /Zc:preprocessor /TC -Oi -Zi -MT -GR -EHa -nologoCompilerFlags5,170
+set LinkerFlags=-incremental:no -opt:refLinkerFlags6,248
+set Imports=user32.lib gdi32.lib kernel32.lib winmm.libImports7,290
+set Exports=/EXPORT:update_and_render /EXPORT:platform_init_memory_base /EXPORT:process_inputExports8,347
+set Defines=-DDEBUG=1 -DHOTLOAD=1Defines9,442
+
+code/main.c,1549
+inline r32 slope2(v2 vec1, v2 vec2)slope211,196
+v2 clamp_line(v2 vec, v2 other)clamp_line47,1338
+inline v2 clamp2(v2 vec)clamp2118,4105
+inline v3 clamp3(v3 vec)clamp3132,4508
+inline wndrect clamp_wndrect(wndrect rect)clamp_wndrect144,4800
+inline v3 rotate3(v3 vec, r32 yaw, r32 pitch, r32 roll)rotate3161,5254
+void draw_clamped_zbuffered_wndrect(wndrect rect, r32 z, pxl color)draw_clamped_zbuffered_wndrect186,5817
+void draw_clamped_wndrect(wndrect rect, pxl color)draw_clamped_wndrect209,6611
+void draw_rotated_rect(s32 width, s32 height, v2 origin, pxl color)draw_rotated_rect228,7162
+v2 project(v3 point, PROJECTION P)project254,8190
+void draw_wndline_aa(v2 P0, v2 P1, u32 color)draw_wndline_aa303,10111
+void draw_line(v2 origin, v2 point, u32 color)draw_line412,13326
+void fill_background()fill_background440,14166
+void dbg_render(s8 x_offset, s8 y_offset)dbg_render453,14499
+void dbg_draw_square_around_cursor(r32 square_length)dbg_draw_square_around_cursor469,14946
+wndrect project_wndrect(wndrect rect)project_wndrect488,15583
+void draw_wndrect_outline_projected(wndrect rect, s32 thickness, pxl color)draw_wndrect_outline_projected505,16262
+void draw_wndrect_outline(wndrect rect, s32 thickness, pxl color)draw_wndrect_outline545,17710
+b32 process_input(u64 curr_keyflags_to_set,process_input581,18980
+void platform_init_memory_base(void* memory_base_ptr)platform_init_memory_base740,24584
+void init_game_state(void)init_game_state746,24764
+void update_and_render(void)update_and_render867,29605
+
+code/main.h,4744
+#define MAIN_HMAIN_H2,16
+typedef b32 (*fp_dbg_read_file) (u8*, void*, u32*);fp_dbg_read_file7,91
+typedef b32 (*fp_dbg_write_file) (u8*, void*, u32);fp_dbg_write_file8,144
+typedef enum tagMOUSECODEtagMOUSECODE12,299
+        MOUSE_NONE = 0,MOUSE_NONE14,333
+        MOUSE_MOVE = (1 << 0), // @Noted MOUSE_MOVED is defined in windows...MOUSE_MOVE15,358
+        MOUSE_M1   = (1 << 1),MOUSE_M116,437
+        MOUSE_M2   = (1 << 2),MOUSE_M217,469
+        MOUSE_M3   = (1 << 3)MOUSE_M318,501
+    } MOUSECODE;MOUSECODE19,532
+typedef enum tagKEYCODetagKEYCODe21,552
+        KEY_NONE  = 0,KEY_NONE23,584
+        KEY_LEFT  = (1 << 0),KEY_LEFT24,608
+        KEY_UP    = (1 << 1), KEY_UP25,639
+        KEY_RIGHT = (1 << 2), KEY_RIGHT26,671
+        KEY_DOWN  = (1 << 3), KEY_DOWN27,703
+        KEY_W     = (1 << 4), KEY_W28,735
+        KEY_S     = (1 << 5), KEY_S29,767
+        KEY_A     = (1 << 6), KEY_A30,799
+        KEY_D     = (1 << 7), KEY_D31,831
+        KEY_Q     = (1 << 8), KEY_Q32,863
+        KEY_E     = (1 << 9), KEY_E33,895
+        KEY_I     = (1 << 10),KEY_I34,927
+        KEY_K     = (1 << 11),KEY_K35,959
+        KEY_J     = (1 << 12),KEY_J36,991
+        KEY_L     = (1 << 13),KEY_L37,1023
+        KEY_U     = (1 << 14),KEY_U38,1055
+        KEY_O     = (1 << 15)KEY_O39,1087
+    } KEYCODE;KEYCODE40,1118
+{__anon1cb8196a010844,1205
+    void* perm_mem;perm_mem45,1208
+    u64 perm_mem_cap;perm_mem_cap46,1229
+    void* temp_mem;temp_mem47,1252
+    u64 temp_mem_cap;temp_mem_cap48,1273
+    s32 bytpp;            // access through macrobytpp50,1298
+    fp_dbg_read_file dbg_read_file;dbg_read_file55,1512
+    fp_dbg_write_file dbg_write_file;dbg_write_file56,1549
+} platform_provides;platform_provides57,1588
+global_variable platform_provides* memory_base;memory_base59,1612
+#define DBG_READ_FILE DBG_READ_FILE62,1665
+#define DBG_WRITE_FILE DBG_WRITE_FILE63,1715
+#define CONCENTRIC_MAX CONCENTRIC_MAX67,1773
+#define MAX_BRUSHES MAX_BRUSHES68,1842
+    {__anon1cb8196a020371,1882
+        BRUSH_NONE = 0,BRUSH_NONE72,1889
+        BRUSH_SCANLINE = 1,BRUSH_SCANLINE73,1914
+        BRUSH_SCANLINE2 = 2BRUSH_SCANLINE274,1943
+    } BRUSH;BRUSH75,1972
+    {__anon1cb8196a030378,2002
+        ORTHOGRAPHIC,ORTHOGRAPHIC79,2009
+        PERSPECTIVEPERSPECTIVE80,2032
+    } PROJECTION;PROJECTION81,2053
+{__anon1cb8196a040884,2090
+    v3 fpoint;fpoint85,2093
+    r32 yaw;yaw86,2109
+    r32 pitch;pitch87,2123
+    r32 roll;roll88,2139
+} Camera;Camera89,2154
+typedef struct babagbabag93,2194
+    b32 inited;inited95,2219
+    b32 tested_once;tested_once96,2236
+    s32 wndbuffer_width;  // access through macrowndbuffer_width99,2262
+    s32 wndbuffer_height; // access through macrowndbuffer_height100,2313
+    u64 keyflags;keyflags103,2436
+    u8 keymap[256]; // @Note 254 is the max VK codekeymap104,2455
+    u8 mouseflags;mouseflags105,2508
+    v2 cursor;cursor106,2528
+    r32 eye_x;eye_x109,2598
+    r32 eye_y;eye_y110,2614
+    r32 screen_z;screen_z111,2630
+    r32 new_screen_z;new_screen_z112,2649
+    r32 nearclip;nearclip113,2672
+    r32 farclip;farclip114,2691
+    Camera camera;camera115,2709
+    u32 brushes[MAX_BRUSHES];brushes117,2731
+    r32 wnd_center_x; wnd_center_x121,2853
+    r32 wnd_center_y;wnd_center_y122,2877
+    s32 dbg_render_x_offset;dbg_render_x_offset124,2906
+    s32 dbg_render_y_offset;dbg_render_y_offset125,2936
+    r32 square_length;square_length126,2966
+    r32 concentric_thickness;concentric_thickness127,2990
+    s32 concentric_count;     // must be less than CONCENTRIC_MAXconcentric_count128,3021
+    r32 concentric_spread_x;concentric_spread_x129,3088
+    r32 concentric_spread_y;concentric_spread_y130,3118
+    r32 concentric_z_values[CONCENTRIC_MAX];concentric_z_values131,3148
+    s32 concentric_current_z;concentric_current_z132,3194
+    r32 line_angle;line_angle133,3225
+    r32 line_scaling_factor;line_scaling_factor134,3246
+    r32 rect_angle;rect_angle135,3276
+    r32 rect_scaling_factor;rect_scaling_factor136,3297
+} game_state;game_state138,3333
+#define Gamestate Gamestate142,3373
+#define wnd_width wnd_width144,3436
+#define wnd_height wnd_height145,3516
+#define wnd_bytpp wnd_bytpp146,3597
+#define wnd_bytesize wnd_bytesize147,3678
+#define wnd_pitch wnd_pitch149,3760
+#define wnd_buffer wnd_buffer150,3840
+#define wnd_nearclip wnd_nearclip154,4011
+#define wnd_farclip wnd_farclip155,4084
+#define to_yisdown(to_yisdown163,4405
+#define to_yisup(to_yisup164,4447
+#define zbuffer zbuffer168,4558
+#define GetBrush(GetBrush176,4851
+#define SetBrush(SetBrush178,4936
+#define ExtractKey(ExtractKey183,5204
+
+code/math.h,678
+#define MATH_HMATH_H2,16
+inline s32 floor32(r32 n)floor3214,397
+inline s64 floor64(r64 n)floor6419,454
+inline s32 ceil32(r32 n)ceil3225,561
+inline s64 ceil64(r64 n)ceil6430,619
+inline s32 round32(r32 n)round3236,729
+inline s64 round64(r64 n)round6441,790
+inline r32 decimal32(r32 n)decimal3246,851
+inline r64 decimal64(r64 n)decimal6451,910
+#define abs(abs56,969
+#define signof32(signof3258,1013
+#define signof64(signof6459,1064
+#define sqr(sqr62,1184
+#define PI PI68,1354
+#define TAU TAU69,1382
+inline r32 to_degree(r32 angle)to_degree71,1415
+inline r32 to_rad(r32 angle)to_rad76,1485
+inline r32 lerp(r32 low, r32 high, r32 step)lerp93,1956
+
+code/pixel.h,1436
+#define PIXEL_HPIXEL_H2,17
+typedef struct ClrClr6,113
+    u8 B;B8,136
+    u8 G;G9,147
+    u8 R;R10,158
+} clr;clr11,169
+typedef struct Clr_nClr_n13,179
+    r32 B;B15,204
+    r32 G;G16,216
+    r32 R;R17,228
+} clr_n;clr_n18,240
+typedef u8 alpha_u8;alpha_u821,280
+typedef r32 alpha;alpha22,302
+typedef struct PxlPxl24,324
+    u8 B;B26,347
+    u8 G;G27,358
+    u8 R;R28,369
+    u8 A;A29,380
+} pxl;pxl30,391
+typedef struct Pxl_nPxl_n33,403
+    u8 B;B35,428
+    u8 G;G36,439
+    u8 R;R37,450
+    r32 A;A38,461
+} pxl_n;pxl_n39,473
+typedef struct Pxl_naPxl_na41,485
+    r32 B;B43,511
+    r32 G;G44,523
+    r32 R;R45,535
+    r32 A;A46,547
+} pxl_na;pxl_na47,559
+inline alpha_u8 resulting_alphau8(alpha_u8 src_a, alpha_u8 dest_a)resulting_alphau854,684
+inline alpha resulting_alpha(alpha src_a, alpha dest_a)resulting_alpha65,1127
+inline clr clr_ablend(clr src, clr dest, alpha src_a)clr_ablend70,1232
+inline clr clr_ablend_u8(clr src, clr dest, alpha_u8 src_a)clr_ablend_u879,1503
+inline clr_n clr_n_ablend(clr_n src, clr_n dest, alpha src_a)clr_n_ablend89,1839
+inline clr_n clr_n_ablend_u8(clr_n src, clr_n dest, alpha_u8 src_a)clr_n_ablend_u898,2081
+inline pxl pxl_ablend(pxl foreground, pxl background)pxl_ablend110,2489
+inline pxl_n pxl_n_ablend(pxl_n src, pxl_n dest)pxl_n_ablend121,2922
+inline pxl_na pxl_na_ablend(pxl_na src, pxl_na dest)pxl_na_ablend131,3238
+
+code/renderer.h,614
+#define RENDERER_HRENDERER_H2,20
+{__anon877e1e1c010a15,460
+    {__anon877e1e1c020817,475
+        r32 left;    // x_minleft18,482
+        r32 bottom;  // y_minbottom19,513
+        r32 right;   // x_maxright20,544
+        r32 top;     // y_maxtop21,575
+    {__anon877e1e1c030824,626
+        v2 ll;     // lower left  cornerll25,633
+        v2 ur;     // upper right cornerur26,675
+} wndrect;wndrect28,725
+inline wndrect Wndrect(r32 l, r32 b, r32 r, r32 t)Wndrect30,739
+inline r32 wndrect_width(wndrect rect)wndrect_width42,938
+inline r32 wndrect_height(wndrect rect)wndrect_height51,1073
+
+code/test.h,1074
+#define CURRENTLY_TESTING CURRENTLY_TESTING1,0
+#define TEST_ONLY_ONCE TEST_ONLY_ONCE2,43
+void zbuffering_triangles_test(void)zbuffering_triangles_test24,852
+void zbuffering_test(void)zbuffering_test343,12067
+void draw_triangle_test(void)draw_triangle_test442,15270
+void static_camera_test(void)static_camera_test590,20163
+void rotate_cube_test(void)rotate_cube_test654,22197
+void rotate3_test(void)rotate3_test744,25750
+void line_side_by_side_test(void)line_side_by_side_test813,27721
+void scanlines_concentric_test(void)scanlines_concentric_test877,29941
+void draw_rotated_line_test(void)draw_rotated_line_test934,32106
+void perspective_projection_test(void)perspective_projection_test966,33305
+void concentric_test(void)concentric_test1004,34630
+void draw_rotated_rect_test(void)draw_rotated_rect_test1033,35614
+void draw_sqaure_around_cursor_test(void)draw_sqaure_around_cursor_test1060,36438
+void file_test(void)file_test1066,36632
+void none_test(void)none_test1074,36908
+#define TEST_ TEST_1079,36958
+void test(void)test1080,36994
+
+code/utils.h,1432
+#define UTILS_HUTILS_H2,17
+typedef int8_t s8;s86,59
+typedef int16_t s16;s167,79
+typedef int32_t s32;s328,101
+typedef int64_t s64;s649,123
+typedef uint8_t u8;u811,147
+typedef uint16_t u16;u1612,168
+typedef uint32_t u32;u3213,191
+typedef uint64_t u64;u6414,214
+typedef float r32;r3216,239
+typedef double r64;r6417,259
+typedef s32 b32;b3219,282
+typedef s64 b64;b6420,300
+#define literal(literal23,340
+#define literal(literal25,369
+#define true true28,403
+#define false false29,419
+#define global_variableglobal_variable31,438
+#define internal internal33,535
+#define Assert(Assert36,576
+#define Assert(Assert38,642
+#define InvalidCodePath InvalidCodePath41,674
+#define InvalidDefaultCase InvalidDefaultCase42,709
+#define MIN_U MIN_U44,749
+#define MAX_U8 MAX_U845,766
+#define MAX_U16 MAX_U1646,786
+#define MAX_U32 MAX_U3247,809
+#define MAX_U64 MAX_U6448,837
+#define MIN_S8 MIN_S849,876
+#define MIN_S16 MIN_S1650,897
+#define MIN_S32 MIN_S3251,922
+#define MIN_S64 MIN_S6452,951
+#define MAX_S8 MAX_S853,989
+#define MAX_S16 MAX_S1654,1009
+#define MAX_S32 MAX_S3255,1033
+#define MAX_S64 MAX_S6456,1061
+inline u64 kilobytes(u32 n)kilobytes63,1277
+inline u64 megabytes(u32 n)megabytes68,1341
+inline u64 gigabytes(u32 n)gigabytes73,1410
+#define arr_count(arr_count78,1484
+#define clamp(clamp79,1541
+inline r32 clamp32(r32 value, r32 min, r32 max)clamp3282,1664
+
+code/vector.h,1156
+#define VECTOR_HVECTOR_H2,18
+{__anon9feeff9801089,147
+    r32 x;x10,150
+    r32 y;y11,162
+} v2;v212,174
+{__anon9feeff98020815,199
+    r32 x;x16,202
+    r32 y;y17,214
+    r32 z;z18,226
+} v3;v319,238
+inline r32 edist2(v2 vec1, v2 vec2)edist221,247
+inline r32 edist3(v3 vec1, v3 vec2)edist327,377
+inline v2 V2(r32 x, r32 y)V234,549
+inline v3 V3(r32 x, r32 y, r32 z)V344,667
+inline v2 zero2(void)zero257,903
+inline v3 zero3(void)zero367,1016
+inline v2 add2(v2 vec1, v2 vec2)add278,1148
+inline v3 add3(v3 vec1, v3 vec2)add388,1300
+inline v2 sub2(v2 vec1, v2 vec2)sub299,1485
+inline v3 sub3(v3 vec1, v3 vec2)sub3109,1637
+inline v2 dot2(v2 vec1, v2 vec2)dot2120,1822
+inline v3 dot3(v3 vec1, v3 vec2)dot3130,1974
+inline v2 scale2(v2 vec, r32 scalar)scale2141,2159
+inline v3 scale3(v3 vec, r32 scalar)scale3151,2313
+inline v2 unit2(v2 vec)unit2162,2503
+inline v3 unit3(v3 vec)unit3173,2669
+inline v2 transpose2(v2 vec, v2 from, v2 to)transpose2185,2861
+inline v3 transpose3(v3 vec, v3 from, v3 to)transpose3195,3041
+inline v2 perp2(v2 vec)perp2208,3299
+inline v2 rotate2(v2 vec, r32 angle)rotate2218,3427
+
+code/vgengine.rdbg,0
+
+code/win32_vgengine.c,2211
+global_variable b32 running = true;running16,333
+global_variable b32 valid_dll = false;valid_dll17,370
+#define MAX_KEY_MESSAGES MAX_KEY_MESSAGES19,412
+global_variable u64 curr_keyflags_to_set = 0;curr_keyflags_to_set20,441
+global_variable u64 curr_keyflags_to_unset = 0;curr_keyflags_to_unset21,488
+global_variable u8 curr_mouseflags_to_set = 0;curr_mouseflags_to_set22,537
+global_variable u8 curr_mouseflags_to_unset = MOUSE_MOVE;curr_mouseflags_to_unset23,585
+global_variable v2 curr_cursor = {0}; // zero2()?curr_cursor24,644
+void init_memory_base_stub(void* memory_base)init_memory_base_stub27,699
+typedef void (*fp_init_memory_base) (void*);fp_init_memory_base31,765
+fp_init_memory_base init_memory_base = init_memory_base_stub;init_memory_base32,811
+void* update_and_render_stub()update_and_render_stub34,876
+typedef void* (*fp_update_and_render) ();fp_update_and_render38,929
+fp_update_and_render update_and_render = update_and_render_stub;update_and_render39,972
+b32 process_input_stub(u64 kts, u64 ktus, u8 mts, u8 mtus, v2 c)process_input_stub41,1040
+typedef b32 (*fp_process_input) (u64, u64, u8, u8, v2);fp_process_input45,1131
+fp_process_input process_input = process_input_stub;process_input46,1188
+HMODULE load_game()load_game48,1244
+void unload_game(HMODULE dll)unload_game88,2549
+typedef struct Window_rect_dimsWindow_rect_dims98,2837
+    s32 width;width100,2873
+    s32 height;height101,2889
+} window_rect_dims;window_rect_dims102,2906
+inline window_rect_dims get_window_rect_dims(HWND window)get_window_rect_dims104,2929
+HANDLE dbg_open_file(u8* filename)dbg_open_file114,3225
+b32 dbg_read_entire_file(u8* filename, void* buffer, u32* buffer_size)dbg_read_entire_file122,3562
+b32 dbg_write_entire_file(u8* filename, void* buffer, u32 buffer_size)dbg_write_entire_file150,4282
+void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPINFO* window_buffestretch_and_draw_window_buffer171,4824
+LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)window_procedure190,5584
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int nShowCmd)WinMain287,8953
+
+exe/.vs/win32_vgengine/v16/.suo,0
+
+exe/.vs/win32_vgengine/v16/Browse.VC.db,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/1e697b2ea718a67c/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/234c41c622a1be9e/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/23e2de1194a920c4/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2c800322bf3c4df7/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2ca737db520bb7c/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/2d594186158d6aab/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/30ec6a69f2b2a0b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/32d623ca5e7247f3/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/46e34e655ef6e2d8/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/537fa418a107d4c5/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/560bf95e31ae5953/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5a69ed881e8ee4e4/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/5bf5ba526b3f5c20/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6635b40ffa0e2716/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6972d9d0a44cc482/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/6beccd691c6a9ace/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/b1f8be5b6981528b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/bbabd67db315a901/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c5d99d91ed71e9d1/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/c8d28971c2fc634e/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/cb16f05b0cdae74b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/dcc08e2d80fb6297/MAIN.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/ecdfca0b4103dd6b/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/f2ed7f13675c249c/WIN32_VGENGINE.ipch,0
+
+exe/.vs/win32_vgengine/v16/ipch/AutoPCH/f82993dd425c5db7/MAIN.ipch,0
+
+exe/main.exp,0
+
+exe/main.map,0
+
+exe/main.pdb,0
+
+exe/testing.rdbg,0
+
+exe/vc140.pdb,0
+
+exe/vgengine.rdbg,0
+
+exe/win32_vgengine.map,0
+
+exe/win32_vgengine.pdb,0
+
+TAGS,0

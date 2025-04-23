@@ -500,6 +500,7 @@ typedef union tagTriangle
 
 triangle TriangleWorldToRaster(triangle tri)
 {
+    // @TODO refactor to use projection matrix instead
     triangle result;
 
     v3 A = tri.A;
@@ -514,7 +515,7 @@ triangle TriangleWorldToRaster(triangle tri)
     v3 A_s = V3(A.x*invA, A.y*invA, A.z);
     v3 B_s = V3(B.x*invB, B.y*invB, B.z);
     v3 C_s = V3(C.x*invC, C.y*invC, C.z);
-
+    
     s32 test1 = wnd_width;
     s32 test2 = wnd_height;
     

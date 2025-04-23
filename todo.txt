@@ -1,0 +1,40 @@
+meshes and OBJ; vertex attributes; perspective-correct interpolation
+polygon clipping
+camera controls, fov zoom in/out
+quaternions
+culling/winding
+shear
+viewport setting, fullscreen, ?resizing
+
+ray-tracing
+curves, other kind of primitive geometry, non-triangulated geometry,
+triangulation
+[other kinds of details I missed or ignored and so on...]
+
+
+texture mapping and filtering
+shading and lighting
+anti-aliasing
+transparency, blending
+
+
+
+???volume rendering: 375-385; ??volume textures; ?PNGs;
+mipmaping;
+animation but not really;
+
+basic modelling and animation is perchance achievable
+
+
+
+swarm and volume animation and rendering with 4D noise
+
+you have to basically only use simple animation with simple transformations,
+the problem is the keyframes, not interpolation, and if you manually have
+to make those keyframes it's a disaster if it's not something simple,
+because it turns into modelling basically, for which you actually just
+want to use a dedicated software if it's anything moderately complex; and
+if you are interpolating, then by definition you kind of cannot proceduraly
+make that animation, you have to manually set the keyframes.....
+
+
