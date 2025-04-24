@@ -516,9 +516,6 @@ triangle TriangleWorldToRaster(triangle tri)
     v3 B_s = V3(B.x*invB, B.y*invB, B.z);
     v3 C_s = V3(C.x*invC, C.y*invC, C.z);
     
-    s32 test1 = wnd_width;
-    s32 test2 = wnd_height;
-    
     r32 Fov = Gamestate->cameraParams.fov;
     r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
 
