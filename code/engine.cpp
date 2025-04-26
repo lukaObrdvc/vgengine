@@ -498,11 +498,18 @@ typedef union tagTriangle
     v3 v[3];
 } triangle;
 
+// divide by w to turn from homogeneous to cartesian coordinates if w != 1
+// what we want to do is turn w to -z, so that when we convert to
+// cartesian we also automatically do the perspective divide
+
+
 triangle TriangleWorldToRaster(triangle tri)
 {
     // @TODO refactor to use projection matrix instead
     triangle result;
 
+    // camera space
+    
     v3 A = tri.A;
     v3 B = tri.B;
     v3 C = tri.C;
@@ -523,7 +530,12 @@ triangle TriangleWorldToRaster(triangle tri)
     r32 l = -r;
     r32 t = r/aspect_ratio;
     r32 b = -t;
+    
+    // clip space (before converting from homogeneous to cartesian, which
+    // does the perspective divide essentialy)
 
+    // ndc space
+    
     v3 A_ndc = V3(A_s.x/r, A_s.y/t, A_s.z);
     v3 B_ndc = V3(B_s.x/r, B_s.y/t, B_s.z);
     v3 C_ndc = V3(C_s.x/r, C_s.y/t, C_s.z);
@@ -532,6 +544,62 @@ triangle TriangleWorldToRaster(triangle tri)
     /* v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (1-(B_ndc.y+1)/2)*(wnd_height-1), B_ndc.z); */
     /* v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (1-(C_ndc.y+1)/2)*(wnd_height-1), C_ndc.z); */
 
+    // raster space
+    
+    v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (A_ndc.y+1)/2*(wnd_height-1), A_ndc.z);
+    v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z);
+    v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);
+
+    result.A = A_r;
+    result.B = B_r;
+    result.C = C_r;
+    
+    return result;
+}
+
+triangle TriangleWorldToRasterPROJ(triangle tri)
+{
+    // @TODO refactor to use projection matrix instead
+    triangle result;
+
+    // camera space
+    
+    v3 A = tri.A;
+    v3 B = tri.B;
+    v3 C = tri.C;
+    
+    r32 Near = Gamestate->cameraParams._near;
+
+    r32 invA = Near/A.z;
+    r32 invB = Near/B.z;
+    r32 invC = Near/C.z;
+    v3 A_s = V3(A.x*invA, A.y*invA, A.z);
+    v3 B_s = V3(B.x*invB, B.y*invB, B.z);
+    v3 C_s = V3(C.x*invC, C.y*invC, C.z);
+    
+    r32 Fov = Gamestate->cameraParams.fov;
+    r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
+
+    r32 r = -Near*tan(to_rad(Fov/2));
+    r32 l = -r;
+    r32 t = r/aspect_ratio;
+    r32 b = -t;
+    
+    // clip space (before converting from homogeneous to cartesian, which
+    // does the perspective divide essentialy)
+
+    // ndc space
+    
+    v3 A_ndc = V3(A_s.x/r, A_s.y/t, A_s.z);
+    v3 B_ndc = V3(B_s.x/r, B_s.y/t, B_s.z);
+    v3 C_ndc = V3(C_s.x/r, C_s.y/t, C_s.z);
+
+    /* v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (1-(A_ndc.y+1)/2)*(wnd_height-1), A_ndc.z); */
+    /* v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (1-(B_ndc.y+1)/2)*(wnd_height-1), B_ndc.z); */
+    /* v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (1-(C_ndc.y+1)/2)*(wnd_height-1), C_ndc.z); */
+
+    // raster space
+    
     v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (A_ndc.y+1)/2*(wnd_height-1), A_ndc.z);
     v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z);
     v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);

@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING mesh_clipping_test
+#define CURRENTLY_TESTING projection_matrix_test
 #define TEST_ONLY_ONCE Gamestate->tested_once = true;
 
 // you need to laod a mesh from disk into memory
@@ -8,136 +8,200 @@
 // tesselate that geometry and put it in a new mesh (fixed size storage..)
 // draw extra geometry
 
-void mesh_clipping_test(void)
+/* void mesh_clipping_test(void) */
+/* { */
+/*     // @IMPORTANT: you need to change to using a 4x4 projection matrix */
+/*     // if you want to implement the clipping algorithm */
+    
+/*     // @TODO am I doing the camera transform correctly orwhat, it */
+/*     // kind of stretches on the screen......... */
+    
+    
+/*     fill_background(); */
+
+/*     u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f); */
+/*     u32 b_color = color_make(1.0f, 1.0f, 1.0f, 1.0f); */
+/*     u32 l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f); */
+/*     u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f); */
+/*     u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f); */
+/*     u32 u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f); */
+
+/*     u32 colors[6] = { */
+/*         f_color, b_color, */
+/*         l_color, r_color, */
+/*         d_color, u_color */
+/*     }; */
+    
+/*     Mesh cube; */
+/*     v3* vertices; */
+/*     u16* indices; */
+
+/*     v3 s_vertices[8] = { */
+/*         V3(-10, -10, -150) , V3(-10, 10, -150) , // 0 1 */
+/*         V3(10, 10, -150)   , V3(10, -10, -150) , // 2 3 */
+/*         V3(-10, -10, -170) , V3(-10, 10, -170) , // 4 5 */
+/*         V3(10, 10, -170)   , V3(10, -10, -170)   // 6 7 */
+/*     }; */
+/*     u16 s_indices[36] = { */
+/*         3, 1, 0,   2, 1, 3,   4, 5, 7,   7, 5, 6, */
+/*         0, 5, 4,   1, 5, 0,   7, 6, 3,   3, 6, 2, */
+/*         7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2 */
+/*     }; */
+
+/* #define RotateVertices2 1 */
+/* #define ChangeVerticeAngles2 1 */
+
+/*     m4 WtoC = M4Unit(); */
+    
+/*     r32 angle = Gamestate->line_angle; */
+/*     r32 camera_offs_x = Gamestate->camera_offs_x; */
+/*     r32 camera_offs_y = Gamestate->camera_offs_y; */
+    
+/*     v3 camera_point = M4Mul(V3(0,0,0), M4Tlate(V3(camera_offs_x, */
+/*                                                   camera_offs_y, */
+/*                                                   0))); */
+/*     m4 T = M4Tlate(camera_point); */
+/*     WtoC = M4Compose(2, WtoC, T); */
+    
+/* #if RotateVertices2 */
+/*     for (int i = 0; i < 8; i++) */
+/*         { */
+/*             s_vertices[i] = rotate3(s_vertices[i], angle, 0, 0); */
+/*         } */
+/* #endif */
+
+/*     for (int i = 0; i < 8; i++) */
+/*         { */
+/*             s_vertices[i] = M4Mul(s_vertices[i], WtoC); */
+/*         } */
+    
+/*     vertices = s_vertices; */
+/*     indices = s_indices; */
+    
+/*     cube.vertices = vertices; */
+/*     cube.indices = indices; */
+    
+/*     *Assets = cube; */
+
+/*     Mesh* mesh = Assets; */
+
+/*     int b = 0; */
+/*     int j = -1; */
+/*     u32 color = f_color; */
+/*     for (int i = 0; i < ArrCount(s_indices)/3; i++) */
+/*         { */
+/*             if (i % 2 == 0) */
+/*                 { */
+/*                     j++; */
+/*                     color = colors[j]; */
+/*                 } */
+            
+/*             u16 i0 = mesh->indices[b]; */
+/*             u16 i1 = mesh->indices[b+1]; */
+/*             u16 i2 = mesh->indices[b+2]; */
+            
+/*             v3 A = mesh->vertices[i0]; */
+/*             v3 B = mesh->vertices[i1]; */
+/*             v3 C = mesh->vertices[i2]; */
+            
+/*             triangle t = {A, B, C}; */
+
+/*             t = TriangleWorldToRaster(t); */
+/*             // @TODO do clipping here, tesselate, then draw extra geometry */
+            
+/*             if (Gamestate->reverse_winding) */
+/*                 { */
+/*                     RasterizeTriangle(t.A, t.B, t.C, color, false); */
+/*                 } */
+/*             else */
+/*                 { */
+/*                     RasterizeTriangle(t.C, t.B, t.A, color, false); */
+/*                 } */
+/*             b += 3; */
+/*         } */
+
+/*     for (s32 i = 0; i < wnd_height; i++) */
+/*         { */
+/*             r32* row = (r32*)(zbuffer + i*wnd_pitch); */
+/*             for (s32 k = 0; k < wnd_width; k++) */
+/*                 { */
+/*                     *row = Gamestate->cameraParams._far-500; */
+/*                     row++; */
+/*                 } */
+/*         } */
+    
+/* #if ChangeVerticeAngles2 */
+/*     Gamestate->line_angle += PI / 256; */
+/* #endif */
+    
+/* #undef RotateVertices2 */
+/* #undef hangeVerticeAngles2 */
+/* } */
+
+
+void projection_matrix_test(void)
 {
-    // @IMPORTANT: you need to change to using a 4x4 projection matrix
-    // if you want to implement the clipping algorithm
-    
-    // @TODO am I doing the camera transform correctly orwhat, it
-    // kind of stretches on the screen.........
-    
-    
+
     fill_background();
+    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
 
-    u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
-    u32 b_color = color_make(1.0f, 1.0f, 1.0f, 1.0f);
-    u32 l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
-    u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
-    u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
-    u32 u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
-
-    u32 colors[6] = {
-        f_color, b_color,
-        l_color, r_color,
-        d_color, u_color
-    };
+    v3 A = V3(-50, -20, -120); // A->C->B = clockwise winding
+    v3 B = V3(60, 0, -150);
+    v3 C = V3(-70, 60, -200);
     
-    Mesh cube;
-    v3* vertices;
-    u16* indices;
-
-    v3 s_vertices[8] = {
-        V3(-10, -10, -150) , V3(-10, 10, -150) , // 0 1
-        V3(10, 10, -150)   , V3(10, -10, -150) , // 2 3
-        V3(-10, -10, -170) , V3(-10, 10, -170) , // 4 5
-        V3(10, 10, -170)   , V3(10, -10, -170)   // 6 7
-    };
-    u16 s_indices[36] = {
-        3, 1, 0,   2, 1, 3,   4, 5, 7,   7, 5, 6,
-        0, 5, 4,   1, 5, 0,   7, 6, 3,   3, 6, 2,
-        7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2
-    };
-
-#define RotateVertices2 1
-#define ChangeVerticeAngles2 1
-
+#define RotTriangles5 0
+#define ChangeAngle5 0
+    
     m4 WtoC = M4Unit();
+    v3 orbiting_point = V3(0, 0, 180);
     
     r32 angle = Gamestate->line_angle;
-    r32 camera_offs_x = Gamestate->camera_offs_x;
-    r32 camera_offs_y = Gamestate->camera_offs_y;
+    r32 camera_angle = Gamestate->camera_angle;
     
-    v3 camera_point = M4Mul(V3(0,0,0), M4Tlate(V3(camera_offs_x,
-                                                  camera_offs_y,
-                                                  0)));
-    m4 T = M4Tlate(camera_point);
-    WtoC = M4Compose(2, WtoC, T);
+    orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
+    orbiting_point = M4Mul(orbiting_point, M4Tlate(V3(0, 0, -180)));
+    m4 T = M4Tlate(orbiting_point);
+    m4 R = M4RotY(camera_angle);
+    WtoC = M4Compose(3, WtoC, R, T);
     
-#if RotateVertices2
-    for (int i = 0; i < 8; i++)
-        {
-            s_vertices[i] = rotate3(s_vertices[i], angle, 0, 0);
-        }
+#if RotTriangles5
+    A = rotate3(A, angle, 0, 0);
+    B = rotate3(B, angle, 0, 0);
+    C = rotate3(C, angle, 0, 0);
 #endif
 
-    for (int i = 0; i < 8; i++)
+    A = M4Mul(A, WtoC);
+    B = M4Mul(B, WtoC);
+    C = M4Mul(C, WtoC);
+
+    triangle t = {A, B, C};
+    t = TriangleWorldToRasterPROJ(t);
+
+    if (Gamestate->reverse_winding)
         {
-            s_vertices[i] = M4Mul(s_vertices[i], WtoC);
+            RasterizeTriangle(t.B, t.C, t.A, color, true);
         }
-    
-    vertices = s_vertices;
-    indices = s_indices;
-    
-    cube.vertices = vertices;
-    cube.indices = indices;
-    
-    *Assets = cube;
-
-    Mesh* mesh = Assets;
-
-    int b = 0;
-    int j = -1;
-    u32 color = f_color;
-    for (int i = 0; i < ArrCount(s_indices)/3; i++)
+    else
         {
-            if (i % 2 == 0)
-                {
-                    j++;
-                    color = colors[j];
-                }
-            
-            u16 i0 = mesh->indices[b];
-            u16 i1 = mesh->indices[b+1];
-            u16 i2 = mesh->indices[b+2];
-            
-            v3 A = mesh->vertices[i0];
-            v3 B = mesh->vertices[i1];
-            v3 C = mesh->vertices[i2];
-            
-            triangle t = {A, B, C};
-
-            t = TriangleWorldToRaster(t);
-            // @TODO do clipping here, tesselate, then draw extra geometry
-            
-            if (Gamestate->reverse_winding)
-                {
-                    RasterizeTriangle(t.A, t.B, t.C, color, false);
-                }
-            else
-                {
-                    RasterizeTriangle(t.C, t.B, t.A, color, false);
-                }
-            b += 3;
+            RasterizeTriangle(t.A, t.C, t.B, color, true);
         }
 
     for (s32 i = 0; i < wnd_height; i++)
         {
             r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 k = 0; k < wnd_width; k++)
+            for (s32 j = 0; j < wnd_width; j++)
                 {
                     *row = Gamestate->cameraParams._far-500;
                     row++;
                 }
         }
-    
-#if ChangeVerticeAngles2
+#if ChangeAngle
     Gamestate->line_angle += PI / 256;
 #endif
-    
-#undef RotateVertices2
-#undef hangeVerticeAngles2
-}
 
+#undef RotTriangles5
+#undef ChangeAngle5
+}
 
 void basic_mesh_test(void)
 {
