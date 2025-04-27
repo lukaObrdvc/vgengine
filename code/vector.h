@@ -62,6 +62,18 @@ inline v3 V3(r32 x, r32 y, r32 z)
     return result;
 }
 
+inline v4 V4(r32 x, r32 y, r32 z, r32 w)
+{
+    v4 result;
+
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    result.w = w;
+    
+    return result;
+}
+
 // @TODO probably turn these zeroes into macros so you don't have to
 // add () everywhere
 inline v2 zero2(void)

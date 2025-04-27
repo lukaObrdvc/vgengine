@@ -150,10 +150,13 @@ void projection_matrix_test(void)
     v3 C = V3(-70, 60, -200);
     
 #define RotTriangles5 0
-#define ChangeAngle5 0
+#define ChangeAngle5 1
+#define DontUseGamestateCamera 0
     
     m4 WtoC = M4Unit();
-    v3 orbiting_point = V3(0, 0, 180);
+    v3 orbiting_point = V3(0+Gamestate->camera_offs_x,
+                           0+Gamestate->camera_offs_y,
+                           180);
     
     r32 angle = Gamestate->line_angle;
     r32 camera_angle = Gamestate->camera_angle;
@@ -170,37 +173,66 @@ void projection_matrix_test(void)
     C = rotate3(C, angle, 0, 0);
 #endif
 
+#if DontUseGamestateCamera
     A = M4Mul(A, WtoC);
     B = M4Mul(B, WtoC);
     C = M4Mul(C, WtoC);
+#else
+    Camera camera = Gamestate->camera;
+    m4 cameraMatrix = M4Unit();
+    m4 trans = M4Tlate(scale3(camera.fpoint, -1.0f));
+    m4 rot = M4Compose(2, M4RotX(-camera.roll), M4RotY(-camera.pitch));
+    cameraMatrix = M4Compose(3, cameraMatrix, trans, rot);
+    /* m4 cameraMatrix = M4Unit(); */
+    /* m4 trans = M4Tlate(scale3(camera.fpoint, -1.0f)); */
+    /* cameraMatrix = M4Compose(3, cameraMatrix, */
+                             /* M4RotX(-camera.roll), */
+                             /* M4RotY(-camera.pitch), */
+                             /* trans */
+                             /* ); */
+    A = M4Mul(A, cameraMatrix);
+    B = M4Mul(B, cameraMatrix);
+    C = M4Mul(C, cameraMatrix);
+#endif
 
     triangle t = {A, B, C};
-    t = TriangleWorldToRasterPROJ(t);
+    TriangleHom extraGeometry[4];
+    int count = TriangleWorldToRasterPROJ(t, extraGeometry);
 
-    if (Gamestate->reverse_winding)
+    for (int i = 0; i < count; i++)
         {
-            RasterizeTriangle(t.B, t.C, t.A, color, true);
+            TriangleHom tHom = extraGeometry[i];
+            triangle tri;
+            tri.A = V3(tHom.A.x, tHom.A.y, tHom.A.z);
+            tri.B = V3(tHom.B.x, tHom.B.y, tHom.B.z);
+            tri.C = V3(tHom.C.x, tHom.C.y, tHom.C.z);
+            
+            if (Gamestate->reverse_winding)
+                {
+                    RasterizeTriangle(tri.B, tri.C, tri.A, color, true);
+                }
+            else
+                {
+                    RasterizeTriangle(tri.A, tri.C, tri.B, color, true);
+                }
         }
-    else
-        {
-            RasterizeTriangle(t.A, t.C, t.B, color, true);
-        }
-
+    
     for (s32 i = 0; i < wnd_height; i++)
         {
             r32* row = (r32*)(zbuffer + i*wnd_pitch);
             for (s32 j = 0; j < wnd_width; j++)
                 {
-                    *row = Gamestate->cameraParams._far-500;
+                    *row = 1.0f;
                     row++;
                 }
         }
-#if ChangeAngle
+#if ChangeAngle5
     Gamestate->line_angle += PI / 256;
 #endif
 
 #undef RotTriangles5
 #undef ChangeAngle5
+#undef DontUseGamestateCamera
 }
 
 void basic_mesh_test(void)

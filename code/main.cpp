@@ -3,14 +3,12 @@
 #if PLATFORM_WINDOWS
 
 #include <Windows.h>
-
-/* #undef min */
-/* #undef max */
+// #undef min
+// #undef max
 
 #endif
 #endif
 
-/* #include <stdlib.h> */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>

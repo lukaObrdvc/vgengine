@@ -477,7 +477,8 @@ void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
 
                             u32 intColor = (((u32)255 << 24) | (r << 16) | (g << 8) | b);
                             
-                            if (z >= *zbuffer_point)
+                            // if (z >= *zbuffer_point)
+                            if (z < *zbuffer_point)
                                 {
                                     *((u32*)(wnd_buffer+j*wnd_pitch+i*wnd_bytpp)) = (inv ? intColor : color);
                                     *zbuffer_point = z;
@@ -497,11 +498,6 @@ typedef union tagTriangle
     };
     v3 v[3];
 } triangle;
-
-// divide by w to turn from homogeneous to cartesian coordinates if w != 1
-// what we want to do is turn w to -z, so that when we convert to
-// cartesian we also automatically do the perspective divide
-
 
 triangle TriangleWorldToRaster(triangle tri)
 {
@@ -528,7 +524,7 @@ triangle TriangleWorldToRaster(triangle tri)
 
     r32 r = -Near*tan(to_rad(Fov/2));
     r32 l = -r;
-    r32 t = r/aspect_ratio;
+    r32 t = r/aspect_ratio; // is it the opposite here actually, first t then r?
     r32 b = -t;
     
     // clip space (before converting from homogeneous to cartesian, which
@@ -557,58 +553,69 @@ triangle TriangleWorldToRaster(triangle tri)
     return result;
 }
 
-triangle TriangleWorldToRasterPROJ(triangle tri)
+typedef struct TagTriangleHom
 {
-    // @TODO refactor to use projection matrix instead
-    triangle result;
+    v4 A;
+    v4 B;
+    v4 C;
+} TriangleHom;
 
-    // camera space
-    
-    v3 A = tri.A;
-    v3 B = tri.B;
-    v3 C = tri.C;
-    
-    r32 Near = Gamestate->cameraParams._near;
+#include "clip.h"
 
-    r32 invA = Near/A.z;
-    r32 invB = Near/B.z;
-    r32 invC = Near/C.z;
-    v3 A_s = V3(A.x*invA, A.y*invA, A.z);
-    v3 B_s = V3(B.x*invB, B.y*invB, B.z);
-    v3 C_s = V3(C.x*invC, C.y*invC, C.z);
-    
-    r32 Fov = Gamestate->cameraParams.fov;
-    r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
+inline m4 M4Proj()
+{
+    m4 result = M4Unit();
 
-    r32 r = -Near*tan(to_rad(Fov/2));
-    r32 l = -r;
-    r32 t = r/aspect_ratio;
-    r32 b = -t;
+    r32 aspectRatio = (wnd_width*1.0f) / wnd_height;
+    r32 fov = Gamestate->cameraParams.fov;
     
-    // clip space (before converting from homogeneous to cartesian, which
-    // does the perspective divide essentialy)
+    r32 n = Gamestate->cameraParams._near;
+    r32 f = Gamestate->cameraParams._far;
+    r32 t = tan(to_rad(fov / 2)) * n;
+    r32 r = t * aspectRatio;
 
-    // ndc space
-    
-    v3 A_ndc = V3(A_s.x/r, A_s.y/t, A_s.z);
-    v3 B_ndc = V3(B_s.x/r, B_s.y/t, B_s.z);
-    v3 C_ndc = V3(C_s.x/r, C_s.y/t, C_s.z);
+    result.m[0][0] = n / r;
+    result.m[1][1] = n / t;
+    result.m[2][2] = - (f + n) / (f - n);
+    result.m[3][3] = 0;
+    result.m[2][3] = - 1;
+    result.m[3][2] = - (2 * f * n) / (f - n);
 
-    /* v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (1-(A_ndc.y+1)/2)*(wnd_height-1), A_ndc.z); */
-    /* v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (1-(B_ndc.y+1)/2)*(wnd_height-1), B_ndc.z); */
-    /* v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (1-(C_ndc.y+1)/2)*(wnd_height-1), C_ndc.z); */
-
-    // raster space
-    
-    v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (A_ndc.y+1)/2*(wnd_height-1), A_ndc.z);
-    v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z);
-    v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);
-
-    result.A = A_r;
-    result.B = B_r;
-    result.C = C_r;
-    
     return result;
+}
+
+int TriangleWorldToRasterPROJ(triangle tri, TriangleHom* out_triangles)
+{
+    m4 PROJ = M4Proj();
+
+    v3 A_clip3 = M4Mul(tri.A, PROJ);
+    v3 B_clip3 = M4Mul(tri.B, PROJ);
+    v3 C_clip3 = M4Mul(tri.C, PROJ);
+
+    v4 A_clip = V4(A_clip3.x, A_clip3.y, A_clip3.z, -tri.A.z);
+    v4 B_clip = V4(B_clip3.x, B_clip3.y, B_clip3.z, -tri.B.z);
+    v4 C_clip = V4(C_clip3.x, C_clip3.y, C_clip3.z, -tri.C.z);
+    
+    int count = ClipTriangle(A_clip, B_clip, C_clip, out_triangles);
+    for (int i = 0; i < count; i++)
+        {
+            TriangleHom t = out_triangles[i];
+            
+            v4 A_ndc = V4(t.A.x/t.A.w, t.A.y/t.A.w, t.A.z/t.A.w, 1);
+            v4 B_ndc = V4(t.B.x/t.B.w, t.B.y/t.B.w, t.B.z/t.B.w, 1);
+            v4 C_ndc = V4(t.C.x/t.C.w, t.C.y/t.C.w, t.C.z/t.C.w, 1);
+
+            v4 A_r = V4((A_ndc.x+1)/2*(wnd_width-1), (A_ndc.y+1)/2*(wnd_height-1), A_ndc.z, 1);
+            v4 B_r = V4((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z, 1);
+            v4 C_r = V4((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z, 1);
+
+            t.A = A_r;
+            t.B = B_r;
+            t.C = C_r;
+            out_triangles[i] = t;
+        }
+    
+    return count;
 }
 
 v3 project_new2(v3 point, PROJECTION P)
@@ -1072,7 +1079,7 @@ b32 process_input(u64 curr_keyflags_to_set,
                   v2 curr_cursor)
 {
     // dude am I doing zbuffering correctly, maybe that's the problem??
-    b32 result = false;
+    b32 result = true;
 
     // need to make WASD work in the direction camera is facing
     // moving by Y can be the same because we don't want to ever yaw
@@ -1099,22 +1106,13 @@ b32 process_input(u64 curr_keyflags_to_set,
     u8 mflags_trans_to_up = mflags_trans & prev_mflags;
     u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
 
+    Camera camera = Gamestate->camera;
     curr_cursor.y = to_yisup(curr_cursor.y);
-    if (result && false)
-        {
-            Camera camera = Gamestate->camera;
-    
-            /* if (ExtractKey(mflags_trans_to_up, MOUSE_MOVE)) // this does not work.... */
-            /* { */
-            v2 cursor_difference = transpose2(curr_cursor, zero2(), Gamestate->cursor); // V2(wnd_width/2.0f, wnd_height/2.0f)
-            r32 roll_camera_by = -cursor_difference.y;
-            r32 pitch_camera_by = cursor_difference.x; // was -
-            Gamestate->camera.roll += roll_camera_by / kilobytes(30); // was 30
-            Gamestate->camera.pitch += pitch_camera_by / kilobytes(30);
-            /* } */
-            v2 prev_cursor = Gamestate->cursor;
-
-        }
+    v2 cursor_difference;
+    cursor_difference.x = curr_cursor.x - wnd_width/2;
+    cursor_difference.y = curr_cursor.y - wnd_height/2;
+    camera.roll += cursor_difference.y / kilobytes(1);
+    camera.pitch -= cursor_difference.x / kilobytes(1);
     Gamestate->cursor = curr_cursor;
 
     if (ExtractKey(kflags_trans_to_up, KEY_U))
@@ -1127,134 +1125,82 @@ b32 process_input(u64 curr_keyflags_to_set,
                 {
                     Gamestate->reverse_winding = true;
                 }
-            /* Gamestate->reverse_winding = ~Gamestate->reverse_winding; */
         }
     
     if (ExtractKey(kflags, KEY_D))
         {
-            Gamestate->camera_offs_x += 1.0f;
-            
-            Gamestate->camera_angle += PI/256;
+            // Gamestate->camera_angle += PI/256;
             Gamestate->log_to_file_once = true;
         }
 
     if (ExtractKey(kflags, KEY_A))
-        {
-            Gamestate->camera_offs_x -= 1.0f;
-            
-            Gamestate->camera_angle -= PI/256;
+        {            
+            // Gamestate->camera_angle -= PI/256;
             Gamestate->log_to_file_once = true;
         }
-
-    if (ExtractKey(kflags, KEY_W))
-        {
-            Gamestate->camera_offs_y += 1.0f;
-        }
     
-    if (ExtractKey(kflags, KEY_S))
-        {
-            Gamestate->camera_offs_y -= 1.0f;            
-        }    
-    
-    // probably better to not use macro, just use &
     if (ExtractKey(kflags, KEY_UP))
         {
+            Gamestate->camera_offs_y += 5.0f;
             Gamestate->wnd_center_y+= 5;
             Gamestate->dbg_render_y_offset+= 10;
         }
     if (ExtractKey(kflags, KEY_DOWN))
         {
+            Gamestate->camera_offs_y -= 5.0f;            
             Gamestate->wnd_center_y-= 5;
             Gamestate->dbg_render_y_offset-= 10;
         }
     if (ExtractKey(kflags, KEY_LEFT))
         {
+            Gamestate->camera_offs_x -= 5.0f;
             Gamestate->wnd_center_x-= 5;
             Gamestate->dbg_render_x_offset-= 10;
         }
     if (ExtractKey(kflags, KEY_RIGHT))
         {
+            Gamestate->camera_offs_x += 5.0f;
             Gamestate->wnd_center_x+= 5;
             Gamestate->dbg_render_x_offset+= 10;
         }
     
-    if (ExtractKey(kflags_trans_to_up, KEY_I))
-        {
-            Gamestate->camera.roll -= PI/2;
-        }
-    if (ExtractKey(kflags_trans_to_up, KEY_K))
-        {
-            Gamestate->camera.roll += PI/2;
-        }
-    if (ExtractKey(kflags_trans_to_up, KEY_J))
-        {
-            Gamestate->camera.pitch -= PI/2;
-        }
-    if (ExtractKey(kflags_trans_to_up, KEY_L))
-        {
-            Gamestate->camera.pitch += PI/2;
-        }
-// figure out keys for these four
-    /* if (ExtractKey(kflags, KEY_Q)) */
-    /*     { */
-    /*         Gamestate->camera.yaw += PI/256; */
-    /*     } */
-    /* if (ExtractKey(kflags, KEY_E)) */
-    /*     { */
-    /*         Gamestate->camera.yaw -= PI/256; */
-    /*     } */
-    
-    /* if (ExtractKey(kflags, KEY_I)) */
-    /*     { */
-    /*         Gamestate->camera.fpoint.y += 5; */
-    /*     } */
-    /* if (ExtractKey(kflags, KEY_K)) */
-    /*     { */
-    /*         Gamestate->camera.fpoint.y -= 5; */
-    /*     } */
-
-    Camera camera = Gamestate->camera;
     v3 camera_movement = zero3();
     if (ExtractKey(kflags, KEY_W))
         {
-            camera_movement.z -= 2.0f;// 0.01f;
-            /* Gamestate->camera.pitch -= PI/4; */
-            /* Gamestate->camera.fpoint.x -= 0.5; */
+            camera_movement.z -= 2.0f;
         }
     if (ExtractKey(kflags, KEY_S))
         {
-            camera_movement.z += 2.0f;//0.01f;
-            /* Gamestate->camera.fpoint.x -= 0.5; */
+            camera_movement.z += 2.0f;
         }
     if (ExtractKey(kflags, KEY_A))
         {
-            /* camera_movement.x -= 2.0f; */
             camera_movement.x -= 2.0f;
-            /* Gamestate->camera.fpoint.z += 0.5; */
         }
     if (ExtractKey(kflags, KEY_D))
         {
-            camera_movement.x += 2.0f; // was 2
-            /* Gamestate->camera.fpoint.z -= 0.5; */
+            camera_movement.x += 2.0f;
         }
+    if (ExtractKey(kflags, KEY_Q))
+        {
+            camera_movement.y -= 2.0f;
+        }
+    if (ExtractKey(kflags, KEY_E))
+        {
+            camera_movement.y += 2.0f;
+        }    
 
+    m4 rotationMatrix = M4Compose(2,
+                                  M4RotX(camera.roll),
+                                  M4RotY(camera.pitch)
+                                  );
+    camera_movement = M4Mul(camera_movement, rotationMatrix);
+    camera.fpoint = add3(camera.fpoint, camera_movement);
     
     if (result)
         {
-            /* camera_movement = transpose3(camera_movement, zero3(), Gamestate->camera.fpoint); */
-            /* camera_movement.x += Gamestate->eye_x; */
-            /* camera_movement.y += Gamestate->eye_y; */
-
-            camera_movement = rotate3(camera_movement,
-                                      Gamestate->camera.yaw,
-                                      Gamestate->camera.pitch,
-                                      Gamestate->camera.roll);
-            Gamestate->camera.fpoint = add3(Gamestate->camera.fpoint, camera_movement);
+            Gamestate->camera = camera;
         }
-    /* camera = Gamestate->camera; */
-    /* //Gamestate->camera.fpoint.z *= -1; */
-    /* Gamestate->camera.pitch *= 1; */
-    /* camera = Gamestate->camera; */
     
     if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
         {
@@ -1296,10 +1242,10 @@ void init_game_state(void)
 {
     if (!Gamestate->inited)
         {
-            s32 init_wnd_width     = 1280;
-            s32 init_wnd_height    = 720;
-            s32 init_wnd_center_x  = 640;
-            s32 init_wnd_center_y  = 360;
+            s32 init_wnd_width    = 1280;
+            s32 init_wnd_height   = 720;
+            s32 init_wnd_center_x = 640;
+            s32 init_wnd_center_y = 360;
             
 
             Gamestate->inited = true;
@@ -1312,8 +1258,8 @@ void init_game_state(void)
             Gamestate->wndbuffer_width = init_wnd_width;
             Gamestate->wndbuffer_height = init_wnd_height;
                     
-            Gamestate->cameraParams._near = -1; // do we want -1?
-            Gamestate->cameraParams._far = -500; // -?
+            Gamestate->cameraParams._near = 5; // do we want -1?
+            Gamestate->cameraParams._far = 500; // -?
             Gamestate->cameraParams.fov = 120; // in degrees I quess?
 
             Gamestate->camera_angle = 0;
@@ -1373,15 +1319,25 @@ void init_game_state(void)
             Gamestate->keymap[0x4F] = 15;
 
             
+            // for (s32 i = 0; i < wnd_height; i++)
+            //     {
+            //         r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            //         for (s32 j = 0; j < wnd_width; j++)
+            //             {
+            //                 *row = Gamestate->cameraParams._far; // smth else??
+            //                 row++;
+            //             }
+            //     }
             for (s32 i = 0; i < wnd_height; i++)
                 {
                     r32* row = (r32*)(zbuffer + i*wnd_pitch);
                     for (s32 j = 0; j < wnd_width; j++)
                         {
-                            *row = Gamestate->cameraParams._far; // smth else??
+                            *row = 1.0f;
                             row++;
                         }
                 }
+
             
             Gamestate->camera.fpoint = V3(640, 360, 0); // was 680  ; z=5
             Gamestate->camera.yaw    = 0;

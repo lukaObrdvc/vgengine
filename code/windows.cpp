@@ -355,9 +355,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     int window_offset_x = 50;
     int window_offset_y = 50;
 
-    wnd_width = 1280;
-    wnd_height = 720;
-    
     WNDCLASS registered_window_infostruct = {
         .style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
         .lpfnWndProc = window_procedure,
@@ -392,8 +389,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     window_buffer_info.bmiHeader.biBitCount = bytes_per_pixel*8;
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
 
-    SetCursorPos(640 + window_offset_x,
-                 360 + window_offset_y);
+    // SetCursorPos(640 + window_offset_x,
+                 // 360 + window_offset_y);
+
+    wnd_width = 1280;
+    wnd_height = 720;
+    POINT center = { wnd_width/2, wnd_height/2 };
+    ClientToScreen(window, &center);
+    SetCursorPos(center.x, center.y);
     
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
@@ -455,6 +458,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             if (camera_mode)
                 {
                     ShowCursor(false);
+                    SetCursorPos(center.x, center.y);
                 }
             else
                 {
