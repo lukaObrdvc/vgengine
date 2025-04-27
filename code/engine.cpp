@@ -461,7 +461,6 @@ void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
                     r32 w1 = EdgeFunction(p, p0, p2);
                     r32 w2 = EdgeFunction(p, p1, p0);
 
-                    // maybe y is inverted or something is inverted.??
                     if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test
                         {
                             w0 /= area; // these are barycentric coords

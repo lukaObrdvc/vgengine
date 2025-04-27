@@ -273,7 +273,14 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
                 //PostQuitMessage(wParam);
             } break;
 
-        case WM_PAINT: {} break;
+        case WM_PAINT: {
+            // @IMPORTANT you need this shit, or otherwise the window
+            // will be blank, if you process the entire message queue,
+            // if you don't then you can leave this blank....
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(window, &ps);
+            EndPaint(window, &ps);
+        } break;
             
         default:
             {
@@ -431,25 +438,25 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             // @TODO do this in a while loop actually....
             // actually then you have to somehow remove WM_PAINT
             // from the queue because it is not removed by default....
+            // MSG message;
+            // PeekMessage(&message, 0, 0, 0, PM_REMOVE);
+
+            // if (message.message == WM_QUIT)
+            //     {
+            //         running = false;
+            //     }
+
             MSG message;
-            PeekMessage(&message, 0, 0, 0, PM_REMOVE);
-
-            if (message.message == WM_QUIT)
+            while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
                 {
-                    running = false;
+                    if (message.message == WM_QUIT)
+                        {
+                            running = false;
+                            break;
+                        }
+                    TranslateMessage(&message);
+                    DispatchMessage(&message);
                 }
-
-            /* MSG message; */
-            /* while (PeekMessage(&message, 0, 0, 0, PM_REMOVE)) */
-            /*     { */
-            /*         if (message.message == WM_QUIT) */
-            /*             { */
-            /*                 //running = false; */
-            /*                 break; */
-            /*             } */
-            TranslateMessage(&message);
-            DispatchMessage(&message);
-            /*     } */
             b32 camera_mode = PROCESS_INPUT(curr_keyflags_to_set,
                                             curr_keyflags_to_unset,
                                             curr_mouseflags_to_set,
@@ -469,12 +476,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             window_buffer_info.bmiHeader.biWidth = wnd_width;
             window_buffer_info.bmiHeader.biHeight = -wnd_height;
 
-            /* if (camera_mode) */
-            /*     { */
-            /*         SetCursorPos(wnd_width/2.0f + window_offset_x, */
-            /*                      wnd_height/2.0f + window_offset_y); // include header if you want to round32 ... */
-            /*     } */
-            
             
             // @TODO figure out if I need to have two different types of
             // resizing, one that resizes the buffer, and the other
