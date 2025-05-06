@@ -28,6 +28,7 @@
 
 #include "math.h"
 #include "vector.h"
+#include "linear_algebra.h"
 #include "pixel.h"
 #include "renderer.h"
 

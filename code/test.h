@@ -3,6 +3,8 @@
 
 void final_giga_test(void)
 {
+    Vec2f v = vec_make(5.0f,33.0f);
+    
     fill_background();
 
     u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
