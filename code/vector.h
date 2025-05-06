@@ -437,7 +437,7 @@ inline m4 M4RotY(r32 a)
 inline m4 M4RotZ(r32 a)
 {
     m4 result;
-
+    
     result.m[0][0] = cos(a);
     result.m[0][1] = sin(a);
     result.m[0][2] = 0;
@@ -477,7 +477,7 @@ inline m4 M4Unit()
     result.m[0][0] = 1;
     result.m[1][1] = 1;
     result.m[2][2] = 1;
-    result.m[3][3] = 1;    
+    result.m[3][3] = 1;
     return result;
 }
 

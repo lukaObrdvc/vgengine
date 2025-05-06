@@ -169,72 +169,6 @@ b32 clip_line(line* Line)
     return to_draw;
 }
 
-v2 clamp_line(v2 vec, v2 other)
-{
-    // @IMPORTANT methinks it is assumed that vector is in wnd coordsys
-    v2 result = zero2();
-
-    // horizontal => k=0
-    // vectical => k=nan
-    
-    // @TODO probably put these in their respective branches instead
-    r32 x = vec.x;
-    r32 y = vec.y;
-    r32 k = (vec.y - other.y) / (vec.x - other.x); // dividing by zero everywhere....
-    r32 y0 = y - x * k;
-    r32 x0 = x - y / k;
-    r32 yw = y - (x - wnd_width)  * k;
-    r32 xh = x - (y - wnd_height) / k;
-
-    // @TODO
-    // added -1 on wnd_width and wnd_height (but is this a good solution??)
-    // essentially it's still drawing around outline of the window
-    // even though this kind of clamping (towards line not perpendicular)
-    // is still desirable but figure out how to prevent that draw.....??
-    
-    if ((vec.y - other.y) == 0 ||
-        (vec.x - other.x) == 0) // horizontal or vectial line
-        {
-            result.x = clamp32(x, 0, wnd_width - 1);
-            result.y = clamp32(y, 0, wnd_height - 1);
-        }
-    else if (x < 0 && y > wnd_height && y0 > wnd_height) // ul corner 2nd quadrant and y0 > wnd_height
-        {
-            r32 xhc = clamp32(xh, 0, wnd_width - 1);
-            result = V2(xhc, wnd_height - 1);
-        }
-    else if ((x < 0 && y > 0) ||
-             (x < 0 && y < 0 && y0 < 0)) // bl corner 2nd quadrant or 3rd and y0 < 0
-        {
-            r32 y0c = clamp32(y0, 0, wnd_height - 1);
-            result = V2(0, y0c);
-        }
-    else if (x > wnd_width && y < 0 && yw < 0) // br corner 4th quadrant and yw < 0
-        {
-            r32 x0c = clamp32(x0, 0, wnd_width - 1);
-            result = V2(x0c, 0);
-        }
-    else if ((x > 0 && y < 0) ||
-             (x < 0 && y < 0 && y0 >= 0)) // bl corner 4th quadrant or 3rd and y0 >= 0
-        {
-            r32 x0c = clamp32(x0, 0, wnd_width - 1);
-            result = V2(x0c, 0);
-        }
-    else if ((x < wnd_width && y > wnd_height) ||  // ur corner 2nd quadrant or 3rd and yw > wnd_height
-             (x > wnd_width && y > wnd_height && yw > wnd_height))
-        {
-            r32 xhc = clamp32(xh, 0, wnd_width - 1);
-            result = V2(xhc, wnd_height - 1);
-        }
-    else if ((x > wnd_width && y < wnd_height) ||  // ur corner 4th quadrant or 3rd and yw <= wnd_height
-             (x > wnd_width && y > wnd_height && yw <= wnd_height))
-        {
-            r32 ywc = clamp32(yw, 0, wnd_height - 1);
-            result = V2(wnd_width - 1, ywc);
-        }
-    
-    return result;
-}
 
 // @Note this is actually bad because it clamps perpendicular
 // to the window, instead of toward the direction of the vector
@@ -245,8 +179,8 @@ inline v2 clamp2(v2 vec)
     v2 result = vec;
 
     // @Note this is iffy (of by one andstuffs...)
-    clamp(result.x, 0, wnd_width - 1);
-    clamp(result.y, 0, wnd_height - 1);
+    clamp(result.x, 0.0f, (r32)wnd_width - 1);
+    clamp(result.y, 0.0f, (r32)wnd_height - 1);
     
     return result;
 }
@@ -259,9 +193,9 @@ inline v3 clamp3(v3 vec)
     v3 result = vec;
 
     // @Note this is iffy (of by one andstuffs...)
-    clamp(result.x, 0, wnd_width - 1);
-    clamp(result.y, 0, wnd_height - 1);
-    clamp(result.z, wnd_nearclip, wnd_farclip); // @TODO is this correct?
+    clamp(result.x, 0.0f, (r32)wnd_width - 1);
+    clamp(result.y, 0.0f, (r32)wnd_height - 1);
+    clamp(result.z, (r32)wnd_nearclip, (r32)wnd_farclip); // @TODO is this correct?
     
     return result;
 }
@@ -271,10 +205,10 @@ inline wndrect clamp_wndrect(wndrect rect)
     wndrect result = rect;
 
     // @Note this is iffy (of by one andstuffs...)
-    clamp(result.left, 0, wnd_width - 1);
-    clamp(result.bottom, 0, wnd_height - 1);
-    clamp(result.right, 0, wnd_width - 1);
-    clamp(result.top, 0, wnd_height - 1);
+    clamp(result.left, 0.0f, (r32)wnd_width - 1);
+    clamp(result.bottom, 0.0f, (r32)wnd_height - 1);
+    clamp(result.right, 0.0f, (r32)wnd_width - 1);
+    clamp(result.top, 0.0f, (r32)wnd_height - 1);
     
     return result;
 }
@@ -313,10 +247,10 @@ inline v3 rotate3(v3 vec, r32 yaw, r32 pitch, r32 roll)
 
 void draw_clamped_zbuffered_wndrect(wndrect rect, r32 z, pxl color)
 {
-    s32 offset = wnd_pitch*round32(rect.bottom) +
-        round32(rect.left)*wnd_bytpp;
-    s32 height = round32(wndrect_height(rect));
-    s32 width = round32(wndrect_width(rect));
+    s32 offset = wnd_pitch*Round(rect.bottom) +
+        Round(rect.left)*wnd_bytpp;
+    s32 height = Round(wndrect_height(rect));
+    s32 width = Round(wndrect_width(rect));
 
     for (s32 i = 0; i < height; i++)
         {
@@ -337,10 +271,10 @@ void draw_clamped_zbuffered_wndrect(wndrect rect, r32 z, pxl color)
 void draw_clamped_wndrect(wndrect rect, pxl color)
 {
     // @TODO do I round?
-    s32 offset = wnd_pitch*round32(rect.bottom) +
-        round32(rect.left)*wnd_bytpp;
-    s32 height = round32(wndrect_height(rect));
-    s32 width = round32(wndrect_width(rect));
+    s32 offset = wnd_pitch*Round(rect.bottom) +
+        Round(rect.left)*wnd_bytpp;
+    s32 height = Round(wndrect_height(rect));
+    s32 width = Round(wndrect_width(rect));
     
     for (s32 i = 0; i < height; i++)
         {
@@ -362,8 +296,8 @@ void draw_rotated_rect(s32 width, s32 height, v2 origin, pxl color)
                 {
                     v2 pxl_point = V2(j, i - height); // do I want - here
                     pxl_point = rotate2(pxl_point, Gamestate->rect_angle);
-                    pxl_point.x = floor32(pxl_point.x);
-                    pxl_point.y = floor32(pxl_point.y);
+                    pxl_point.x = Floor(pxl_point.x);
+                    pxl_point.y = Floor(pxl_point.y);
                     pxl_point = add2(pxl_point, origin);
                     pxl_point = clamp2(pxl_point);
                     pxl* draw_point = (pxl*)(wnd_buffer +
@@ -419,7 +353,7 @@ v2 project(v3 point, PROJECTION P)
             } break;
         default:
             {
-                InvalidDefaultCase;
+                ASSERT(0); // invalid default case
             }
         }
     
@@ -435,10 +369,10 @@ inline wndrect ObtainTriangleBBox(v3 p0, v3 p1, v3 p2)
 {
     wndrect result;
 
-    result.left   = MIN(MIN(p0.x, p1.x), p2.x);
-    result.right  = MAX(MAX(p0.x, p1.x), p2.x);
-    result.bottom = MIN(MIN(p0.y, p1.y), p2.y);
-    result.top    = MAX(MAX(p0.y, p1.y), p2.y);
+    result.left   = Min(Min(p0.x, p1.x), p2.x);
+    result.right  = Max(Max(p0.x, p1.x), p2.x);
+    result.bottom = Min(Min(p0.y, p1.y), p2.y);
+    result.top    = Max(Max(p0.y, p1.y), p2.y);
 
     return result;
 }
@@ -451,10 +385,10 @@ void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
     wndrect bbox = ObtainTriangleBBox(p0, p1, p2);
     r32 area = EdgeFunction(p2, p1, p0);
 
-    for (s32 j = floor32(bbox.bottom); j < floor32(bbox.top); j++)
+    for (s32 j = Floor(bbox.bottom); j < Floor(bbox.top); j++)
         {
             
-            for (s32 i = floor32(bbox.left); i < floor32(bbox.right); i++)
+            for (s32 i = Floor(bbox.left); i < Floor(bbox.right); i++)
                 {
                     v3 p = V3(i+0.5f, j+0.5f, 0);
                     r32 w0 = EdgeFunction(p, p2, p1);
@@ -651,7 +585,7 @@ v3 project_new2(v3 point, PROJECTION P)
             } break;
         default:
             {
-                InvalidDefaultCase;
+                ASSERT(0); // invalid default case
             }
         }
     
@@ -691,8 +625,8 @@ void draw_wndline_zbuffered_aa(v2 P0, v2 P1, r32 z, u32 color)
             k = 1; // why exactly?
         }
 
-    s32 xstart = floor32(P0.x); // round here?
-    s32 xend = floor32(P1.x);
+    s32 xstart = Floor(P0.x); // round here?
+    s32 xend = Floor(P1.x);
     r32 intersectY = P0.y;
 
     s32 xoffset;
@@ -715,7 +649,7 @@ void draw_wndline_zbuffered_aa(v2 P0, v2 P1, r32 z, u32 color)
     
     for (s32 x = xstart; x <= xend; x++)
         {
-            r32* Z = (r32*)(zbuffer + floor32(intersectY)*yoffset + x*xoffset);
+            r32* Z = (r32*)(zbuffer + floor_to_int(intersectY)*yoffset + x*xoffset);
             if (z < *Z ||     // this stuff was other way when Z was other way, also >= on first condition
                 z > Gamestate->nearclip ||
                 z < Gamestate->farclip)
@@ -730,11 +664,11 @@ void draw_wndline_zbuffered_aa(v2 P0, v2 P1, r32 z, u32 color)
             // @IMPORTANT do we actually want to use 256 instead of 255, and in that case we can shift instead...
          
             
-            u32* drawing_point1 = (u32*)(wnd_buffer + floor32(intersectY) * yoffset + x * xoffset);
-            u32* drawing_point2 = (u32*)(wnd_buffer + (floor32(intersectY) - 1) * yoffset + x * xoffset);
+            u32* drawing_point1 = (u32*)(wnd_buffer + floor_to_int(intersectY) * yoffset + x * xoffset);
+            u32* drawing_point2 = (u32*)(wnd_buffer + (floor_to_int(intersectY) - 1) * yoffset + x * xoffset);
 
-            r32 alpha1 = 1 - decimal32(intersectY);
-            r32 alpha2 = decimal32(intersectY);
+            r32 alpha1 = 1 - decimal(intersectY);
+            r32 alpha2 = decimal(intersectY);
 
             u32 color1 = *drawing_point1;
             u32 color2 = *drawing_point2;
@@ -819,8 +753,8 @@ void draw_wndline_aa(v2 P0, v2 P1, u32 color)
             k = 1; // why exactly?
         }
 
-    s32 xstart = floor32(P0.x); // round here?
-    s32 xend = floor32(P1.x);
+    s32 xstart = Floor(P0.x); // round here?
+    s32 xend = Floor(P1.x);
     r32 intersectY = P0.y;
 
     s32 xoffset;
@@ -846,11 +780,11 @@ void draw_wndline_aa(v2 P0, v2 P1, u32 color)
             // @IMPORTANT do we actually want to use 256 instead of 255, and in that case we can shift instead...
          
             
-            u32* drawing_point1 = (u32*)(wnd_buffer + floor32(intersectY) * yoffset + x * xoffset);
-            u32* drawing_point2 = (u32*)(wnd_buffer + (floor32(intersectY) - 1) * yoffset + x * xoffset);
+            u32* drawing_point1 = (u32*)(wnd_buffer + floor_to_int(intersectY) * yoffset + x * xoffset);
+            u32* drawing_point2 = (u32*)(wnd_buffer + (floor_to_int(intersectY) - 1) * yoffset + x * xoffset);
 
-            r32 alpha1 = 1 - decimal32(intersectY);
-            r32 alpha2 = decimal32(intersectY);
+            r32 alpha1 = 1 - decimal(intersectY);
+            r32 alpha2 = decimal(intersectY);
 
             u32 color1 = *drawing_point1;
             u32 color2 = *drawing_point2;
@@ -907,7 +841,7 @@ void draw_line(v2 origin, v2 point, u32 color)
 
     // @TODO implement anti-aliasing
     
-    u8* offset = wnd_buffer + wnd_pitch*round32(origin.y) + wnd_bytpp*round32(origin.x);
+    u8* offset = wnd_buffer + wnd_pitch*round_to_int(origin.y) + wnd_bytpp*round_to_int(origin.x);
     u8* drawing_point = 0;
     
     r32 dX = point.x;
@@ -919,10 +853,10 @@ void draw_line(v2 origin, v2 point, u32 color)
     r32 whenY = len / dY;
 
     
-    for (s32 i = 1; i <= floor32(len); i++)
+    for (s32 i = 1; i <= Floor(len); i++)
         {
-            movebyX = floor32(i/whenX);
-            movebyY = floor32(i/whenY);
+            movebyX = Floor(i/whenX);
+            movebyY = Floor(i/whenY);
             drawing_point = offset + wnd_pitch*movebyY + wnd_bytpp*movebyX;
                 *((u32*)drawing_point) = color;
         }
@@ -1128,13 +1062,13 @@ b32 process_input(u64 curr_keyflags_to_set,
     
     if (ExtractKey(kflags, KEY_D))
         {
-            // Gamestate->camera_angle += PI/256;
+            // Gamestate->camera_angle += pi/256;
             Gamestate->log_to_file_once = true;
         }
 
     if (ExtractKey(kflags, KEY_A))
         {            
-            // Gamestate->camera_angle -= PI/256;
+            // Gamestate->camera_angle -= pi/256;
             Gamestate->log_to_file_once = true;
         }
     
@@ -1341,12 +1275,12 @@ void init_game_state(void)
             Gamestate->camera.fpoint = V3(640, 360, 0); // was 680  ; z=5
             Gamestate->camera.yaw    = 0;
             Gamestate->camera.pitch  = 0;
-            //Gamestate->camera.pitch  = PI/4;
+            //Gamestate->camera.pitch  = pi/4;
             Gamestate->camera.roll   = 0;
             
             s32 concentric_count = Gamestate->concentric_count;
             r32* concentric_z_values = Gamestate->concentric_z_values;
-            Assert(concentric_count <= CONCENTRIC_MAX);
+            ASSERT(concentric_count <= CONCENTRIC_MAX);
 
             for (s32 i = 0; i < MAX_BRUSHES; i++)
                 {
@@ -1367,7 +1301,7 @@ void init_game_state(void)
             
             for (s32 i = 0; i < concentric_count; i++)
                 {
-                    concentric_z_values[i] = floor32(concentric_count/2.0 - 1 - i);
+                    concentric_z_values[i] = Floor(concentric_count/2.0 - 1 - i);
                 }
 
             /* u64 permMemCap = megabytes(64); */

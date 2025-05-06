@@ -65,11 +65,11 @@ inline alpha_u8 resulting_alphau8(alpha_u8 src_a, alpha_u8 dest_a)
     // @Note is this correct?
     //result.a = lerp(background.a, foreground.a, foreground.a);
     // @Note do I want to floor instead??
-    return (alpha_u8)(round32(src_a+dest_a*(1 - (src_a*1.0f)/(MAX_U8*1.0f))));
+    return (alpha_u8)(Round(src_a+dest_a*(1 - (src_a*1.0f)/(MAX_U8*1.0f))));
 }
 
-// @Note assume alphas have been Asserted already
-    /* Assert((src_a >= 0 && src_a <= 1)&& */
+// @Note assume alphas have been ASSERTed already
+    /* ASSERT((src_a >= 0 && src_a <= 1)&& */
     /*        (dest_a >= 0 && dest_a <= 1)); */
 inline alpha resulting_alpha(alpha src_a, alpha dest_a)
 {
@@ -79,9 +79,9 @@ inline alpha resulting_alpha(alpha src_a, alpha dest_a)
 inline clr clr_ablend(clr src, clr dest, alpha src_a)
 {
     clr result;
-    result.R = (u8)round32(lerp(dest.R, src.R, src_a));
-    result.G = (u8)round32(lerp(dest.G, src.G, src_a));
-    result.B = (u8)round32(lerp(dest.R, src.B, src_a));
+    result.R = (u8)Round(lerp(dest.R, src.R, src_a));
+    result.G = (u8)Round(lerp(dest.G, src.G, src_a));
+    result.B = (u8)Round(lerp(dest.R, src.B, src_a));
     return result;
 }
 
@@ -89,9 +89,9 @@ inline clr clr_ablend_u8(clr src, clr dest, alpha_u8 src_a)
 {
     clr result;
     alpha n_src_a = (src_a*1.0f)/(MAX_U8*1.0f);
-    result.R = (u8)round32(lerp(dest.R, src.R, n_src_a));
-    result.G = (u8)round32(lerp(dest.G, src.G, n_src_a));
-    result.B = (u8)round32(lerp(dest.R, src.B, n_src_a));
+    result.R = (u8)Round(lerp(dest.R, src.R, n_src_a));
+    result.G = (u8)Round(lerp(dest.G, src.G, n_src_a));
+    result.B = (u8)Round(lerp(dest.R, src.B, n_src_a));
     return result;    
 }
 
@@ -120,9 +120,9 @@ inline pxl pxl_ablend(pxl foreground, pxl background)
 {
     pxl result;
     alpha n_src_a = (foreground.A*1.0f)/(MAX_U8*1.0f);
-    result.R = (u8)round32(lerp(background.R, foreground.R, n_src_a));
-    result.G = (u8)round32(lerp(background.G, foreground.G, n_src_a));
-    result.B = (u8)round32(lerp(background.R, foreground.B, n_src_a));
+    result.R = (u8)Round(lerp(background.R, foreground.R, n_src_a));
+    result.G = (u8)Round(lerp(background.G, foreground.G, n_src_a));
+    result.B = (u8)Round(lerp(background.R, foreground.B, n_src_a));
     result.A = resulting_alpha(foreground.A, background.A);
     return result;
 }
@@ -130,9 +130,9 @@ inline pxl pxl_ablend(pxl foreground, pxl background)
 inline pxl_n pxl_n_ablend(pxl_n src, pxl_n dest)
 {
     pxl_n result;
-    result.R = (u8)round32(lerp(dest.R, src.R, src.A));
-    result.G = (u8)round32(lerp(dest.G, src.G, src.A));
-    result.B = (u8)round32(lerp(dest.R, src.B, src.A));
+    result.R = (u8)Round(lerp(dest.R, src.R, src.A));
+    result.G = (u8)Round(lerp(dest.G, src.G, src.A));
+    result.B = (u8)Round(lerp(dest.R, src.B, src.A));
     result.A = resulting_alpha(src.A, dest.A);
     return result;
 }

@@ -187,7 +187,7 @@ void projection_matrix_test(void)
                 }
         }
 #if ChangeAngle5
-    Gamestate->line_angle += PI / 256;
+    Gamestate->line_angle += pi / 256;
 #endif
 
 #undef RotTriangles5
@@ -332,7 +332,7 @@ void basic_mesh_test(void)
         }
 
 #if ChangeVerticeAngles
-    Gamestate->line_angle += PI / 256;
+    Gamestate->line_angle += pi / 256;
 #endif
 
 #undef RotateVertices
@@ -382,9 +382,9 @@ void orbiting_camera_test(void)
     B = rotate3(B, angle, 0, 0);
     C = rotate3(C, angle, 0, 0);
 
-    A2 = rotate3(A2, -(angle+PI/4), 0, 0);
-    B2 = rotate3(B2, -(angle+PI/4), 0, 0);
-    C2 = rotate3(C2, -(angle+PI/4), 0, 0);
+    A2 = rotate3(A2, -(angle+pi/4), 0, 0);
+    B2 = rotate3(B2, -(angle+pi/4), 0, 0);
+    C2 = rotate3(C2, -(angle+pi/4), 0, 0);
 #endif
 
     /* WtoC.m[3][0] = - WtoC.m[3][0]; */
@@ -437,7 +437,7 @@ void orbiting_camera_test(void)
                 }
         }
 #if ChangeAngle
-    Gamestate->line_angle += PI / 256;
+    Gamestate->line_angle += pi / 256;
 #endif
 
     Gamestate->log_to_file_once = false;
@@ -470,9 +470,9 @@ void zb_triangle_test(void)
     B = rotate3(B, angle, 0, 0);
     C = rotate3(C, angle, 0, 0);
 
-    A2 = rotate3(A2, -(angle+PI/4), 0, 0);
-    B2 = rotate3(B2, -(angle+PI/4), 0, 0);
-    C2 = rotate3(C2, -(angle+PI/4), 0, 0);
+    A2 = rotate3(A2, -(angle+pi/4), 0, 0);
+    B2 = rotate3(B2, -(angle+pi/4), 0, 0);
+    C2 = rotate3(C2, -(angle+pi/4), 0, 0);
 #endif
 
     // basically just do the camera transform here..
@@ -495,7 +495,7 @@ void zb_triangle_test(void)
                 }
         }
 #if 1
-    Gamestate->line_angle += PI / 256;
+    Gamestate->line_angle += pi / 256;
 #endif
 }
 
@@ -554,7 +554,7 @@ void rasterize_triangle_test(void)
     v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);
 
     RasterizeTriangle(A_r, C_r, B_r, color, true);
-    Gamestate->line_angle += PI / 256;
+    Gamestate->line_angle += pi / 256;
 
     for (s32 i = 0; i < wnd_height; i++)
         {
@@ -708,10 +708,10 @@ void moving_camera_test(void)
     /* pD = clamp2(pD); */
 
     v2 tmp = pA;
-    pA = clamp_line(pA, pB);
-    pB = clamp_line(pB, pC);
-    pC = clamp_line(pC, pD);
-    pD = clamp_line(pD, tmp);
+    // pA = clamp_line(pA, pB);
+    // pB = clamp_line(pB, pC);
+    // pC = clamp_line(pC, pD);
+    // pD = clamp_line(pD, tmp);
     
     u32 color = Gamestate->brushes[BRUSH_SCANLINE];
     draw_wndline_aa(pA, pB, color);
@@ -885,15 +885,15 @@ void zbuffering_triangles_test(void)
                 }
         }
     
-    s32 offset1 = wnd_pitch*round32(outline1.bottom) +
-        round32(outline1.left)*wnd_bytpp;
-    s32 height1 = round32(wndrect_height(outline1));
-    s32 width1 = round32(wndrect_width(outline1));
+    s32 offset1 = wnd_pitch*Round(outline1.bottom) +
+        Round(outline1.left)*wnd_bytpp;
+    s32 height1 = Round(wndrect_height(outline1));
+    s32 width1 = Round(wndrect_width(outline1));
 
-    s32 offset2 = wnd_pitch*round32(outline2.bottom) +
-        round32(outline2.left)*wnd_bytpp;
-    s32 height2 = round32(wndrect_height(outline2));
-    s32 width2 = round32(wndrect_width(outline2));
+    s32 offset2 = wnd_pitch*Round(outline2.bottom) +
+        Round(outline2.left)*wnd_bytpp;
+    s32 height2 = Round(wndrect_height(outline2));
+    s32 width2 = Round(wndrect_width(outline2));
 
     v3 a1 = V3(A.x, A.y, A.z);
     a1 = sub3(B, a1);
@@ -1232,10 +1232,10 @@ void draw_triangle_test(void)
                 }
         }
     
-    s32 offset = wnd_pitch*round32(outline.bottom) +
-        round32(outline.left)*wnd_bytpp;
-    s32 height = round32(wndrect_height(outline));
-    s32 width = round32(wndrect_width(outline));
+    s32 offset = wnd_pitch*Round(outline.bottom) +
+        Round(outline.left)*wnd_bytpp;
+    s32 height = Round(wndrect_height(outline));
+    s32 width = Round(wndrect_width(outline));
 
     // also dividing by 0 when calculating k...
     for (s32 i = 0; i < height; i++)
@@ -1444,8 +1444,8 @@ void rotate_cube_test(void)
             draw_wndline_aa(pC, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
             draw_wndline_aa(pD, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
         }
-    Gamestate->line_angle += PI / 256;
-    //Gamestate->line_angle += PI / (256*4);
+    Gamestate->line_angle += pi / 256;
+    //Gamestate->line_angle += pi / (256*4);
 }
 
 
@@ -1487,8 +1487,8 @@ void rotate3_test(void)
                             projected_my_point,
                             Gamestate->brushes[BRUSH_SCANLINE]);
         }
-    Gamestate->line_angle += PI / 256;
-    //Gamestate->line_angle += PI / (256*4);
+    Gamestate->line_angle += pi / 256;
+    //Gamestate->line_angle += pi / (256*4);
 }
 
 
@@ -1549,7 +1549,7 @@ void line_side_by_side_test(void)
     
     draw_wndline_aa(origin_aa, line_aa, color);
     
-    Gamestate->line_angle += PI / 256;
+    Gamestate->line_angle += pi / 256;
 
     // draw_line_aa
     
@@ -1627,10 +1627,10 @@ void scanlines_concentric_test(void)
                     v2 D2 = project(D3, PERSPECTIVE);
 
                     v2 tmp = A2;
-                    A2 = clamp_line(A2, B2);
-                    B2 = clamp_line(B2, C2);
-                    C2 = clamp_line(C2, D2);
-                    D2 = clamp_line(D2, tmp);
+                    // A2 = clamp_line(A2, B2);
+                    // B2 = clamp_line(B2, C2);
+                    // C2 = clamp_line(C2, D2);
+                    // D2 = clamp_line(D2, tmp);
 
                     u32 brush = GetBrush(BRUSH_SCANLINE);
 
@@ -1672,7 +1672,7 @@ void draw_rotated_line_test(void)
     //draw_line(start, line, color); because of pxl
     // draw_line(origin, offset_line, color); because of pxl
 
-    Gamestate->line_angle += PI / 256;
+    Gamestate->line_angle += pi / 256;
 }
 
 void perspective_projection_test(void)
@@ -1761,12 +1761,12 @@ void draw_rotated_rect_test(void)
 
     // @Note round instead??
     // @TODO there are holes at certain times, due to numerical inaccuracy...
-    s32 width = floor32(edist2(A, B));
-    s32 height = floor32(edist2(A, D));
+    s32 width = Floor(edist2(A, B));
+    s32 height = Floor(edist2(A, D));
 
     draw_rotated_rect(width, height, origin, color);
 
-    Gamestate->rect_angle += PI / 256;
+    Gamestate->rect_angle += pi / 256;
 }
 
 void draw_sqaure_around_cursor_test(void)

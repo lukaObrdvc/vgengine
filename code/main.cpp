@@ -12,6 +12,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>
+// @todo math intrinsics
+// for sqrt, sin, cos, (winapi?) signbit
 #include <math.h>
 
 #if !USE_DLL
@@ -21,6 +23,7 @@
 #endif
 
 #include "utils.h"
+#include "basic.h"
 #include "Allocator.h"
 
 #include "math.h"
