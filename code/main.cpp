@@ -30,6 +30,8 @@
 #include "vector.h"
 #include "linear_algebra.h"
 #include "matrix.h"
+#include "quaternion.h"
+#include "transform.h"
 #include "pixel.h"
 #include "renderer.h"
 

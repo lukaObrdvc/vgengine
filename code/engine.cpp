@@ -455,7 +455,7 @@ triangle TriangleWorldToRaster(triangle tri)
     r32 Fov = Gamestate->cameraParams.fov;
     r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
 
-    r32 r = -Near*tan(to_rad(Fov/2));
+    r32 r = -Near*tan(radians(Fov/2));
     r32 l = -r;
     r32 t = r/aspect_ratio; // is it the opposite here actually, first t then r?
     r32 b = -t;
@@ -504,7 +504,7 @@ inline m4 M4Proj()
     
     r32 n = Gamestate->cameraParams._near;
     r32 f = Gamestate->cameraParams._far;
-    r32 t = tan(to_rad(fov / 2)) * n;
+    r32 t = tan(radians(fov / 2)) * n;
     r32 r = t * aspectRatio;
 
     result.m[0][0] = n / r;

@@ -538,7 +538,7 @@ void rasterize_triangle_test(void)
     r32 Fov = Gamestate->cameraParams.fov;
     r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
 
-    r32 r = -Near*tan(to_rad(Fov/2));
+    r32 r = -Near*tan(radians(Fov/2));
     r32 l = -r;
     r32 t = r/aspect_ratio;
     r32 b = -t;

@@ -3,6 +3,7 @@
 
 
 // @todo do the row/column major thingy, with macro toggle
+// @todo make some of these noinline?
 
 // @doc matrices are row-major
 
@@ -12,6 +13,7 @@ union Matrix4x4f
     struct {Vec4f X, Y, Z, W;};
     Vec4f row[4];
     r32 e[4][4];
+    r32 i[16];
 };
 
 union Matrix4x4d
@@ -19,6 +21,7 @@ union Matrix4x4d
     struct {Vec4d X, Y, Z, W;};
     Vec4d row[4];
     r64 e[4][4];
+    r64 i[16];
 };
 
 
@@ -85,8 +88,8 @@ inline void matrix_transpose(Matrix4x4f* m)
 
 inline void matrix_rotation_x(Matrix4x4f* m, r32 angle)
 {
-    r32 sinA = sin(angle);
-    r32 cosA = cos(angle);
+    r32 sinA = sinf(angle);
+    r32 cosA = cosf(angle);
 
     m->X = {1,    0,     0, 0};
     m->Y = {0,  cosA, sinA, 0};
@@ -96,8 +99,8 @@ inline void matrix_rotation_x(Matrix4x4f* m, r32 angle)
 
 inline void matrix_rotation_y(Matrix4x4f* m, r32 angle)
 {
-    r32 sinA = sin(angle);
-    r32 cosA = cos(angle);
+    r32 sinA = sinf(angle);
+    r32 cosA = cosf(angle);
 
     m->X = {cosA, 0, -sinA, 0};
     m->Y = {0,    1,     0, 0};
@@ -107,8 +110,8 @@ inline void matrix_rotation_y(Matrix4x4f* m, r32 angle)
 
 inline void matrix_rotation_z(Matrix4x4f* m, r32 angle)
 {
-    r32 sinA = sin(angle);
-    r32 cosA = cos(angle);
+    r32 sinA = sinf(angle);
+    r32 cosA = cosf(angle);
 
     m->X = { cosA, sinA, 0, 0};
     m->Y = {-sinA, cosA, 0, 0};

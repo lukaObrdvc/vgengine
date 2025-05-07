@@ -215,23 +215,24 @@ inline s32 trunc(s64 n)
 }
 
 
-inline r32 to_rad(r32 angle)
+// @todo replace 360/tau and tau/360 with precomputed values
+inline r32 radians(r32 angle)
 {
     return (angle*360)/tau;
 }
 
-inline r64 to_rad(r64 angle)
+inline r64 radians(r64 angle)
 {
     return (angle*360)/tau;
 }
 
 
-inline r32 to_deg(r32 angle)
+inline r32 degrees(r32 angle)
 {
     return (angle*tau)/360;
 }
 
-inline r64 to_deg(r64 angle)
+inline r64 degrees(r64 angle)
 {
     return (angle*tau)/360;
 }

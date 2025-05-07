@@ -2,6 +2,8 @@
 #define LINEAR_ALGEBRA_H
 
 // @todo rename to vector.h
+// @todo make certain functions like vec_add variadic? but it's also
+// life if you did operator overloading honestly..
 
 // VECTORS FOR r32
 union Vec2f
@@ -113,24 +115,24 @@ inline Vec4f vec_zero4f()
 
 inline r32 vec_len(Vec2f v)
 {
-    return (r32)sqrt(sqr(v.x) + sqr(v.y));
+    return sqrtf(sqr(v.x) + sqr(v.y));
 }
 inline r32 vec_len(Vec3f v)
 {
-    return (r32)sqrt(sqr(v.x) + sqr(v.y) + sqr(v.z));
+    return sqrtf(sqr(v.x) + sqr(v.y) + sqr(v.z));
 }
 
 // @pot a version without taking sqrt for performance
 inline r32 vec_edist(Vec2f v1, Vec2f v2)
 {
-    return (r32)sqrt(sqr(v1.x - v2.x) +
-                     sqr(v1.y - v2.y));
+    return sqrtf(sqr(v1.x - v2.x) +
+                 sqr(v1.y - v2.y));
 }
 inline r32 vec_edist(Vec3f v1, Vec3f v2)
 {
-    return (r32)sqrt(sqr(v1.x - v2.x) +
-                     sqr(v1.y - v2.y) +
-                     sqr(v1.z - v2.z));
+    return sqrtf(sqr(v1.x - v2.x) +
+                 sqr(v1.y - v2.y) +
+                 sqr(v1.z - v2.z));
 }
 
 // @doc I think you never want to check for normalized status, just
@@ -192,6 +194,20 @@ inline Vec3f vec_dotself(Vec3f v)
     return {v.x * v.x,
             v.y * v.y,
             v.z * v.z};
+}
+
+// @todo figure out how these actually work mathematically...
+inline r32 vec_cross(Vec2f v1, Vec2f v2)
+{
+    return v1.x * v2.y - v1.y * v2.x;
+}
+inline Vec3f vec_cross(Vec3f v1, Vec3f v2)
+{
+    Vec3f result;
+    result.x = v1.y * v2.z - v1.z * v2.y;
+    result.y = v1.z * v2.x - v1.x * v2.z;
+    result.z = v1.x * v2.y - v1.y * v2.x;
+    return result;
 }
 
 inline Vec2f vec_scale(Vec2f v, r32 s)
@@ -312,6 +328,19 @@ inline Vec3d vec_dotself(Vec3d v)
             v.z * v.z};
 }
 
+inline r64 vec_cross(Vec2d v1,Vec2d v2)
+{
+    return v1.x * v2.y - v1.y * v2.x;
+}
+inline Vec3d vec_cross(Vec3d v1, Vec3d v2)
+{
+    Vec3d result;
+    result.x = v1.y * v2.z - v1.z * v2.y;
+    result.y = v1.z * v2.x - v1.x * v2.z;
+    result.z = v1.x * v2.y - v1.y * v2.x;
+    return result;
+}
+
 inline Vec2d vec_scale(Vec2d v, r64 s)
 {
     return {s * v.x, s * v.y};
@@ -352,23 +381,23 @@ inline Vec4i vec_zero4i()
 
 inline r32 vec_len(Vec2i v)
 {
-    return (r32)sqrt(sqr(v.x) + sqr(v.y));
+    return sqrtf(sqr(v.x) + sqr(v.y));
 }
 inline r32 vec_len(Vec3i v)
 {
-    return (r32)sqrt(sqr(v.x) + sqr(v.y) + sqr(v.z));
+    return sqrtf(sqr(v.x) + sqr(v.y) + sqr(v.z));
 }
 
 inline r32 vec_edist(Vec2i v1, Vec2i v2)
 {
-    return (r32)sqrt(sqr(v1.x - v2.x) +
-                     sqr(v1.y - v2.y));
+    return sqrtf(sqr(v1.x - v2.x) +
+                 sqr(v1.y - v2.y));
 }
 inline r32 vec_edist(Vec3i v1, Vec3i v2)
 {
-    return (r32)sqrt(sqr(v1.x - v2.x) +
-                     sqr(v1.y - v2.y) +
-                     sqr(v1.z - v2.z));
+    return sqrtf(sqr(v1.x - v2.x) +
+                 sqr(v1.y - v2.y) +
+                 sqr(v1.z - v2.z));
 }
 
 inline Vec2i vec_add(Vec2i v1, Vec2i v2)
@@ -417,6 +446,19 @@ inline Vec3i vec_dotself(Vec3i v)
     return {v.x * v.x,
             v.y * v.y,
             v.z * v.z};
+}
+
+inline s32 vec_cross(Vec2i v1, Vec2i v2)
+{
+    return v1.x * v2.y - v1.y * v2.x;
+}
+inline Vec3i vec_cross(Vec3i v1, Vec3i v2)
+{
+    Vec3i result;
+    result.x = v1.y * v2.z - v1.z * v2.y;
+    result.y = v1.z * v2.x - v1.x * v2.z;
+    result.z = v1.x * v2.y - v1.y * v2.x;
+    return result;
 }
 
 inline Vec2i vec_scale(Vec2i v, s32 s)
@@ -524,6 +566,19 @@ inline Vec3l vec_dotself(Vec3l v)
     return {v.x * v.x,
             v.y * v.y,
             v.z * v.z};
+}
+
+inline s64 vec_cross(Vec2l v1, Vec2l v2)
+{
+    return v1.x * v2.y - v1.y * v2.x;
+}
+inline Vec3l vec_cross(Vec3l v1, Vec3l v2)
+{
+    Vec3l result;
+    result.x = v1.y * v2.z - v1.z * v2.y;
+    result.y = v1.z * v2.x - v1.x * v2.z;
+    result.z = v1.x * v2.y - v1.y * v2.x;
+    return result;
 }
 
 inline Vec2l vec_scale(Vec2l v, s64 s)
