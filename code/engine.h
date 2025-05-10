@@ -8,7 +8,7 @@
 
 #if USE_DLL
 
-void platform_init_memory_base_stub(PlatformAPI* memoryBase)
+void platform_init_memory_base_stub(Globals* memoryBase)
 {
     return;
 }
@@ -21,7 +21,7 @@ b32 process_input_stub(u64 kts, u64 ktus, u8 mts, u8 mtus, v2 c)
     return false;
 }
 
-typedef void (*fpPlatformInitMemoryBase) (PlatformAPI*);
+typedef void (*fpPlatformInitMemoryBase) (Globals*);
 typedef void (*fpUpdateAndRender) (void);
 typedef b32 (*fpProcessInput) (u64, u64, u8, u8, v2);
 

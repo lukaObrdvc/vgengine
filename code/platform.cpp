@@ -1,4 +1,5 @@
 #include "project.h"
+#include "alias.h"
 
 #if USE_DLL
 
@@ -6,8 +7,13 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <math.h>
-#include "utils.h"
+
+#include "basic.h"
+#include "arena.h"
 #include "vector.h"
+#include "linear_algebra.h"
+#include "matrix.h"
+#include "quaternion.h"
 
 #include "platform.h"
 #include "engine.h"

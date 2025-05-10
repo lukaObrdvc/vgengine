@@ -7,7 +7,6 @@
 #include <intrin.h>
 #include <malloc.h> // @TODO do I need this?
 
-#include "alias.h"
 
 global_variable u8 keymap[256];
 
@@ -404,7 +403,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                     dll = load_game();
                     dll_filetime_prev = dll_filetime_curr;
                     
-                    PLATFORM_INIT_MEMORY_BASE((PlatformAPI*) base_ptr);
+                    PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
                 }
 #endif         
             u64 begin_cycle_count = __rdtsc();
