@@ -25,6 +25,7 @@
 
 #include "utils.h"
 #include "basic.h"
+#include "init.h"
 #include "arena.h"
 #include "platform.h"
 #include "Allocator.h"
@@ -45,6 +46,7 @@
 #include "new_mani.h"
 
 #include "arena.cpp"
+#include "init.cpp"
 
 #if !USE_DLL
 #include "engine.h"

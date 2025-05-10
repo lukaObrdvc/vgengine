@@ -3,40 +3,6 @@
 
 
 
-
-// @TODO figure out byte sizes of these fields for alignment optimization and to not waste space
-
-// @TODO do I use defines instead of enums at this point??
-typedef enum tagMOUSECODE
-    {
-        MOUSE_NONE = 0,
-        MOUSE_MOVE = (1 << 0), // @Noted MOUSE_MOVED is defined in windows...
-        MOUSE_M1   = (1 << 1),
-        MOUSE_M2   = (1 << 2),
-        MOUSE_M3   = (1 << 3)
-    } MOUSECODE;
-
-typedef enum tagKEYCODe
-    {
-        KEY_NONE  = 0,
-        KEY_LEFT  = (1 << 0),
-        KEY_UP    = (1 << 1), 
-        KEY_RIGHT = (1 << 2), 
-        KEY_DOWN  = (1 << 3), 
-        KEY_W     = (1 << 4), 
-        KEY_S     = (1 << 5), 
-        KEY_A     = (1 << 6), 
-        KEY_D     = (1 << 7), 
-        KEY_Q     = (1 << 8), 
-        KEY_E     = (1 << 9), 
-        KEY_I     = (1 << 10),
-        KEY_K     = (1 << 11),
-        KEY_J     = (1 << 12),
-        KEY_L     = (1 << 13),
-        KEY_U     = (1 << 14),
-        KEY_O     = (1 << 15)
-    } KEYCODE;
-
 #define CONCENTRIC_MAX 50 // must be positive integer less than 256
 #define MAX_BRUSHES 16
 
@@ -46,13 +12,6 @@ typedef enum
         BRUSH_SCANLINE = 1,
         BRUSH_SCANLINE2 = 2
     } BRUSH;
-
-typedef enum
-    {
-        ORTHOGRAPHIC,
-        PERSPECTIVE
-    } PROJECTION;
-
 
 // @doc canvas plane is implicitly at zNear;
 // canvas center is (0,0) relative to camera space origin;
