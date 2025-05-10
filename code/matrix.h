@@ -243,4 +243,18 @@ inline void matrix_translate(Matrix4x4d* m, Vec3d v)
 
 // @todo matrix_compose_transforms variadic function (or template?)
 
+// inline void MatrixToStr(u8* buff, m4 M)
+// {
+//     s32 pos = 0;
+//     for (s32 i = 0; i < 4; i++)
+//         {
+//             for (s32 j = 0; j < 4; j++)
+//                 {
+//                     pos += sprintf((char* const)(buff+pos), "%8.2f", M.m[i][j]);
+//                 }
+//             pos += sprintf((char* const)(buff+pos), "\n");
+//         }
+// }
+
+
 #endif

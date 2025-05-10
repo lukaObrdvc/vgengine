@@ -74,9 +74,8 @@ struct EngineState
     u16 frameBufferWidth;
     u16 frameBufferHeight;
     u8* frameBuffer;
-    r32* zBuffer;
+    r32* Z_BUFFER;
     Camera mainCamera;
-    u64 keyflags;
 
     // shize ------------------------------------
     // @TODO methinks VK combines mouse keys with keyboard keys.....
@@ -88,14 +87,13 @@ struct EngineState
 
     // temporary-----------------------------
 
+    b32 tested_once;
     r32 camera_angle;
     b32 log_to_file_once;
     b32 reverse_winding;
 
     u32 brushes[MAX_BRUSHES];
 
-    // @Note this is what the input changes,
-    // probably think of something better
     r32 wnd_center_x; 
     r32 wnd_center_y;
     
@@ -120,7 +118,7 @@ struct EngineState
 };
 
 // @todo change all aliases to inline functions bro...
-// @todo change Gamestate name to EngineState
+// @todo change ENGINESTATE name to EngineState
 
 #define ENGINESTATE ((EngineState*)PERM_ARENA)
 
@@ -130,7 +128,7 @@ struct EngineState
 #define FRAME_BUFFER_PITCH (-FRAME_BUFFER_HEIGHT * BYTPP) // @doc ...
 #define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT * BYTPP)
 
-#define Z_BUFFER ENGINESTATE->zBuffer
+#define Z_BUFFER ENGINESTATE->Z_BUFFER
 
 #define MAIN_CAMERA ENGINESTATE->mainCamera
 #define Z_NEAR MAIN_CAMERA.zNear
@@ -143,16 +141,16 @@ struct EngineState
 
 // @Note better name?
 // @TODO do I make one for converting a wndrect (has to switch top and bottom)
-#define to_yisdown(y) (wnd_height - (y))
-#define to_yisup(y)   (wnd_height - (y))
+#define to_yisdown(y) (FRAME_BUFFER_HEIGHT - (y))
+#define to_yisup(y)   (FRAME_BUFFER_HEIGHT - (y))
 //#define wndrect_yisdown(y)
 
 
 // @TODO figure out default rotation direction cw or ccw and transforms...
 
-#define GetBrush(type) (Gamestate->brushes[(type)])
+#define GetBrush(type) (ENGINESTATE->brushes[(type)])
 // @Note maybe not a good idea
-#define SetBrush(type, color) Gamestate->brushes[(type)] = (color)
+#define SetBrush(type, color) ENGINESTATE->brushes[(type)] = (color)
 
 // @Note converting when highest bit is 1 will result into wrapping to
 // negative, but we don't care since we only use it in if statements ?

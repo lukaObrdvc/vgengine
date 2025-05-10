@@ -1,5 +1,5 @@
 #define CURRENTLY_TESTING final_giga_test
-#define TEST_ONLY_ONCE Gamestate->tested_once = true;
+#define TEST_ONLY_ONCE ENGINESTATE->tested_once = true;
 
 void final_giga_test(void)
 {
@@ -32,7 +32,7 @@ void final_giga_test(void)
         7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2
     };
 
-    Camera camera = Gamestate->camera;
+    Camera camera = ENGINESTATE->camera;
     m4 cameraMatrix = M4Unit();
     m4 trans = M4Tlate(scale3(camera.fpoint, -1.0f));
     m4 rot = M4Compose(2, M4RotY(-camera.pitch), M4RotX(-camera.roll));
@@ -78,7 +78,7 @@ void final_giga_test(void)
                     tri.B = V3(tHom.B.x, tHom.B.y, tHom.B.z);
                     tri.C = V3(tHom.C.x, tHom.C.y, tHom.C.z);
             
-                    if (Gamestate->reverse_winding)
+                    if (ENGINESTATE->reverse_winding)
                         {
                             RasterizeTriangle(tri.B, tri.C, tri.A, color, false);
                         }
@@ -90,10 +90,10 @@ void final_giga_test(void)
             b += 3;
         }
     
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 k = 0; k < wnd_width; k++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 k = 0; k < FRAME_BUFFER_WIDTH; k++)
                 {
                     *row = 1.0f;
                     row++;
@@ -105,7 +105,7 @@ void projection_matrix_test(void)
 {
 
     fill_background();
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
     v3 A = V3(-50, -20, -120); // A->C->B = clockwise winding
     v3 B = V3(60, 0, -150);
@@ -113,15 +113,15 @@ void projection_matrix_test(void)
     
 #define RotTriangles5 0
 #define ChangeAngle5 1
-#define DontUseGamestateCamera 0
+#define DontUseENGINESTATECamera 0
     
     m4 WtoC = M4Unit();
-    v3 orbiting_point = V3(0+Gamestate->camera_offs_x,
-                           0+Gamestate->camera_offs_y,
+    v3 orbiting_point = V3(0+ENGINESTATE->camera_offs_x,
+                           0+ENGINESTATE->camera_offs_y,
                            180);
     
-    r32 angle = Gamestate->line_angle;
-    r32 camera_angle = Gamestate->camera_angle;
+    r32 angle = ENGINESTATE->line_angle;
+    r32 camera_angle = ENGINESTATE->camera_angle;
     
     orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
     orbiting_point = M4Mul(orbiting_point, M4Tlate(V3(0, 0, -180)));
@@ -135,12 +135,12 @@ void projection_matrix_test(void)
     C = rotate3(C, angle, 0, 0);
 #endif
 
-#if DontUseGamestateCamera
+#if DontUseENGINESTATECamera
     A = M4Mul(A, WtoC);
     B = M4Mul(B, WtoC);
     C = M4Mul(C, WtoC);
 #else
-    Camera camera = Gamestate->camera;
+    Camera camera = ENGINESTATE->camera;
     m4 cameraMatrix = M4Unit();
     m4 trans = M4Tlate(scale3(camera.fpoint, -1.0f));
     m4 rot = M4Compose(2, M4RotX(-camera.roll), M4RotY(-camera.pitch));
@@ -169,7 +169,7 @@ void projection_matrix_test(void)
             tri.B = V3(tHom.B.x, tHom.B.y, tHom.B.z);
             tri.C = V3(tHom.C.x, tHom.C.y, tHom.C.z);
             
-            if (Gamestate->reverse_winding)
+            if (ENGINESTATE->reverse_winding)
                 {
                     RasterizeTriangle(tri.B, tri.C, tri.A, color, false);
                 }
@@ -179,22 +179,22 @@ void projection_matrix_test(void)
                 }
         }
     
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 j = 0; j < FRAME_BUFFER_WIDTH; j++)
                 {
                     *row = 1.0f;
                     row++;
                 }
         }
 #if ChangeAngle5
-    Gamestate->line_angle += pi / 256;
+    ENGINESTATE->line_angle += pi / 256;
 #endif
 
 #undef RotTriangles5
 #undef ChangeAngle5
-#undef DontUseGamestateCamera
+#undef DontUseENGINESTATECamera
 }
 
 void basic_mesh_test(void)
@@ -259,8 +259,8 @@ void basic_mesh_test(void)
     m4 WtoC = M4Unit();
     v3 orbiting_point = V3(0, 0, ORBIT_OFFS);
     
-    r32 angle = Gamestate->line_angle;
-    r32 camera_angle = Gamestate->camera_angle;
+    r32 angle = ENGINESTATE->line_angle;
+    r32 camera_angle = ENGINESTATE->camera_angle;
     
     orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
     orbiting_point = M4Mul(orbiting_point, M4Tlate(V3(0, 0, -ORBIT_OFFS)));
@@ -312,7 +312,7 @@ void basic_mesh_test(void)
             triangle t = {A, B, C};
             t = TriangleWorldToRaster(t);
             
-            if (Gamestate->reverse_winding)
+            if (ENGINESTATE->reverse_winding)
                 {
                     RasterizeTriangle(t.A, t.B, t.C, color, false);
                 }
@@ -323,18 +323,18 @@ void basic_mesh_test(void)
             b += 3;
         }
     
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 k = 0; k < wnd_width; k++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 k = 0; k < FRAME_BUFFER_WIDTH; k++)
                 {
-                    *row = Gamestate->cameraParams._far-500;
+                    *row = ENGINESTATE->cameraParams._far-500;
                     row++;
                 }
         }
 
 #if ChangeVerticeAngles
-    Gamestate->line_angle += pi / 256;
+    ENGINESTATE->line_angle += pi / 256;
 #endif
 
 #undef RotateVertices
@@ -345,7 +345,7 @@ void basic_mesh_test(void)
 void orbiting_camera_test(void)
 {
     fill_background();
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
     v3 A = V3(-50, -20, -120); // A->C->B = clockwise winding
     v3 B = V3(60, 0, -150);
@@ -364,8 +364,8 @@ void orbiting_camera_test(void)
     m4 WtoC = M4Unit();
     v3 orbiting_point = V3(0, 0, ORBIT_OFFS); // assuming it's in 0,0,-180 coordsys
     
-    r32 angle = Gamestate->line_angle;
-    r32 camera_angle = Gamestate->camera_angle;
+    r32 angle = ENGINESTATE->line_angle;
+    r32 camera_angle = ENGINESTATE->camera_angle;
     
 #if RotCamera
     orbiting_point = M4Mul(orbiting_point, M4RotY(camera_angle));
@@ -417,7 +417,7 @@ void orbiting_camera_test(void)
     
     // when rotating behind the triangles, they are getting culled
     // because winding is reversed, how fix this?
-    if (Gamestate->reverse_winding)
+    if (ENGINESTATE->reverse_winding)
         {
             dbg_print("reverse winding\n");
             RasterizeTriangle(t.B, t.C, t.A, color, true);
@@ -429,20 +429,20 @@ void orbiting_camera_test(void)
             RasterizeTriangle(t2.A, t2.C, t2.B, color, false);
         }
 
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 j = 0; j < FRAME_BUFFER_WIDTH; j++)
                 {
-                    *row = Gamestate->cameraParams._far-500;
+                    *row = ENGINESTATE->cameraParams._far-500;
                     row++;
                 }
         }
 #if ChangeAngle
-    Gamestate->line_angle += pi / 256;
+    ENGINESTATE->line_angle += pi / 256;
 #endif
 
-    Gamestate->log_to_file_once = false;
+    ENGINESTATE->log_to_file_once = false;
     
 #undef RotCamera
 #undef RotTriangles
@@ -453,7 +453,7 @@ void orbiting_camera_test(void)
 void zb_triangle_test(void)
 {
     fill_background();
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
     v3 A = V3(-50, -10, -160); // A->C->B = clockwise winding
     v3 B = V3(60, 10, -200);
@@ -467,7 +467,7 @@ void zb_triangle_test(void)
     C2.z = -120;
 
 #if 1
-    r32 angle = Gamestate->line_angle;
+    r32 angle = ENGINESTATE->line_angle;
     A = rotate3(A, angle, 0, 0);
     B = rotate3(B, angle, 0, 0);
     C = rotate3(C, angle, 0, 0);
@@ -487,17 +487,17 @@ void zb_triangle_test(void)
     RasterizeTriangle(t.A, t.C, t.B, color, true);
     RasterizeTriangle(t2.A, t2.C, t2.B, color, false);
 
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 j = 0; j < FRAME_BUFFER_WIDTH; j++)
                 {
-                    *row = Gamestate->cameraParams._far;
+                    *row = ENGINESTATE->cameraParams._far;
                     row++;
                 }
         }
 #if 1
-    Gamestate->line_angle += pi / 256;
+    ENGINESTATE->line_angle += pi / 256;
 #endif
 }
 
@@ -507,11 +507,11 @@ void rasterize_triangle_test(void)
     // not sure about sign of Z throughout, and stuff..
 
     fill_background();
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
-    r32 Near = Gamestate->cameraParams._near;
-    v3 triangle_base = V3(wnd_width/2.0,
-                          wnd_height/2.0,
+    r32 Near = ENGINESTATE->cameraParams._near;
+    v3 triangle_base = V3(FRAME_BUFFER_WIDTH/2.0,
+                          FRAME_BUFFER_HEIGHT/2.0,
                           Near-10);
 
     // what about explicitly figuring out winding?
@@ -519,7 +519,7 @@ void rasterize_triangle_test(void)
     v3 B = V3(60, 10, -160);
     v3 C = V3(-70, 70, -160);
 
-    r32 angle = Gamestate->line_angle;
+    r32 angle = ENGINESTATE->line_angle;
     A = rotate3(A, angle, 0, 0);
     B = rotate3(B, angle, 0, 0);
     C = rotate3(C, angle, 0, 0);
@@ -535,8 +535,8 @@ void rasterize_triangle_test(void)
     v3 B_s = V3(B.x*invB, B.y*invB, B.z);
     v3 C_s = V3(C.x*invC, C.y*invC, C.z);
     
-    r32 Fov = Gamestate->cameraParams.fov;
-    r32 aspect_ratio = (wnd_width*1.0f)/wnd_height;
+    r32 Fov = ENGINESTATE->cameraParams.fov;
+    r32 aspect_ratio = (FRAME_BUFFER_WIDTH*1.0f)/FRAME_BUFFER_HEIGHT;
 
     r32 r = -Near*tan(radians(Fov/2));
     r32 l = -r;
@@ -547,23 +547,23 @@ void rasterize_triangle_test(void)
     v3 B_ndc = V3(B_s.x/r, B_s.y/t, B_s.z);
     v3 C_ndc = V3(C_s.x/r, C_s.y/t, C_s.z);
 
-    /* v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (1-(A_ndc.y+1)/2)*(wnd_height-1), A_ndc.z); */
-    /* v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (1-(B_ndc.y+1)/2)*(wnd_height-1), B_ndc.z); */
-    /* v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (1-(C_ndc.y+1)/2)*(wnd_height-1), C_ndc.z); */
+    /* v3 A_r = V3((A_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (1-(A_ndc.y+1)/2)*(FRAME_BUFFER_HEIGHT-1), A_ndc.z); */
+    /* v3 B_r = V3((B_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (1-(B_ndc.y+1)/2)*(FRAME_BUFFER_HEIGHT-1), B_ndc.z); */
+    /* v3 C_r = V3((C_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (1-(C_ndc.y+1)/2)*(FRAME_BUFFER_HEIGHT-1), C_ndc.z); */
 
-    v3 A_r = V3((A_ndc.x+1)/2*(wnd_width-1), (A_ndc.y+1)/2*(wnd_height-1), A_ndc.z);
-    v3 B_r = V3((B_ndc.x+1)/2*(wnd_width-1), (B_ndc.y+1)/2*(wnd_height-1), B_ndc.z);
-    v3 C_r = V3((C_ndc.x+1)/2*(wnd_width-1), (C_ndc.y+1)/2*(wnd_height-1), C_ndc.z);
+    v3 A_r = V3((A_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (A_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), A_ndc.z);
+    v3 B_r = V3((B_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (B_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), B_ndc.z);
+    v3 C_r = V3((C_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (C_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), C_ndc.z);
 
     RasterizeTriangle(A_r, C_r, B_r, color, true);
-    Gamestate->line_angle += pi / 256;
+    ENGINESTATE->line_angle += pi / 256;
 
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 j = 0; j < FRAME_BUFFER_WIDTH; j++)
                 {
-                    *row = Gamestate->cameraParams._far;
+                    *row = ENGINESTATE->cameraParams._far;
                     row++;
                 }
         }    
@@ -576,10 +576,10 @@ void clipping_and_camera_test(void)
 {
     fill_background();
 
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
                           0);
     
     v3 A = V3(-50, -10, -20);
@@ -628,12 +628,12 @@ void clipping_and_camera_test(void)
 
     
     
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 j = 0; j < FRAME_BUFFER_WIDTH; j++)
                 {
-                    *row = Gamestate->farclip;
+                    *row = ENGINESTATE->farclip;
                     row++;
                 }
         }
@@ -644,11 +644,11 @@ void clipping_test(void)
 {
     fill_background();
 
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z);
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z);
     
     v3 A = V3(-50, -10, 5); // was -15 on z
     v3 B = V3(60, 10, 5);
@@ -685,9 +685,9 @@ void moving_camera_test(void)
 {
     fill_background();
     
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z);
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z);
 
     v3 A = V3(-30,  30, 5);
     v3 B = V3( 30,  30, 5);
@@ -715,7 +715,7 @@ void moving_camera_test(void)
     // pC = clamp_line(pC, pD);
     // pD = clamp_line(pD, tmp);
     
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
     draw_wndline_aa(pA, pB, color);
     draw_wndline_aa(pB, pC, color);
     draw_wndline_aa(pC, pD, color);
@@ -729,12 +729,12 @@ void zbuffering_triangles_test(void)
 {
 
     fill_background();
-    u32 color1 = Gamestate->brushes[BRUSH_SCANLINE];
-    u32 color2 = Gamestate->brushes[BRUSH_SCANLINE2];
+    u32 color1 = ENGINESTATE->brushes[BRUSH_SCANLINE];
+    u32 color2 = ENGINESTATE->brushes[BRUSH_SCANLINE2];
 
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z);
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z);
     
     v3 A = V3(-50, -10, 7);
     v3 B = V3(60, 10, 50);
@@ -887,13 +887,13 @@ void zbuffering_triangles_test(void)
                 }
         }
     
-    s32 offset1 = wnd_pitch*Round(outline1.bottom) +
-        Round(outline1.left)*wnd_bytpp;
+    s32 offset1 = FRAME_BUFFER_PITCH*Round(outline1.bottom) +
+        Round(outline1.left)*BYTPP;
     s32 height1 = Round(wndrect_height(outline1));
     s32 width1 = Round(wndrect_width(outline1));
 
-    s32 offset2 = wnd_pitch*Round(outline2.bottom) +
-        Round(outline2.left)*wnd_bytpp;
+    s32 offset2 = FRAME_BUFFER_PITCH*Round(outline2.bottom) +
+        Round(outline2.left)*BYTPP;
     s32 height2 = Round(wndrect_height(outline2));
     s32 width2 = Round(wndrect_width(outline2));
 
@@ -920,11 +920,11 @@ void zbuffering_triangles_test(void)
     // also dividing by 0 when calculating k...
     for (s32 i = 0; i < height1; i++)
         {
-            u32* row = (u32*)(wnd_buffer + wnd_pitch*i + offset1);
+            u32* row = (u32*)(FRAME_BUFFER + FRAME_BUFFER_PITCH*i + offset1);
             for (s32 j = 0; j < width1; j++)
                 {
                     b32 inside = true;
-                    r32* zbuffer_point = (r32*)(zbuffer + wnd_pitch*i + wnd_bytpp*j + offset1);
+                    r32* Z_BUFFER_point = (r32*)(Z_BUFFER + FRAME_BUFFER_PITCH*i + BYTPP*j + offset1);
                     r32 z = (d1 - n1.x*(outline1.left+j) - n1.y*(outline1.bottom+i)) / n1.z;
 
                     r32 yAB = kAB*(outline1.left + j - pA.x) + pA.y;
@@ -978,11 +978,11 @@ void zbuffering_triangles_test(void)
     // ---------------------------------------------------------------
     for (s32 i = 0; i < height2; i++)
         {
-            u32* row = (u32*)(wnd_buffer + wnd_pitch*i + offset2);
+            u32* row = (u32*)(FRAME_BUFFER + FRAME_BUFFER_PITCH*i + offset2);
             for (s32 j = 0; j < width2; j++)
                 {
                     b32 inside = true;
-                    r32* zbuffer_point = (r32*)(zbuffer + wnd_pitch*i + wnd_bytpp*j + offset2);
+                    r32* Z_BUFFER_point = (r32*)(Z_BUFFER + FRAME_BUFFER_PITCH*i + BYTPP*j + offset2);
                     r32 z = (d2 - n2.x*(outline2.left+j) - n2.y*(outline2.bottom+i)) / n2.z;
                     
                     r32 yIJ = kIJ*(outline2.left + j - pI.x) + pI.y;
@@ -1034,12 +1034,12 @@ void zbuffering_triangles_test(void)
                 }
         }
 
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 j = 0; j < FRAME_BUFFER_WIDTH; j++)
                 {
-                    *row = Gamestate->farclip; // smth else??
+                    *row = ENGINESTATE->farclip; // smth else??
                     row++;
                 }
         }
@@ -1056,11 +1056,11 @@ void zbuffering_test(void)
 {
 
     fill_background();
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z);
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z);
 
     v3 rect1A = V3(-30, 30, 5);
     v3 rect1B = V3(30, 30, 5);
@@ -1138,12 +1138,12 @@ void zbuffering_test(void)
     /* draw_clamped_wndrect(rect1, color1); */
     /* draw_clamped_wndrect(rect2, color2); */
 
-    for (s32 i = 0; i < wnd_height; i++)
+    for (s32 i = 0; i < FRAME_BUFFER_HEIGHT; i++)
         {
-            r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            for (s32 j = 0; j < wnd_width; j++)
+            r32* row = (r32*)(Z_BUFFER + i*FRAME_BUFFER_PITCH);
+            for (s32 j = 0; j < FRAME_BUFFER_WIDTH; j++)
                 {
-                    *row = Gamestate->farclip; // smth else??
+                    *row = ENGINESTATE->farclip; // smth else??
                     row++;
                 }
         }
@@ -1155,11 +1155,11 @@ void draw_triangle_test(void)
 {
 
     fill_background();
-    u32 color = Gamestate->brushes[BRUSH_SCANLINE];
+    u32 color = ENGINESTATE->brushes[BRUSH_SCANLINE];
 
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z);
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z);
     
     v3 A = V3(-50, -10, 10);
     v3 B = V3(60, 10, 10);
@@ -1234,15 +1234,15 @@ void draw_triangle_test(void)
                 }
         }
     
-    s32 offset = wnd_pitch*Round(outline.bottom) +
-        Round(outline.left)*wnd_bytpp;
+    s32 offset = FRAME_BUFFER_PITCH*Round(outline.bottom) +
+        Round(outline.left)*BYTPP;
     s32 height = Round(wndrect_height(outline));
     s32 width = Round(wndrect_width(outline));
 
     // also dividing by 0 when calculating k...
     for (s32 i = 0; i < height; i++)
         {
-            u32* row = (u32*)(wnd_buffer + wnd_pitch*i + offset);
+            u32* row = (u32*)(FRAME_BUFFER + FRAME_BUFFER_PITCH*i + offset);
             for (s32 j = 0; j < width; j++)
                 {
                     b32 inside = true;
@@ -1303,9 +1303,9 @@ void static_camera_test(void)
 {
     fill_background();
 
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z + 140);
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z + 140);
 
     v3 A = V3(-60, 60, -60);
     v3 B = V3(60, 60, -60);
@@ -1346,20 +1346,20 @@ void static_camera_test(void)
             
     v2 pSC = project(screen_center, PERSPECTIVE);
 
-    draw_wndline_aa(pA, pB, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pB, pC, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pC, pD, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pD, pA, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pA, pB, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pB, pC, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pC, pD, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pD, pA, ENGINESTATE->brushes[BRUSH_SCANLINE]);
 
-    draw_wndline_aa(pbA, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pbB, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pbC, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pbD, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pbA, pbB, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pbB, pbC, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pbC, pbD, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pbD, pbA, ENGINESTATE->brushes[BRUSH_SCANLINE]);
 
-    draw_wndline_aa(pA, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pB, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pC, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
-    draw_wndline_aa(pD, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pA, pbA, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pB, pbB, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pC, pbC, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+    draw_wndline_aa(pD, pbD, ENGINESTATE->brushes[BRUSH_SCANLINE]);
 }
 
 
@@ -1367,9 +1367,9 @@ void rotate_cube_test(void)
 {
     fill_background();
     
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z + 140); // was + 140
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z + 140); // was + 140
 
     v3 A = V3(-60, 60, -60); // was -60 here and 60 down on z
     v3 B = V3(60, 60, -60);
@@ -1383,39 +1383,39 @@ void rotate_cube_test(void)
 
     // assume I will offset my_point into screen_center
     // so don't test for it Z
-    if (screen_center.z >= wnd_nearclip &&
-        screen_center.z <= wnd_farclip)
+    if (screen_center.z >= Z_NEAR &&
+        screen_center.z <= Z_FAR)
         {
-            A = rotate3(A, Gamestate->line_angle, 0, Gamestate->line_angle);
+            A = rotate3(A, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             A = add3(A, screen_center);
             v2 pA = project(A, PERSPECTIVE);
             
-            B = rotate3(B, Gamestate->line_angle, 0, Gamestate->line_angle);
+            B = rotate3(B, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             B = add3(B, screen_center);
             v2 pB = project(B, PERSPECTIVE);
             
-            C = rotate3(C, Gamestate->line_angle, 0, Gamestate->line_angle);
+            C = rotate3(C, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             C = add3(C, screen_center);
             v2 pC = project(C, PERSPECTIVE);
 
-            D = rotate3(D, Gamestate->line_angle, 0, Gamestate->line_angle);
+            D = rotate3(D, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             D = add3(D, screen_center);
             v2 pD = project(D, PERSPECTIVE);
 
 
-            bA = rotate3(bA, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bA = rotate3(bA, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             bA = add3(bA, screen_center);
             v2 pbA = project(bA, PERSPECTIVE);
             
-            bB = rotate3(bB, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bB = rotate3(bB, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             bB = add3(bB, screen_center);
             v2 pbB = project(bB, PERSPECTIVE);
             
-            bC = rotate3(bC, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bC = rotate3(bC, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             bC = add3(bC, screen_center);
             v2 pbC = project(bC, PERSPECTIVE);
 
-            bD = rotate3(bD, Gamestate->line_angle, 0, Gamestate->line_angle);
+            bD = rotate3(bD, ENGINESTATE->line_angle, 0, ENGINESTATE->line_angle);
             bD = add3(bD, screen_center);
             v2 pbD = project(bD, PERSPECTIVE);
 
@@ -1431,23 +1431,23 @@ void rotate_cube_test(void)
             /* projected_screen_center = clamp_line(projected_screen_center, */
             /*                                      tmp); */
     
-            draw_wndline_aa(pA, pB, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pB, pC, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pC, pD, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pD, pA, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pA, pB, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pB, pC, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pC, pD, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pD, pA, ENGINESTATE->brushes[BRUSH_SCANLINE]);
 
-            draw_wndline_aa(pbA, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pbB, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pbC, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pbD, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pbA, pbB, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pbB, pbC, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pbC, pbD, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pbD, pbA, ENGINESTATE->brushes[BRUSH_SCANLINE]);
 
-            draw_wndline_aa(pA, pbA, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pB, pbB, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pC, pbC, Gamestate->brushes[BRUSH_SCANLINE]);
-            draw_wndline_aa(pD, pbD, Gamestate->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pA, pbA, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pB, pbB, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pC, pbC, ENGINESTATE->brushes[BRUSH_SCANLINE]);
+            draw_wndline_aa(pD, pbD, ENGINESTATE->brushes[BRUSH_SCANLINE]);
         }
-    Gamestate->line_angle += pi / 256;
-    //Gamestate->line_angle += pi / (256*4);
+    ENGINESTATE->line_angle += pi / 256;
+    //ENGINESTATE->line_angle += pi / (256*4);
 }
 
 
@@ -1457,18 +1457,18 @@ void rotate3_test(void)
 {
     fill_background();
     
-    v3 screen_center = V3(Gamestate->wnd_center_x,
-                          Gamestate->wnd_center_y,
-                          Gamestate->screen_z + 140);
+    v3 screen_center = V3(ENGINESTATE->wnd_center_x,
+                          ENGINESTATE->wnd_center_y,
+                          ENGINESTATE->screen_z + 140);
 
     v3 my_point = V3(150, 150, 0);
 
     // assume I will offset my_point into screen_center
     // so don't test for it's Z
-    if (screen_center.z >= wnd_nearclip &&
-        screen_center.z <= wnd_farclip)
+    if (screen_center.z >= Z_NEAR &&
+        screen_center.z <= Z_FAR)
         {
-            my_point = rotate3(my_point, Gamestate->line_angle/4, 0, Gamestate->line_angle/4);
+            my_point = rotate3(my_point, ENGINESTATE->line_angle/4, 0, ENGINESTATE->line_angle/4);
             my_point = add3(my_point, screen_center);
 
             v2 projected_screen_center = project(screen_center, PERSPECTIVE);
@@ -1487,10 +1487,10 @@ void rotate3_test(void)
     
             draw_wndline_aa(projected_screen_center,
                             projected_my_point,
-                            Gamestate->brushes[BRUSH_SCANLINE]);
+                            ENGINESTATE->brushes[BRUSH_SCANLINE]);
         }
-    Gamestate->line_angle += pi / 256;
-    //Gamestate->line_angle += pi / (256*4);
+    ENGINESTATE->line_angle += pi / 256;
+    //ENGINESTATE->line_angle += pi / (256*4);
 }
 
 
@@ -1526,24 +1526,24 @@ void rotate3_test(void)
 
 void line_side_by_side_test(void)
 {
-    //Gamestate->brushes[BRUSH_NONE] = 0xFFFFFF;
+    //ENGINESTATE->brushes[BRUSH_NONE] = 0xFFFFFF;
     fill_background();
 
-    u32 color      = Gamestate->brushes[BRUSH_SCANLINE];
-    v2 origin      = V2(Gamestate->wnd_center_x,
-                        Gamestate->wnd_center_y);
+    u32 color      = ENGINESTATE->brushes[BRUSH_SCANLINE];
+    v2 origin      = V2(ENGINESTATE->wnd_center_x,
+                        ENGINESTATE->wnd_center_y);
     v2 line        = V2(100, 0);
     
-    line = scale2(line, Gamestate->line_scaling_factor);
-    line = rotate2(line, -Gamestate->line_angle);
+    line = scale2(line, ENGINESTATE->line_scaling_factor);
+    line = rotate2(line, -ENGINESTATE->line_angle);
     
     draw_line(origin, line, color);
 
-    v2 origin_aa = V2(Gamestate->wnd_center_x,
-                        Gamestate->wnd_center_y + 10);
+    v2 origin_aa = V2(ENGINESTATE->wnd_center_x,
+                        ENGINESTATE->wnd_center_y + 10);
     v2 line_aa = V2(100, 0);
-    line_aa = rotate2(line_aa, -Gamestate->line_angle);
-    line_aa = scale2(line_aa, Gamestate->line_scaling_factor);
+    line_aa = rotate2(line_aa, -ENGINESTATE->line_angle);
+    line_aa = scale2(line_aa, ENGINESTATE->line_scaling_factor);
 
     line_aa = add2(origin_aa, line_aa);
     //line_aa = transpose2(line_aa, zero2(), origin_aa);
@@ -1551,7 +1551,7 @@ void line_side_by_side_test(void)
     
     draw_wndline_aa(origin_aa, line_aa, color);
     
-    Gamestate->line_angle += pi / 256;
+    ENGINESTATE->line_angle += pi / 256;
 
     // draw_line_aa
     
@@ -1590,16 +1590,16 @@ void line_side_by_side_test(void)
 
 void scanlines_concentric_test(void)
 {
-    v2  origin    = V2(Gamestate->wnd_center_x,
-                       Gamestate->wnd_center_y);
+    v2  origin    = V2(ENGINESTATE->wnd_center_x,
+                       ENGINESTATE->wnd_center_y);
     
-    r32 spread_x         = Gamestate->concentric_spread_x;
-    r32 spread_y         = Gamestate->concentric_spread_y;
-    s32 concentric_count = Gamestate->concentric_count;
+    r32 spread_x         = ENGINESTATE->concentric_spread_x;
+    r32 spread_y         = ENGINESTATE->concentric_spread_y;
+    s32 concentric_count = ENGINESTATE->concentric_count;
     
-    r32* concentric_z_buffer = Gamestate->concentric_z_values;
+    r32* concentric_z_buffer = ENGINESTATE->concentric_z_values;
 
-    //Gamestate->brushes[0] = 0xFFFFFF;
+    //ENGINESTATE->brushes[0] = 0xFFFFFF;
     fill_background();
 
     // @TODO maybe don't do i=1 here ?
@@ -1607,8 +1607,8 @@ void scanlines_concentric_test(void)
         {
             r32 curr_z = concentric_z_buffer[i];
             
-            if (curr_z >= wnd_nearclip &&
-                curr_z <= wnd_farclip)
+            if (curr_z >= Z_NEAR &&
+                curr_z <= Z_FAR)
                 {
                     r32 half_width  = (i+1) * spread_x;
                     r32 half_height = (i+1) * spread_y;
@@ -1651,15 +1651,15 @@ void draw_rotated_line_test(void)
     fill_background();
     
     pxl color      = PXL(0, 0, 0, 0);
-    v2 origin      = V2(Gamestate->wnd_center_x,
-                        Gamestate->wnd_center_y);
+    v2 origin      = V2(ENGINESTATE->wnd_center_x,
+                        ENGINESTATE->wnd_center_y);
     v2 offset_line = V2(100, 0);
     v2 line        = V2(50, 0);
     
-    line = scale2(line, Gamestate->line_scaling_factor);
-    line = rotate2(line, -Gamestate->line_angle);
-    offset_line = scale2(offset_line, Gamestate->line_scaling_factor);
-    offset_line = rotate2(offset_line, Gamestate->line_angle*1.5);
+    line = scale2(line, ENGINESTATE->line_scaling_factor);
+    line = rotate2(line, -ENGINESTATE->line_angle);
+    offset_line = scale2(offset_line, ENGINESTATE->line_scaling_factor);
+    offset_line = rotate2(offset_line, ENGINESTATE->line_angle*1.5);
     // @TODO figure out if this can be done with add2 orwhtv
     v2 start = V2(origin.x+offset_line.x, origin.y-offset_line.y);
     v2 end = V2(origin.x+line.x+offset_line.x, origin.y-line.y-offset_line.y);
@@ -1674,22 +1674,22 @@ void draw_rotated_line_test(void)
     //draw_line(start, line, color); because of pxl
     // draw_line(origin, offset_line, color); because of pxl
 
-    Gamestate->line_angle += pi / 256;
+    ENGINESTATE->line_angle += pi / 256;
 }
 
 void perspective_projection_test(void)
 {
-    Gamestate->concentric_current_z = 0;
-    r32* concentric_z_values = Gamestate->concentric_z_values;
+    ENGINESTATE->concentric_current_z = 0;
+    r32* concentric_z_values = ENGINESTATE->concentric_z_values;
 
     pxl color     = PXL(0, 0, 0, 255);
-    r32 thickness = Gamestate->concentric_thickness;    
-    v2  origin    = V2(Gamestate->wnd_center_x,
-                       Gamestate->wnd_center_y);
+    r32 thickness = ENGINESTATE->concentric_thickness;    
+    v2  origin    = V2(ENGINESTATE->wnd_center_x,
+                       ENGINESTATE->wnd_center_y);
     
-    r32 spread_x         = Gamestate->concentric_spread_x;
-    r32 spread_y         = Gamestate->concentric_spread_y;
-    s32 concentric_count = Gamestate->concentric_count;
+    r32 spread_x         = ENGINESTATE->concentric_spread_x;
+    r32 spread_y         = ENGINESTATE->concentric_spread_y;
+    s32 concentric_count = ENGINESTATE->concentric_count;
     
     fill_background();
 
@@ -1705,12 +1705,12 @@ void perspective_projection_test(void)
             
             wndrect rect = Wndrect(left, bottom, right, top);
 
-            if (concentric_z_values[i] >= wnd_nearclip &&
-                concentric_z_values[i] <= wnd_farclip)
+            if (concentric_z_values[i] >= Z_NEAR &&
+                concentric_z_values[i] <= Z_FAR)
                 {
                     draw_wndrect_outline_projected(rect, thickness, color);
                 }
-            Gamestate->concentric_current_z++;
+            ENGINESTATE->concentric_current_z++;
         }
 
 }
@@ -1718,13 +1718,13 @@ void perspective_projection_test(void)
 void concentric_test(void)
 {
     pxl color     = PXL(0, 0, 0, 255);
-    r32 thickness = Gamestate->concentric_thickness;    
-    v2  origin    = V2(Gamestate->wnd_center_x,
-                       Gamestate->wnd_center_y);
+    r32 thickness = ENGINESTATE->concentric_thickness;    
+    v2  origin    = V2(ENGINESTATE->wnd_center_x,
+                       ENGINESTATE->wnd_center_y);
     
-    r32 spread_x         = Gamestate->concentric_spread_x;
-    r32 spread_y         = Gamestate->concentric_spread_y;
-    s32 concentric_count = Gamestate->concentric_count;
+    r32 spread_x         = ENGINESTATE->concentric_spread_x;
+    r32 spread_y         = ENGINESTATE->concentric_spread_y;
+    s32 concentric_count = ENGINESTATE->concentric_count;
     
     fill_background();
 
@@ -1748,9 +1748,9 @@ void draw_rotated_rect_test(void)
 {
     fill_background();
     pxl color = PXL(0, 0, 0, 0);
-    r32 rect_scaling_factor = Gamestate->rect_scaling_factor;
-    v2 origin = V2(Gamestate->wnd_center_x,
-                   Gamestate->wnd_center_y);
+    r32 rect_scaling_factor = ENGINESTATE->rect_scaling_factor;
+    v2 origin = V2(ENGINESTATE->wnd_center_x,
+                   ENGINESTATE->wnd_center_y);
     v2 A = V2(0, 50);
     v2 B = V2(50, 50);
     //v2 C = V2(50, 0);
@@ -1768,13 +1768,13 @@ void draw_rotated_rect_test(void)
 
     draw_rotated_rect(width, height, origin, color);
 
-    Gamestate->rect_angle += pi / 256;
+    ENGINESTATE->rect_angle += pi / 256;
 }
 
 void draw_sqaure_around_cursor_test(void)
 {
-    dbg_render(Gamestate->dbg_render_x_offset, Gamestate->dbg_render_y_offset);
-    dbg_draw_square_around_cursor(Gamestate->square_length);
+    dbg_render(ENGINESTATE->dbg_render_x_offset, ENGINESTATE->dbg_render_y_offset);
+    dbg_draw_square_around_cursor(ENGINESTATE->square_length);
 }
 
 void file_test(void)
@@ -1793,7 +1793,7 @@ void none_test(void)
 #define TEST_ CURRENTLY_TESTING();
 void test(void)
 {
-    if (!Gamestate->tested_once)
+    if (!ENGINESTATE->tested_once)
         {
             TEST_
         }

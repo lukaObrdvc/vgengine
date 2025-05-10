@@ -159,20 +159,20 @@ typedef struct tagGame_state
 #pragma pack(pop)
 
 
-#define Gamestate    ((game_state*)(memory_base->perm_mem))
+#define ENGINESTATE    ((game_state*)(memory_base->perm_mem))
 
-#define wnd_width    (((game_state*)(memory_base->perm_mem))->wndbuffer_width)
-#define wnd_height   (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
-#define wnd_bytpp    (memory_base->bytpp)                                      
-#define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)      // cache in scope ?
+#define FRAME_BUFFER_WIDTH    (((game_state*)(memory_base->perm_mem))->wndbuffer_width)
+#define FRAME_BUFFER_HEIGHT   (((game_state*)(memory_base->perm_mem))->wndbuffer_height)
+#define BYTPP    (memory_base->bytpp)                                      
+#define wnd_bytesize (FRAME_BUFFER_WIDTH*FRAME_BUFFER_HEIGHT*BYTPP)      // cache in scope ?
 
-#define wnd_pitch    (-wnd_width*wnd_bytpp)                // cache in scope ?
-#define wnd_buffer   (((u8*)(memory_base->perm_mem) +   \
+#define FRAME_BUFFER_PITCH    (-FRAME_BUFFER_WIDTH*BYTPP)                // cache in scope ?
+#define FRAME_BUFFER   (((u8*)(memory_base->perm_mem) +   \
                        sizeof(game_state) +             \
-                       wnd_bytesize + wnd_pitch))
+                       wnd_bytesize + FRAME_BUFFER_PITCH))
 
-#define wnd_nearclip (((game_state*)(memory_base->perm_mem))->nearclip)
-#define wnd_farclip  (((game_state*)(memory_base->perm_mem))->farclip)
+#define Z_NEAR (((game_state*)(memory_base->perm_mem))->nearclip)
+#define Z_FAR  (((game_state*)(memory_base->perm_mem))->farclip)
 
 // @Note the cursor will always be in the windows' coordsys
 // so if you want to draw around it, you have to translate
@@ -180,22 +180,22 @@ typedef struct tagGame_state
 
 // @Note better name?
 // @TODO do I make one for converting a wndrect (has to switch top and bottom)
-#define to_yisdown(y) (wnd_height - (y))
-#define to_yisup(y)   (wnd_height - (y))
+#define to_yisdown(y) (FRAME_BUFFER_HEIGHT - (y))
+#define to_yisup(y)   (FRAME_BUFFER_HEIGHT - (y))
 //#define wndrect_yisdown(y)
 
 // cast to r32* after you offset...
-#define zbuffer (((u8*)(memory_base->perm_mem) +    \
+#define Z_BUFFER (((u8*)(memory_base->perm_mem) +    \
                   sizeof(game_state) +              \
                   wnd_bytesize +                    \
-                  wnd_bytesize + wnd_pitch))
+                  wnd_bytesize + FRAME_BUFFER_PITCH))
 
 
 // @TODO figure out default rotation direction cw or ccw and transforms...
 
-#define GetBrush(type) (Gamestate->brushes[(type)])
+#define GetBrush(type) (ENGINESTATE->brushes[(type)])
 // @Note maybe not a good idea
-#define SetBrush(type, color) Gamestate->brushes[(type)] = (color)
+#define SetBrush(type, color) ENGINESTATE->brushes[(type)] = (color)
 
 // @Note converting when highest bit is 1 will result into wrapping to
 // negative, but we don't care since we only use it in if statements ?

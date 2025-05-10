@@ -25,6 +25,8 @@
 
 #include "utils.h"
 #include "basic.h"
+#include "arena.h"
+#include "platform.h"
 #include "Allocator.h"
 #include "dynamic_array.h"
 
@@ -35,7 +37,6 @@
 #include "quaternion.h"
 #include "transform.h"
 #include "rect.h"
-#include "arena.h"
 #include "pixel.h"
 #include "renderer.h"
 
@@ -43,8 +44,8 @@
 
 #include "new_mani.h"
 
+#include "arena.cpp"
 
-#include "platform.h"
 #if !USE_DLL
 #include "engine.h"
 #endif

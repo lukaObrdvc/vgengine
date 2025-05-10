@@ -332,18 +332,18 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     
     Globals* globalsToPass = (Globals*)base_ptr;
     
-    PLATFORM_API->platformDisplay.bytesPerPixel = bytes_per_pixel;
-    PLATFORM_API->platformMemory.reservedMemory = totalReservedMemory;
-    PLATFORM_API->platformMemory.pageSize = pageSize;
+    PLATFORM_API.platformDisplay.bytesPerPixel = bytes_per_pixel;
+    PLATFORM_API.platformMemory.reservedMemory = totalReservedMemory;
+    PLATFORM_API.platformMemory.pageSize = pageSize;
 #if USE_DLL
-    PLATFORM_API->platformProcedures.readFile = read_file;
-    PLATFORM_API->platformProcedures.writeFile = write_file;
-    PLATFORM_API->platformProcedures.commitMemory = commit_memory;
+    PLATFORM_API.platformProcedures.readFile = read_file;
+    PLATFORM_API.platformProcedures.writeFile = write_file;
+    PLATFORM_API.platformProcedures.commitMemory = commit_memory;
 #endif
 
-    PLATFORM_INIT_MEMORY_BASE((PlatformAPI*) base_ptr);
+    PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
 
-    void* window_buffer_memory = (void*)wnd_buffer;
+    void* window_buffer_memory = (void*)FRAME_BUFFER;
     
     int window_offset_x = 50;
     int window_offset_y = 50;
@@ -381,9 +381,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     window_buffer_info.bmiHeader.biBitCount = bytes_per_pixel*8;
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
 
-    wnd_width = 1280;
-    wnd_height = 720;
-    POINT center = { wnd_width/2, wnd_height/2 };
+    FRAME_BUFFER_WIDTH = 1280;
+    FRAME_BUFFER_HEIGHT = 720;
+    POINT center = { FRAME_BUFFER_WIDTH/2, FRAME_BUFFER_HEIGHT/2 };
     ClientToScreen(window, &center);
     SetCursorPos(center.x, center.y);
     
@@ -440,8 +440,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             
             UPDATE_AND_RENDER();
 
-            window_buffer_info.bmiHeader.biWidth = wnd_width;
-            window_buffer_info.bmiHeader.biHeight = -wnd_height;
+            window_buffer_info.bmiHeader.biWidth = FRAME_BUFFER_WIDTH;
+            window_buffer_info.bmiHeader.biHeight = -FRAME_BUFFER_HEIGHT;
 
             
             // @TODO figure out if I need to have two different types of
