@@ -9,24 +9,27 @@
 #if USE_DLL
 typedef b32 (*fpReadFile) (u8*, void*, u32*);
 typedef b32 (*fpWriteFile) (u8*, void*, u32);
+typedef b32 (*fpCommitMemory) (u8*, u64);
 
 typedef struct tagPlatformProcedures
 {
     fpReadFile readFile;
     fpWriteFile writeFile;
+    fpCommitMemory commitMemory;
 } PlatformProcedures;
 
 #else
 
 b32 read_file(u8* path, void* buff, u32* buffSize);
 b32 write_file(u8* path, void* buff, u32 buffSize);
+b32 commit_memory(u8* address, u64 size);
 
 #endif
 
 typedef struct tagPlatformMemory
 {
-    /* void* memoryBase; */
-    u64 memoryCapacity;
+    u64 reservedMemory;
+    u64 pageSize;
 } PlatformMemory;
 
 // @TODO not sure if you want a macro for something like this instead
@@ -37,31 +40,44 @@ typedef struct tagPlatformDisplay
 } PlatformDisplay;
 
 
-#pragma pack(push, 1)
-typedef struct tagPlatformAPI
+struct PlatformAPI
 {
 #if USE_DLL
     PlatformProcedures platformProcedures;
 #endif
     PlatformMemory platformMemory;
     PlatformDisplay platformDisplay;
-} PlatformAPI;
-#pragma pack(pop)
+};
 
-global_variable PlatformAPI* platformAPI;
+
+
+struct Globals
+{
+    PlatformAPI platformAPI;
+    ArenaManager arenaManager;
+    Arena permArena;
+    Arena frameArena;
+    u16 arenaCount;
+    Arena arenas[MAX_ARENAS];
+};
+
+global_variable Globals* globals;
 
 
 #if USE_DLL
 
-#define READ_FILE(path, buff, buffSize) platformAPI->platformProcedures.readFile((path), (buff), (buffSize))
-#define WRITE_FILE(path, buff, buffSize) platformAPI->platformProcedures.writeFile((path), (buff), (buffSize))
+#define READ_FILE(path, buff, buffSize) PLATFORM_API.platformProcedures.readFile((path), (buff), (buffSize))
+#define WRITE_FILE(path, buff, buffSize) PLATFORM_API.platformProcedures.writeFile((path), (buff), (buffSize))
+#define COMMIT_MEMORY(address, size) PLATFORM_API.platformProcedures.commitMemory((address), (size))
 
 #else
 
 #define READ_FILE(path, buff, buffSize) read_file((path), (buff), (buffSize))
 #define WRITE_FILE(path, buff, buffSize) write_file((path), (buff), (buffSize))
+#define COMMIT_MEMORY(address, size) commit_memory((address), (size))
 
 #endif
+
 
 
 #endif

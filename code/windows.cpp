@@ -7,6 +7,7 @@
 #include <intrin.h>
 #include <malloc.h> // @TODO do I need this?
 
+#include "alias.h"
 
 global_variable u8 keymap[256];
 
@@ -111,6 +112,13 @@ inline window_rect_dims get_window_rect_dims(HWND window)
         .width = window_rect.right - window_rect.left,
         .height = window_rect.bottom - window_rect.top };
     return rect;
+}
+
+inline b32 commit_memory(u8* address, u64 size)
+{
+    if (!VirtualAlloc(address, size, MEM_COMMIT, PAGE_READWRITE))
+        return false;
+    return true;
 }
 
 HANDLE dbg_open_file(u8* filename)
@@ -294,7 +302,7 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int nShowCmd)
 {
-    // @Failure failure points??
+    // @todo failure points??
     
     timeBeginPeriod(1);
     init_keymap();
@@ -308,52 +316,30 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     FILETIME dll_filetime_curr;
 #endif
 
-    int bytes_per_pixel = 4;
-    
-    u64 total_memory_capacity = gigabytes(4);
-    u64 perm_memory_capacity = megabytes(64);
-    u64 temp_memory_capacity = total_memory_capacity - perm_memory_capacity;
-    void* base_ptr = VirtualAlloc(0, total_memory_capacity, MEM_COMMIT, PAGE_READWRITE);
+    u8 bytes_per_pixel = 4;
 
-    // @TODO if not use DLL then we probably have one global platformAPI*,
-    // which we want to set directly only once
-
-    platformAPI = (PlatformAPI*) base_ptr;
+    SYSTEM_INFO systemInfo;
+    GetSystemInfo(&systemInfo);
+    // commiting memory with VirtualAlloc will be a multiple of this
+    DWORD pageSize = systemInfo.dwPageSize;
+    // reserving memory with VirtualAlloc will be a multiple of this
+    DWORD virtualReserveGranularity = systemInfo.dwAllocationGranularity;
     
-    platformAPI->platformDisplay.bytesPerPixel = bytes_per_pixel;
-    /* platformAPI->platformMemory.memoryBase = base_ptr; */
-    platformAPI->platformMemory.memoryCapacity = total_memory_capacity;
+    u64 totalReservedMemory = terabytes(1);
+    void* base_ptr = VirtualAlloc(0, totalReservedMemory, MEM_RESERVE, PAGE_READWRITE);
+    u64 initialCommitMemorySize = INITIAL_COMMIT_SIZE_BY_PLATFORM;
+    commit_memory((u8*)base_ptr, initialCommitMemorySize);
+    
+    Globals* globalsToPass = (Globals*)base_ptr;
+    
+    PLATFORM_API->platformDisplay.bytesPerPixel = bytes_per_pixel;
+    PLATFORM_API->platformMemory.reservedMemory = totalReservedMemory;
+    PLATFORM_API->platformMemory.pageSize = pageSize;
 #if USE_DLL
-    platformAPI->platformProcedures.readFile = read_file;
-    platformAPI->platformProcedures.writeFile = write_file;
+    PLATFORM_API->platformProcedures.readFile = read_file;
+    PLATFORM_API->platformProcedures.writeFile = write_file;
+    PLATFORM_API->platformProcedures.commitMemory = commit_memory;
 #endif
-
-    u64 permMemCap = megabytes(64);
-    u64 tempMemCap = gigabytes(4);
-
-    u8* permMemPtr = ((u8*)(platformAPI) + sizeof(PlatformAPI) + sizeof(EngineMemory));
-    u8* tempMemPtr = permMemPtr + permMemCap;
-    
-    EngineMemory* memory = (EngineMemory*)((u8*)(platformAPI) + sizeof(PlatformAPI));
-    memory->perm_mem = permMemPtr;
-    memory->temp_mem = tempMemPtr;
-    memory->perm_mem_cap = permMemCap;
-    memory->temp_mem_cap = tempMemCap;
-    
-    // @Note the following line should be able to replace the #define
-    /* memory_base = (platform_provides*)base_ptr; */
-    // #define memory_base ((platform_provides*)base_ptr)
-    
-    /* platform_provides provides = { */
-        /* .perm_mem = (u8*)base_ptr + sizeof(platform_provides), */
-        /* .perm_mem_cap = perm_memory_capacity, */
-        /* .temp_mem = (u8*)base_ptr + sizeof(platform_provides) + perm_memory_capacity, */
-        /* .temp_mem_cap = temp_memory_capacity, */
-        /* .bytpp = bytes_per_pixel, */
-        /* .dbg_read_file = dbg_read_entire_file, */
-        /* .dbg_write_file = dbg_write_entire_file }; */
-
-    /* *((platform_provides*)base_ptr) = provides; */
 
     PLATFORM_INIT_MEMORY_BASE((PlatformAPI*) base_ptr);
 
@@ -362,12 +348,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     int window_offset_x = 50;
     int window_offset_y = 50;
 
-    WNDCLASS registered_window_infostruct = {
-        .style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
-        .lpfnWndProc = window_procedure,
-        .hInstance = hInstance,
-        .lpszClassName = "CardcrafterWindowClass" };
-
+    WNDCLASS registered_window_infostruct = {0};
+    registered_window_infostruct.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+    registered_window_infostruct.lpfnWndProc = window_procedure;
+    registered_window_infostruct.hInstance = hInstance;
+    registered_window_infostruct.lpszClassName = "CardcrafterWindowClass";
+    
     ATOM registered_window = RegisterClass(&registered_window_infostruct);
 
     // @Note initial window dims (perhaps offset too), is not written by
@@ -375,8 +361,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     // whose job it is to do that, and how to resize the window....
     // @TODO window resizing...
     
-    HWND window = CreateWindow(
-                               registered_window_infostruct.lpszClassName,
+    HWND window = CreateWindow(registered_window_infostruct.lpszClassName,
                                "Cardcrafter",
                                WS_VISIBLE | WS_OVERLAPPEDWINDOW,
                                window_offset_x,
@@ -396,9 +381,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     window_buffer_info.bmiHeader.biBitCount = bytes_per_pixel*8;
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
 
-    // SetCursorPos(640 + window_offset_x,
-                 // 360 + window_offset_y);
-
     wnd_width = 1280;
     wnd_height = 720;
     POINT center = { wnd_width/2, wnd_height/2 };
@@ -411,10 +393,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     while (running)
         {
 #if USE_DLL
-            // @TODO when doing rotated_line test, then hotloading perspective_test
-            // it won't hotload every time, and also sometimes it might bug out
-            // and not load anything...?
-
             // maybe delete previous dll?
             // not perfectly reloading....
             dll_filehandle = FindFirstFile((LPCSTR)ACTUAL_DLL, &find_data);
@@ -426,7 +404,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                     dll = load_game();
                     dll_filetime_prev = dll_filetime_curr;
                     
-                    /* PLATFORM_INIT_MEMORY_BASE(platformAPI); */
                     PLATFORM_INIT_MEMORY_BASE((PlatformAPI*) base_ptr);
                 }
 #endif         
@@ -434,18 +411,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
             LARGE_INTEGER begin_time_count;
             QueryPerformanceCounter(&begin_time_count);
-
-            // @TODO do this in a while loop actually....
-            // actually then you have to somehow remove WM_PAINT
-            // from the queue because it is not removed by default....
-            // MSG message;
-            // PeekMessage(&message, 0, 0, 0, PM_REMOVE);
-
-            // if (message.message == WM_QUIT)
-            //     {
-            //         running = false;
-            //     }
-
+            
             MSG message;
             while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
                 {
@@ -471,6 +437,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                 {
                     ShowCursor(true);
                 }
+            
             UPDATE_AND_RENDER();
 
             window_buffer_info.bmiHeader.biWidth = wnd_width;

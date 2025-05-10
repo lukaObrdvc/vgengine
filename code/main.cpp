@@ -1,4 +1,5 @@
 #include "project.h"
+#include "alias.h"
 #if !USE_DLL
 #if PLATFORM_WINDOWS
 
@@ -25,6 +26,7 @@
 #include "utils.h"
 #include "basic.h"
 #include "Allocator.h"
+#include "dynamic_array.h"
 
 #include "math.h"
 #include "vector.h"
@@ -32,6 +34,8 @@
 #include "matrix.h"
 #include "quaternion.h"
 #include "transform.h"
+#include "rect.h"
+#include "arena.h"
 #include "pixel.h"
 #include "renderer.h"
 

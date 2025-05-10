@@ -1164,157 +1164,157 @@ b32 process_input(u64 curr_keyflags_to_set,
 }
 
 #if USE_DLL
-void platform_init_memory_base(PlatformAPI* memoryBase)
+void platform_init_memory_base(Globals* memoryBase)
 {    
-    platformAPI = memoryBase;
+    globals = memoryBase;
 }
 #endif
 
-// @TODO you can probably export this and call it once
-void init_game_state(void)
+void init_memory()
 {
-    if (!Gamestate->inited)
-        {
-            s32 init_wnd_width    = 1280;
-            s32 init_wnd_height   = 720;
-            s32 init_wnd_center_x = 640;
-            s32 init_wnd_center_y = 360;
+    ArenaManager arenaManager;
+    arenaManager.base = globals + 1;
+    arenaManager.virtualMemoryUsed = sizeof(Globals);
+
+    // @pot do I need to align down/up, if sizeof(Globals) makes it
+    // unaligned or something?
+    u64 firstArenaSize = INITIAL_COMMIT_SIZE_BY_PLATFORM - sizeof(Globals);
+    arena_init(PERM_ARENA, firsArenaSize, firsArenaSize);
+    arena_init(FRAME_ARENA, gigabytes(4));
+            
+    FRAME_BUFFER = arena_push<u8>(PERM_ARENA, MAX_FRAMEBUFFER_SIZE * BYTPP);
+    Z_BUFFER = arena_push<r32>(PERM_ARENA, MAX_FRAMEBUFFER_SIZE);    
+}
+
+// @todo you can probably export this and call it once
+void init_engine_state(void)
+{
+    s32 init_wnd_width    = 1280;
+    s32 init_wnd_height   = 720;
+    s32 init_wnd_center_x = 640;
+    s32 init_wnd_center_y = 360;
             
 
-            Gamestate->inited = true;
-            Gamestate->tested_once = 0;
+    ENGINESTATE->tested_once = 0;
 
-            // @Note do I want this now??
-            Gamestate->cursor = V2(init_wnd_center_x,
-                                   init_wnd_center_y);
+    // @Note do I want this now??
+    ENGINESTATE->cursor = V2(init_wnd_center_x,
+                             init_wnd_center_y);
                 
-            Gamestate->wndbuffer_width = init_wnd_width;
-            Gamestate->wndbuffer_height = init_wnd_height;
+    ENGINESTATE->wndbuffer_width = init_wnd_width;
+    ENGINESTATE->wndbuffer_height = init_wnd_height;
                     
-            Gamestate->cameraParams._near = 5; // do we want -1?
-            Gamestate->cameraParams._far = 500; // -?
-            Gamestate->cameraParams.fov = 120; // in degrees I quess?
+    ENGINESTATE->cameraParams._near = 5; // do we want -1?
+    ENGINESTATE->cameraParams._far = 500; // -?
+    ENGINESTATE->cameraParams.fov = 120; // in degrees I quess?
 
-            Gamestate->camera_angle = 0;
-            Gamestate->log_to_file_once = false;
-            Gamestate->reverse_winding = false;
+    ENGINESTATE->camera_angle = 0;
+    ENGINESTATE->log_to_file_once = false;
+    ENGINESTATE->reverse_winding = false;
 
-            Gamestate->keyflags = 0;
-            Gamestate->mouseflags = 0;
+    ENGINESTATE->keyflags = 0;
+    ENGINESTATE->mouseflags = 0;
                     
-            Gamestate->eye_x = init_wnd_center_x;
-            Gamestate->eye_y = init_wnd_center_y;
-            Gamestate->screen_z = 0.5f;   // was 0.6f ; 30
-            Gamestate->new_screen_z = 30.0f;        // - 0.5  ; 10 ; 0.5
-            Gamestate->nearclip = 0.7f;  // was  -     ; 0.7f ; -500 ; 0.7
-            Gamestate->farclip = 10000.0f;  // was  -  ;  9.8f ; 500 ; 100
+    ENGINESTATE->eye_x = init_wnd_center_x;
+    ENGINESTATE->eye_y = init_wnd_center_y;
+    ENGINESTATE->screen_z = 0.5f;   // was 0.6f ; 30
+    ENGINESTATE->new_screen_z = 30.0f;        // - 0.5  ; 10 ; 0.5
+    ENGINESTATE->nearclip = 0.7f;  // was  -     ; 0.7f ; -500 ; 0.7
+    ENGINESTATE->farclip = 10000.0f;  // was  -  ;  9.8f ; 500 ; 100
 
-            Gamestate->wnd_center_x = init_wnd_center_x;
-            Gamestate->wnd_center_y = init_wnd_center_y;
+    ENGINESTATE->wnd_center_x = init_wnd_center_x;
+    ENGINESTATE->wnd_center_y = init_wnd_center_y;
                     
-            Gamestate->dbg_render_x_offset = 0; 
-            Gamestate->dbg_render_y_offset = 0; 
-            Gamestate->square_length = 10;       
-            Gamestate->concentric_thickness = 5;
-            Gamestate->concentric_count = 10;     // must be less than CONCENTRIC_MAX
-            Gamestate->concentric_spread_x = 50; 
-            Gamestate->concentric_spread_y = 50;
-            Gamestate->concentric_current_z = 0;
-            Gamestate->line_angle = 0;
-            Gamestate->line_scaling_factor = 1;
-            Gamestate->rect_angle = 0;
-            Gamestate->rect_scaling_factor = 1;
+    ENGINESTATE->dbg_render_x_offset = 0; 
+    ENGINESTATE->dbg_render_y_offset = 0; 
+    ENGINESTATE->square_length = 10;       
+    ENGINESTATE->concentric_thickness = 5;
+    ENGINESTATE->concentric_count = 10;     // must be less than CONCENTRIC_MAX
+    ENGINESTATE->concentric_spread_x = 50; 
+    ENGINESTATE->concentric_spread_y = 50;
+    ENGINESTATE->concentric_current_z = 0;
+    ENGINESTATE->line_angle = 0;
+    ENGINESTATE->line_scaling_factor = 1;
+    ENGINESTATE->rect_angle = 0;
+    ENGINESTATE->rect_scaling_factor = 1;
             
-            Gamestate->camera_offs_x = 0;
-            Gamestate->camera_offs_y = 0;
+    ENGINESTATE->camera_offs_x = 0;
+    ENGINESTATE->camera_offs_y = 0;
 
-
-            
-            // @TODO you should probably have a default for everything but whatever
-            // @TODO is this a good way to set a keymap, just setting powers of two.............
-            Gamestate->keymap[0x25] = 0;
-            Gamestate->keymap[0x26] = 1; 
-            Gamestate->keymap[0x27] = 2; 
-            Gamestate->keymap[0x28] = 3; 
-
-            Gamestate->keymap[0x57] = 4;   
-            Gamestate->keymap[0x53] = 5; 
-            Gamestate->keymap[0x41] = 6; 
-            Gamestate->keymap[0x44] = 7; 
-            Gamestate->keymap[0x51] = 8; 
-            Gamestate->keymap[0x45] = 9; 
-
-            Gamestate->keymap[0x49] = 10;   
-            Gamestate->keymap[0x4B] = 11;
-            Gamestate->keymap[0x4A] = 12;
-            Gamestate->keymap[0x4C] = 13;
-            Gamestate->keymap[0x55] = 14;
-            Gamestate->keymap[0x4F] = 15;
 
             
-            // for (s32 i = 0; i < wnd_height; i++)
-            //     {
-            //         r32* row = (r32*)(zbuffer + i*wnd_pitch);
-            //         for (s32 j = 0; j < wnd_width; j++)
-            //             {
-            //                 *row = Gamestate->cameraParams._far; // smth else??
-            //                 row++;
-            //             }
-            //     }
-            for (s32 i = 0; i < wnd_height; i++)
+    // @TODO you should probably have a default for everything but whatever
+    // @TODO is this a good way to set a keymap, just setting powers of two.............
+    ENGINESTATE->keymap[0x25] = 0;
+    ENGINESTATE->keymap[0x26] = 1; 
+    ENGINESTATE->keymap[0x27] = 2; 
+    ENGINESTATE->keymap[0x28] = 3; 
+
+    ENGINESTATE->keymap[0x57] = 4;   
+    ENGINESTATE->keymap[0x53] = 5; 
+    ENGINESTATE->keymap[0x41] = 6; 
+    ENGINESTATE->keymap[0x44] = 7; 
+    ENGINESTATE->keymap[0x51] = 8; 
+    ENGINESTATE->keymap[0x45] = 9; 
+
+    ENGINESTATE->keymap[0x49] = 10;   
+    ENGINESTATE->keymap[0x4B] = 11;
+    ENGINESTATE->keymap[0x4A] = 12;
+    ENGINESTATE->keymap[0x4C] = 13;
+    ENGINESTATE->keymap[0x55] = 14;
+    ENGINESTATE->keymap[0x4F] = 15;
+
+            
+    // for (s32 i = 0; i < wnd_height; i++)
+    //     {
+    //         r32* row = (r32*)(zbuffer + i*wnd_pitch);
+    //         for (s32 j = 0; j < wnd_width; j++)
+    //             {
+    //                 *row = ENGINESTATE->cameraParams._far; // smth else??
+    //                 row++;
+    //             }
+    //     }
+    for (s32 i = 0; i < wnd_height; i++)
+        {
+            r32* row = (r32*)(zbuffer + i*wnd_pitch);
+            for (s32 j = 0; j < wnd_width; j++)
                 {
-                    r32* row = (r32*)(zbuffer + i*wnd_pitch);
-                    for (s32 j = 0; j < wnd_width; j++)
-                        {
-                            *row = 1.0f;
-                            row++;
-                        }
+                    *row = 1.0f;
+                    row++;
                 }
+        }
 
             
-            Gamestate->camera.fpoint = V3(640, 360, 0); // was 680  ; z=5
-            Gamestate->camera.yaw    = 0;
-            Gamestate->camera.pitch  = 0;
-            //Gamestate->camera.pitch  = pi/4;
-            Gamestate->camera.roll   = 0;
+    ENGINESTATE->camera.fpoint = V3(640, 360, 0); // was 680  ; z=5
+    ENGINESTATE->camera.yaw    = 0;
+    ENGINESTATE->camera.pitch  = 0;
+    //ENGINESTATE->camera.pitch  = pi/4;
+    ENGINESTATE->camera.roll   = 0;
             
-            s32 concentric_count = Gamestate->concentric_count;
-            r32* concentric_z_values = Gamestate->concentric_z_values;
-            ASSERT(concentric_count <= CONCENTRIC_MAX);
+    s32 concentric_count = ENGINESTATE->concentric_count;
+    r32* concentric_z_values = ENGINESTATE->concentric_z_values;
+    ASSERT(concentric_count <= CONCENTRIC_MAX);
 
-            for (s32 i = 0; i < MAX_BRUSHES; i++)
-                {
-                    Gamestate->brushes[i] = (((u32)255 << 24) |  // a
-                                             ((u32)120 << 16) |  // R
-                                             ((u32)0 << 8) |     // G
-                                             (u32)120);          // B
-                }
-            Gamestate->brushes[BRUSH_SCANLINE] = (((u32)255 << 24) |
-                                                  ((u32)0 << 16) |
-                                                  ((u32)0 << 8) |   
-                                                  0);        
+    for (s32 i = 0; i < MAX_BRUSHES; i++)
+        {
+            ENGINESTATE->brushes[i] = (((u32)255 << 24) |  // a
+                                       ((u32)120 << 16) |  // R
+                                       ((u32)0 << 8) |     // G
+                                       (u32)120);          // B
+        }
+    ENGINESTATE->brushes[BRUSH_SCANLINE] = (((u32)255 << 24) |
+                                            ((u32)0 << 16) |
+                                            ((u32)0 << 8) |   
+                                            0);        
 
-            Gamestate->brushes[BRUSH_SCANLINE2] = (((u32)255 << 24) |
-                                                   ((u32)0 << 16) |
-                                                   ((u32)0 << 8) |
-                                                   255);
+    ENGINESTATE->brushes[BRUSH_SCANLINE2] = (((u32)255 << 24) |
+                                             ((u32)0 << 16) |
+                                             ((u32)0 << 8) |
+                                             255);
             
-            for (s32 i = 0; i < concentric_count; i++)
-                {
-                    concentric_z_values[i] = Floor(concentric_count/2.0 - 1 - i);
-                }
-
-            /* u64 permMemCap = megabytes(64); */
-            /* u64 tempMemCap = gigabytes(4); */
-
-            /* u8* permMemPtr = ((u8*)(platformAPI) + sizeof(PlatformAPI) + sizeof(EngineMemory)); */
-            /* u8* tempMemPtr = permMemPtr + permMemCap; */
-
-            /* EngineMemory* memory = (EngineMemory*)((u8*)(platformAPI) + sizeof(PlatformAPI)); */
-            /* memory->perm_mem = permMemPtr; */
-            /* memory->temp_mem = tempMemPtr; */
-            /* memory->perm_mem_cap = permMemCap; */
-            /* memory->temp_mem_cap = tempMemCap; */
+    for (s32 i = 0; i < concentric_count; i++)
+        {
+            concentric_z_values[i] = Floor(concentric_count/2.0 - 1 - i);
         }
 }
 
@@ -1322,7 +1322,13 @@ void init_game_state(void)
 
 void update_and_render(void)
 {
-    init_game_state();
+    if (!ENGINESTATE->inited)
+        {
+            init_memory();
+            init_engine_state();
+            
+            ENGINESTATE->inited = true;
+        }
     test();
 }
 

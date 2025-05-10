@@ -4,6 +4,8 @@
 // @todo rename to vector.h
 // @todo make certain functions like vec_add variadic? but it's also
 // life if you did operator overloading honestly..
+// @todo actually bro, when r64 or s64 it should be pointers so maybe
+// just scrap that, or use const & or something...?
 
 // VECTORS FOR r32
 union Vec2f

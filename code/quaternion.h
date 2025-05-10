@@ -18,8 +18,9 @@ inline Quaternion quaternion_identity()
 
 // @todo figure out if clocwise vs anti-clockwise?
 // @doc this requires radians
-inline Quaternion quaternion_xyz(r32 x, r32 y, r32 z)
+inline Quaternion quaternion_euler(r32 x, r32 y, r32 z)
 {
+    // @todo use halfAngle local variables here
     r32 cx = cosf(x * 0.5f);
     r32 sx = sinf(x * 0.5f);
     r32 cy = cosf(y * 0.5f);

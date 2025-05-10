@@ -2,6 +2,8 @@
 #define NEW_MANI_H
 
 
+
+
 // @TODO figure out byte sizes of these fields for alignment optimization and to not waste space
 
 // @TODO do I use defines instead of enums at this point??
@@ -35,14 +37,6 @@ typedef enum tagKEYCODe
         KEY_O     = (1 << 15)
     } KEYCODE;
 
-typedef struct
-{
-    void* perm_mem;
-    u64 perm_mem_cap;
-    void* temp_mem;
-    u64 temp_mem_cap;
-} EngineMemory;
-
 #define CONCENTRIC_MAX 50 // must be positive integer less than 256
 #define MAX_BRUSHES 16
 
@@ -59,54 +53,40 @@ typedef enum
         PERSPECTIVE
     } PROJECTION;
 
-typedef struct
+
+// @doc canvas plane is implicitly at zNear;
+// canvas center is (0,0) relative to camera space origin;
+// eye is positioned at camera space origin;
+// camera is looking down negative Z in camera space;
+// canvas aspect ration is implicitly 1, this also means FOVh = FOVv;
+struct Camera
 {
-    v3 fpoint;
-    r32 yaw;
-    r32 pitch;
-    r32 roll;
-} Camera;
+    Vec3f position;
+    Quaternion orientation;
+    r32 zNear;
+    r32 zFar;
+    r32 fov;
+};
 
-
-typedef struct tagCamera_parameters
-{
-    // canvas is implicitly at the near clipping plane;
-    
-    // canvas center x,y are 0 relative to camera space origin;
-    // eye is positioned at origin in camera space;
-    // camera is looking down negative Z in camera space;
-    // camera aspect ratio is implicitly 1
-    r32 _near; // near clipping plane is on z=-1 in camera space
-    r32 _far;
-    r32 fov; // horizontal=vertical since aspect ratio is 1
-} camera_parameters;
-
-#pragma pack(push, 1)
-typedef struct tagGame_state
+struct EngineState
 {
     b32 inited;
-    b32 tested_once;
+    u16 frameBufferWidth;
+    u16 frameBufferHeight;
+    u8* frameBuffer;
+    r32* zBuffer;
+    Camera mainCamera;
+    u64 keyflags;
 
-
-    s32 wndbuffer_width;  // access through macro
-    s32 wndbuffer_height; // access through macro
-    /* r32 aspectRatio; */
-    camera_parameters cameraParams;
-
+    // shize ------------------------------------
     // @TODO methinks VK combines mouse keys with keyboard keys.....
     u64 keyflags;
     u8 keymap[256]; // @Note 254 is the max VK code
     u8 mouseflags;
     v2 cursor;
+    // shize ------------------------------------
 
-    // @TODO these can be designed better probably
-    r32 eye_x;
-    r32 eye_y;
-    r32 screen_z;
-    r32 new_screen_z;
-    r32 nearclip;
-    r32 farclip;
-    Camera camera;
+    // temporary-----------------------------
 
     r32 camera_angle;
     b32 log_to_file_once;
@@ -136,44 +116,26 @@ typedef struct tagGame_state
     r32 camera_offs_x;
     r32 camera_offs_y;
     
-} game_state;
-#pragma pack(pop)
+    // temporary-----------------------------
+};
 
+// @todo change all aliases to inline functions bro...
+// @todo change Gamestate name to EngineState
 
-#define ENGINE_MEMORY ((EngineMemory*)((u8*)(platformAPI) + sizeof(PlatformAPI)))
-#define PERM_MEM      (ENGINE_MEMORY->perm_mem)
-#define TEMP_MEM      (ENGINE_MEMORY->temp_mem)
+#define ENGINESTATE ((EngineState*)PERM_ARENA)
 
-#define Gamestate    ((game_state*)(PERM_MEM))
-#define Assets       ((Mesh*)(TEMP_MEM))
+#define FRAME_BUFFER ENGINESTATE->frameBuffer
+#define FRAME_BUFFER_WIDTH ENGINESTATE->frameBufferWidth
+#define FRAME_BUFFER_HEIGHT ENGINESTATE->frameBufferHeight
+#define FRAME_BUFFER_PITCH (-FRAME_BUFFER_HEIGHT * BYTPP) // @doc ...
+#define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT * BYTPP)
 
-#define wnd_width    (Gamestate->wndbuffer_width)
-#define wnd_height   (Gamestate->wndbuffer_height)
-#define wnd_bytpp    (platformAPI->platformDisplay.bytesPerPixel)
-#define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)      // cache in scope ?
+#define Z_BUFFER ENGINESTATE->zBuffer
 
-#define wnd_pitch    (-wnd_width*wnd_bytpp)                // cache in scope ?
-#define wnd_buffer   (((u8*)(PERM_MEM) +                \
-                       sizeof(game_state) +             \
-                       wnd_bytesize + wnd_pitch))
-
-#define wnd_nearclip (Gamestate->nearclip)
-#define wnd_farclip  (Gamestate->farclip)
-
-/* #define Gamestate    ((game_state*)(memory_base->perm_mem)) */
-
-/* #define wnd_width    (((game_state*)(memory_base->perm_mem))->wndbuffer_width) */
-/* #define wnd_height   (((game_state*)(memory_base->perm_mem))->wndbuffer_height) */
-/* #define wnd_bytpp    (memory_base->bytpp)                                       */
-/* #define wnd_bytesize (wnd_width*wnd_height*wnd_bytpp)      // cache in scope ? */
-
-/* #define wnd_pitch    (-wnd_width*wnd_bytpp)                // cache in scope ? */
-/* #define wnd_buffer   (((u8*)(memory_base->perm_mem) +   \ */
-/*                        sizeof(game_state) +             \ */
-/*                        wnd_bytesize + wnd_pitch)) */
-
-/* #define wnd_nearclip (((game_state*)(memory_base->perm_mem))->nearclip) */
-/* #define wnd_farclip  (((game_state*)(memory_base->perm_mem))->farclip) */
+#define MAIN_CAMERA ENGINESTATE->mainCamera
+#define Z_NEAR MAIN_CAMERA.zNear
+#define Z_FAR MAIN_CAMERA.zFar
+#define FOV MAIN_CAMERA.fov
 
 // @Note the cursor will always be in the windows' coordsys
 // so if you want to draw around it, you have to translate
@@ -184,12 +146,6 @@ typedef struct tagGame_state
 #define to_yisdown(y) (wnd_height - (y))
 #define to_yisup(y)   (wnd_height - (y))
 //#define wndrect_yisdown(y)
-
-// cast to r32* after you offset...
-#define zbuffer (((u8*)(PERM_MEM) +                   \
-                  sizeof(game_state) +                \
-                  wnd_bytesize +                      \
-                  wnd_bytesize + wnd_pitch))
 
 
 // @TODO figure out default rotation direction cw or ccw and transforms...
