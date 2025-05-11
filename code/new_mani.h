@@ -2,38 +2,11 @@
 #define NEW_MANI_H
 
 
-
-#define CONCENTRIC_MAX 50 // must be positive integer less than 256
-#define MAX_BRUSHES 16
-
-typedef enum
-    {
-        BRUSH_NONE = 0,
-        BRUSH_SCANLINE = 1,
-        BRUSH_SCANLINE2 = 2
-    } BRUSH;
-
-// @doc canvas plane is implicitly at zNear;
-// canvas center is (0,0) relative to camera space origin;
-// eye is positioned at camera space origin;
-// camera is looking down negative Z in camera space;
-// canvas aspect ration is implicitly 1, this also means FOVh = FOVv;
-struct Camera
-{
-    Vec3f position;
-    Quaternion orientation;
-    r32 zNear;
-    r32 zFar;
-    r32 fov;
-};
-
 struct EngineState
 {
     b32 inited;
-    u16 frameBufferWidth;
-    u16 frameBufferHeight;
-    u8* frameBuffer;
-    r32* Z_BUFFER;
+    FrameBuffer frameBuffer;
+    u8* zBuffer;
     Camera mainCamera;
 
     // shize ------------------------------------
@@ -41,7 +14,7 @@ struct EngineState
     u64 keyflags;
     u8 keymap[256]; // @Note 254 is the max VK code
     u8 mouseflags;
-    v2 cursor;
+    Vec2f cursor;
     // shize ------------------------------------
 
     // temporary-----------------------------
@@ -51,24 +24,8 @@ struct EngineState
     b32 log_to_file_once;
     b32 reverse_winding;
 
-    u32 brushes[MAX_BRUSHES];
-
-    r32 wnd_center_x; 
-    r32 wnd_center_y;
-    
-    s32 dbg_render_x_offset;
-    s32 dbg_render_y_offset;
-    r32 square_length;
-    r32 concentric_thickness;
-    s32 concentric_count;     // must be less than CONCENTRIC_MAX
-    r32 concentric_spread_x;
-    r32 concentric_spread_y;
-    r32 concentric_z_values[CONCENTRIC_MAX];
-    s32 concentric_current_z;
     r32 line_angle;
-    r32 line_scaling_factor;
     r32 rect_angle;
-    r32 rect_scaling_factor;
 
     r32 camera_offs_x;
     r32 camera_offs_y;
@@ -76,23 +33,22 @@ struct EngineState
     // temporary-----------------------------
 };
 
-// @todo change all aliases to inline functions bro...
-// @todo change ENGINESTATE name to EngineState
-
-#define ENGINESTATE ((EngineState*)PERM_ARENA)
+#define ENGINESTATE ((EngineState*)&PERM_ARENA)
 
 #define FRAME_BUFFER ENGINESTATE->frameBuffer
-#define FRAME_BUFFER_WIDTH ENGINESTATE->frameBufferWidth
-#define FRAME_BUFFER_HEIGHT ENGINESTATE->frameBufferHeight
-#define FRAME_BUFFER_PITCH (-FRAME_BUFFER_HEIGHT * BYTPP) // @doc ...
-#define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT * BYTPP)
+#define FRAME_BUFFER_WIDTH FRAME_BUFFER.width
+#define FRAME_BUFFER_HEIGHT FRAME_BUFFER.height
+#define FRAME_BUFFER_BYTPP PLATFORM_API.platformDisplay.bytesPerPixel
+#define FRAME_BUFFER_PITCH (FRAME_BUFFER_HEIGHT * FRAME_BUFFER_BYTPP)
+#define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_WIDTH * FRAME_BUFFER_BYTPP)
 
-#define Z_BUFFER ENGINESTATE->Z_BUFFER
+// @doc when we offset these like this, then we can - on y coordinate
+// which allows the rest of the code to use y is up, and then this
+// will map it to y is down
+#define FRAME_BUFFER_BASE (FRAME_BUFFER.base + FRAME_BUFFER_BYTESIZE - FRAME_BUFFER_PITCH)
+#define Z_BUFFER (ENGINESTATE->zBuffer + FRAME_BUFFER_BYTESIZE - FRAME_BUFFER_PITCH)
 
-#define MAIN_CAMERA ENGINESTATE->mainCamera
-#define Z_NEAR MAIN_CAMERA.zNear
-#define Z_FAR MAIN_CAMERA.zFar
-#define FOV MAIN_CAMERA.fov
+
 
 // @Note the cursor will always be in the windows' coordsys
 // so if you want to draw around it, you have to translate
@@ -106,10 +62,6 @@ struct EngineState
 
 
 // @TODO figure out default rotation direction cw or ccw and transforms...
-
-#define GetBrush(type) (ENGINESTATE->brushes[(type)])
-// @Note maybe not a good idea
-#define SetBrush(type, color) ENGINESTATE->brushes[(type)] = (color)
 
 // @Note converting when highest bit is 1 will result into wrapping to
 // negative, but we don't care since we only use it in if statements ?

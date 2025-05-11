@@ -8,13 +8,6 @@
 #define ARENA_COMMIT_STEP PAGE_SIZE
 
 
-#define ARENA_MANAGER globals->arenaManager
-#define ARENA_COUNT globals->arenaCount
-#define PERM_ARENA globals->permArena
-#define FRAME_ARENA globals->frameArena
-#define ARENAS globals->arenas
-
-
 struct ArenaManager
 {
     u8* base;
@@ -58,6 +51,27 @@ inline void zero_memory(void* ptr, u64 size)
 inline void arena_reset(Arena* arena)
 {
     arena->used = 0;
+}
+
+inline ArenaManager* get_arena_manager()
+{
+    return &globals->arenaManager;
+}
+inline u16* get_arena_count()
+{
+    return &globals->arenaCount;
+}
+inline Arena* get_perm_arena()
+{
+    return &globals->permArena;
+}
+inline Arena* get_frame_arena()
+{
+    return &globals->frameArena;
+}
+inline Arena* get_arenas()
+{
+    return globals->arenas;
 }
 
 

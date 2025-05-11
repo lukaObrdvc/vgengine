@@ -1,9 +1,10 @@
 // @doc this is for arenas you know you want, and you make them once in init somewhere
 void arena_init(Arena* arena, u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 initialCommit = ARENA_DEFAULT_COMMIT_SIZE)
 {
-    ASSERT(ARENA_MANAGER.virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
+    ArenaManager* arenaManager = &ARENA_MANAGER;
+    ASSERT(arenaManager->virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
     
-    arena->base = ARENA_MANAGER.base + ARENA_MANAGER.virtualMemoryUsed;
+    arena->base = arenaManager->base + arenaManager->virtualMemoryUsed;
     arena->used = 0;
     arena->commited = initialCommit;
 #if DEVELOPER
@@ -11,17 +12,19 @@ void arena_init(Arena* arena, u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 
 #endif
  
     COMMIT_MEMORY(arena->base, initialCommit);
-    ARENA_MANAGER.virtualMemoryUsed += reserveSize;
+    arenaManager->virtualMemoryUsed += reserveSize;
 }
 
+// @todo maybe caches ARENAS and ARENA_COUNT in scope?
 // @doc this is for arenas that are not fixe and you wanna make a lot of
 Arena* arena_make(u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 initialCommit = ARENA_DEFAULT_COMMIT_SIZE)
 {
     ASSERT(++ARENA_COUNT <= MAX_ARENAS);
-    ASSERT(ARENA_MANAGER.virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
+    ArenaManager* arenaManager = &ARENA_MANAGER;
+    ASSERT(arenaManager->virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
     
     Arena newArena;
-    newArena.base = ARENA_MANAGER.base + ARENA_MANAGER.virtualMemoryUsed;
+    newArena.base = arenaManager->base + arenaManager->virtualMemoryUsed;
     newArena.used = 0;
     newArena.commited = initialCommit;
 #if DEVELOPER
@@ -29,7 +32,7 @@ Arena* arena_make(u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 initialCommi
 #endif
  
     COMMIT_MEMORY(newArena.base, initialCommit);
-    ARENA_MANAGER.virtualMemoryUsed += reserveSize;
+    arenaManager->virtualMemoryUsed += reserveSize;
     ARENAS[ARENA_COUNT] = newArena;
     return ARENAS + ARENA_COUNT;
 }

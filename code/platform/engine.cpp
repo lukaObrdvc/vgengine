@@ -1,3 +1,4 @@
+#define INITIAL_COMMIT_SIZE_BY_PLATFORM 8388608 // 8MB
 
 // possibilities...:
 
@@ -20,14 +21,14 @@
 
 
 
-// inline r32 slope2(v2 vec1, v2 vec2)
-// {
-    // r32 result;
+inline r32 slope2(v2 vec1, v2 vec2)
+{
+    r32 result;
 
-    // result = (vec1.y - vec2.y) / (vec1.x / vec2.x);
+    result = (vec1.y - vec2.y) / (vec1.x / vec2.x);
     
-    // return result;
-// }
+    return result;
+}
 
 inline r32 EdgeFunction(v3 c, v3 b, v3 a)
 {

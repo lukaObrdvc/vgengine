@@ -2,7 +2,7 @@ b32 process_input(u64 curr_keyflags_to_set,
                   u64 curr_keyflags_to_unset,
                   u8 curr_mouseflags_to_set,
                   u8 curr_mouseflags_to_unset,
-                  v2 curr_cursor)
+                  Vec2f curr_cursor)
 {
     // dude am I doing zbuffering correctly, maybe that's the problem??
     b32 result = true;
@@ -34,7 +34,7 @@ b32 process_input(u64 curr_keyflags_to_set,
 
     Camera camera = MAIN_CAMERA;
     curr_cursor.y = to_yisup(curr_cursor.y);
-    v2 cursor_difference;
+    Vec2f cursor_difference;
     cursor_difference.x = curr_cursor.x - FRAME_BUFFER_WIDTH/2;
     cursor_difference.y = curr_cursor.y - FRAME_BUFFER_HEIGHT/2;
     // camera.roll += cursor_difference.y / kilobytes(1);
@@ -68,29 +68,21 @@ b32 process_input(u64 curr_keyflags_to_set,
     if (ExtractKey(kflags, KEY_UP))
         {
             ENGINESTATE->camera_offs_y += 5.0f;
-            ENGINESTATE->wnd_center_y+= 5;
-            ENGINESTATE->dbg_render_y_offset+= 10;
         }
     if (ExtractKey(kflags, KEY_DOWN))
         {
             ENGINESTATE->camera_offs_y -= 5.0f;            
-            ENGINESTATE->wnd_center_y-= 5;
-            ENGINESTATE->dbg_render_y_offset-= 10;
         }
     if (ExtractKey(kflags, KEY_LEFT))
         {
             ENGINESTATE->camera_offs_x -= 5.0f;
-            ENGINESTATE->wnd_center_x-= 5;
-            ENGINESTATE->dbg_render_x_offset-= 10;
         }
     if (ExtractKey(kflags, KEY_RIGHT))
         {
             ENGINESTATE->camera_offs_x += 5.0f;
-            ENGINESTATE->wnd_center_x+= 5;
-            ENGINESTATE->dbg_render_x_offset+= 10;
         }
     
-    v3 camera_movement = zero3();
+    Vec3f camera_movement = vec_zero3f();
     if (ExtractKey(kflags, KEY_W))
         {
             camera_movement.z -= 2.0f;
@@ -130,27 +122,11 @@ b32 process_input(u64 curr_keyflags_to_set,
     
     if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
         {
-            ENGINESTATE->square_length += 50;
-            ENGINESTATE->concentric_spread_x+=10;
-            ENGINESTATE->concentric_spread_y+=4;
-            ENGINESTATE->line_scaling_factor += 0.1f;
-            ENGINESTATE->rect_scaling_factor += 0.1f;
-            for (s32 i = 0; i < ENGINESTATE->concentric_count; i++)
-                {
-                    ENGINESTATE->concentric_z_values[i]++;
-                }
+
         }
     if (ExtractKey(mflags_trans_to_up, MOUSE_M2))
         {
-            ENGINESTATE->square_length -= 50;
-            ENGINESTATE->concentric_spread_x-=10;
-            ENGINESTATE->concentric_spread_y-=4;
-            ENGINESTATE->line_scaling_factor -= 0.1f;
-            ENGINESTATE->rect_scaling_factor -= 0.1f;
-            for (s32 i = 0; i < ENGINESTATE->concentric_count; i++)
-                {
-                    ENGINESTATE->concentric_z_values[i]--;
-                }
+
         }
 
     return result;

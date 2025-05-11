@@ -1,6 +1,6 @@
 // @todo do I use defines instead of enums at this point??
 
-enum
+enum MOUSECODE
 {
     MOUSE_NONE = 0,
     MOUSE_MOVE = (1 << 0), // @fail MOUSE_MOVED is defined in windows...
@@ -9,7 +9,7 @@ enum
     MOUSE_M3   = (1 << 3)
 };
 
-enum
+enum KEYCODE
 {
     KEY_NONE  = 0,
     KEY_LEFT  = (1 << 0),
@@ -30,9 +30,8 @@ enum
     KEY_O     = (1 << 15)
 };
 
-b32 process_input(u64 curr_keyflags_to_set,
-                  u64 curr_keyflags_to_unset,
-                  u8 curr_mouseflags_to_set,
-                  u8 curr_mouseflags_to_unset,
-                  v2 curr_cursor);
-
+b32 process_input(u64 keyflags_to_set,
+                  u64 keyflags_to_unset,
+                  u8  mouseflags_to_set,
+                  u8  mouseflags_to_unset,
+                  Vec2f  cursor);

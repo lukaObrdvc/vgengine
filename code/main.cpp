@@ -1,13 +1,11 @@
 #include "project.h"
-#include "alias.h"
+
 #if !USE_DLL
+
 #if PLATFORM_WINDOWS
-
 #include <Windows.h>
-// #undef min
-// #undef max
-
 #endif
+
 #endif
 
 #include <stdarg.h>
@@ -17,42 +15,55 @@
 // for sqrt, sin, cos, (winapi?) signbit
 #include <math.h>
 
-#if !USE_DLL
-#define dbg_print(str) OutputDebugString(str);
-#else
-#define dbg_print(str) ((void)0)
-#endif
+// #if !USE_DLL
+// #define dbg_print(str) OutputDebugString(str);
+// #else
+// #define dbg_print(str) ((void)0)
+// #endif
 
-#include "utils.h"
 #include "basic.h"
-#include "init.h"
-#include "arena.h"
-#include "platform.h"
-#include "Allocator.h"
-#include "dynamic_array.h"
 
-#include "math.h"
-#include "vector.h"
-#include "linear_algebra.h"
+#include "math/vector.h"
 #include "matrix.h"
 #include "quaternion.h"
-#include "transform.h"
-#include "rect.h"
-#include "pixel.h"
-#include "renderer.h"
+#include "math/transform.h"
 
-#include "MeshLoader.h"
+#include "rect.h"
+
+#include "arena.h"
+
+#include "camera.h"
+// #include "graphics/clip.h"
+#include "framebuffer.h"
+// #include "line.h"
+#include "graphics/pixel.h"
+// #include "graphics/renderer.h"
+
 
 #include "new_mani.h"
 
-#include "arena.cpp"
-#include "init.cpp"
+#include "platform.h"
+
+#include "init.h"
+#include "input.h"
 
 #if !USE_DLL
-#include "engine.h"
+#include "platform/engine.h"
 #endif
+
+// .cpps here probably.....
+#include "math/matrix.cpp"
+#include "math/quaternion.cpp"
+
+#include "core/arena.cpp"
+
+// #include "graphics/line.cpp"
+
+#include "graphics/framebuffer.cpp"
+#include "init.cpp"
+#include "input.cpp"
 
 #include "engine.cpp"
 #if !USE_DLL
-#include "platform.cpp"
+#include "platform/platform.cpp"
 #endif

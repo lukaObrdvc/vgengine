@@ -1,7 +1,6 @@
-#ifndef LINEAR_ALGEBRA_H
-#define LINEAR_ALGEBRA_H
+#ifndef VECTOR_H
+#define VECTOR_H
 
-// @todo rename to vector.h
 // @todo make certain functions like vec_add variadic? but it's also
 // life if you did operator overloading honestly..
 // @todo actually bro, when r64 or s64 it should be pointers so maybe

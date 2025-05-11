@@ -2,7 +2,6 @@
 #define RECT_H
 
 // @doc assumes y is up, x is right
-// @todo what about z layering of these?
 union Rect
 {
     struct {r32 minX, minY, maxX, maxY;};
@@ -16,7 +15,7 @@ union RectInt
 };
 
 
-// FUNCTIONS FOR r32
+// FUNCTIONS FOR 332
 
 inline Rect rect_make(r32 minX, r32 minY, r32 maxX, r32 maxY)
 {
