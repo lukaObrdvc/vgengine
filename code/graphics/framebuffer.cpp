@@ -16,18 +16,20 @@ inline u32* framebuffer_access(u32 x, u32 y, u8* buff = FRAME_BUFFER_BASE, u32 p
 {
     return (u32*)(buff - y*pitch + x*bytpp);
 }
-inline r32* zbuffer_access(u32 x, u32 y, u8* buff = Z_BUFFER, u32 pitch = FRAME_BUFFER_PITCH, u32 bytpp = FRAME_BUFFER_BYTPP)
+inline r32* zbuffer_access(u32 x, u32 y, r32* buff = Z_BUFFER, u32 pitch = FRAME_BUFFER_WIDTH)
 {
-    return (r32*)(buff - y*pitch + x*bytpp);
+    return buff - y*pitch + x;
 }
 
-inline void zbuffer_reset(u8* buff = Z_BUFFER, u32 pitch = FRAME_BUFFER_PITCH, u32 bytpp = FRAME_BUFFER_BYTPP, u32 width = FRAME_BUFFER_WIDTH, u32 height = FRAME_BUFFER_HEIGHT)
+
+// @todo do not need to pass pitch here if I pass width and height also
+inline void zbuffer_reset(r32* buff = Z_BUFFER, u32 pitch = FRAME_BUFFER_WIDTH, u32 width = FRAME_BUFFER_WIDTH, u32 height = FRAME_BUFFER_HEIGHT)
 {
     for (u32 y = 0; y < height; y++)
         {
             for (u32 x = 0; x < width; x++)
                 {
-                    *zbuffer_access(x, y, buff, pitch, bytpp) = Z_BUFFER_RESET_VALUE;
+                    *zbuffer_access(x, y, buff, pitch) = Z_BUFFER_RESET_VALUE;
                 }
         }
 }

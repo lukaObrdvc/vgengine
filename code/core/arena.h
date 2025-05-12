@@ -7,6 +7,12 @@
 #define ARENA_DEFAULT_COMMIT_SIZE PAGE_SIZE
 #define ARENA_COMMIT_STEP PAGE_SIZE
 
+#define ARENA_MANAGER globals->arenaManager
+#define ARENA_COUNT globals->arenaCount
+#define PERM_ARENA globals->permArena
+#define FRAME_ARENA globals->frameArena
+#define ARENAS globals->arenas
+
 
 struct ArenaManager
 {
@@ -34,7 +40,7 @@ Arena* arena_make(u64 reserveSize, u64 commitSize);
 void* arena_push_size(Arena* arena, u64 size, u64 alignment);
 
 template<typename T>
-inline T* arena_push(Arena* arena, u32 count = 1)
+T* arena_push(Arena* arena, u32 count = 1)
 {
     return (T*) arena_push_size(arena, sizeof(T)*count, alignof(T));
 }
@@ -51,27 +57,6 @@ inline void zero_memory(void* ptr, u64 size)
 inline void arena_reset(Arena* arena)
 {
     arena->used = 0;
-}
-
-inline ArenaManager* get_arena_manager()
-{
-    return &globals->arenaManager;
-}
-inline u16* get_arena_count()
-{
-    return &globals->arenaCount;
-}
-inline Arena* get_perm_arena()
-{
-    return &globals->permArena;
-}
-inline Arena* get_frame_arena()
-{
-    return &globals->frameArena;
-}
-inline Arena* get_arenas()
-{
-    return globals->arenas;
 }
 
 

@@ -1,8 +1,9 @@
-b32 process_input(u64 curr_keyflags_to_set,
-                  u64 curr_keyflags_to_unset,
-                  u8 curr_mouseflags_to_set,
-                  u8 curr_mouseflags_to_unset,
-                  Vec2f curr_cursor)
+extern "C" b32 process_input(u64 curr_keyflags_to_set,
+                             u64 curr_keyflags_to_unset,
+                             u8 curr_mouseflags_to_set,
+                             u8 curr_mouseflags_to_unset,
+                             r32 curr_cursorX,
+                             r32 curr_cursorY)
 {
     // dude am I doing zbuffering correctly, maybe that's the problem??
     b32 result = true;
@@ -33,13 +34,14 @@ b32 process_input(u64 curr_keyflags_to_set,
     u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
 
     Camera camera = MAIN_CAMERA;
-    curr_cursor.y = to_yisup(curr_cursor.y);
+    curr_cursorY = to_yisup(curr_cursorY);
     Vec2f cursor_difference;
-    cursor_difference.x = curr_cursor.x - FRAME_BUFFER_WIDTH/2;
-    cursor_difference.y = curr_cursor.y - FRAME_BUFFER_HEIGHT/2;
+    cursor_difference.x = curr_cursorX - FRAME_BUFFER_WIDTH/2;
+    cursor_difference.y = curr_cursorY - FRAME_BUFFER_HEIGHT/2;
     // camera.roll += cursor_difference.y / kilobytes(1);
     // camera.pitch -= cursor_difference.x / kilobytes(1);
-    ENGINESTATE->cursor = curr_cursor;
+    ENGINESTATE->cursor.x = curr_cursorX;
+    ENGINESTATE->cursor.y = curr_cursorY;
 
     if (ExtractKey(kflags_trans_to_up, KEY_U))
         {
@@ -56,13 +58,11 @@ b32 process_input(u64 curr_keyflags_to_set,
     if (ExtractKey(kflags, KEY_D))
         {
             // ENGINESTATE->camera_angle += pi/256;
-            ENGINESTATE->log_to_file_once = true;
         }
 
     if (ExtractKey(kflags, KEY_A))
         {            
             // ENGINESTATE->camera_angle -= pi/256;
-            ENGINESTATE->log_to_file_once = true;
         }
     
     if (ExtractKey(kflags, KEY_UP))

@@ -34,6 +34,15 @@ void init_keymap()
 
 #if USE_DLL
 
+enum MOUSECODE
+{
+    MOUSE_NONE = 0,
+    MOUSE_MOVE = (1 << 0),
+    MOUSE_M1   = (1 << 1),
+    MOUSE_M2   = (1 << 2),
+    MOUSE_M3   = (1 << 3)
+};
+
 global_variable b32 valid_dll = false;
 #define ACTUAL_DLL BUILD_PATH "main.dll"
 #define COPIED_DLL BUILD_PATH "main_copy.dll"
@@ -94,8 +103,9 @@ global_variable b32 running = true;
 global_variable u64 curr_keyflags_to_set = 0;
 global_variable u64 curr_keyflags_to_unset = 0;
 global_variable u8  curr_mouseflags_to_set = 0;
-global_variable u8  curr_mouseflags_to_unset = MOUSE_MOVE;
-global_variable v2  curr_cursor = {640, 360}; // zero2()?
+global_variable u8  curr_mouseflags_to_unset = 0;
+global_variable r32 curr_cursorX = 640;
+global_variable r32 curr_cursorY = 360;
 
 typedef struct Window_rect_dims
 {
@@ -116,7 +126,14 @@ inline window_rect_dims get_window_rect_dims(HWND window)
 inline b32 commit_memory(u8* address, u64 size)
 {
     if (!VirtualAlloc(address, size, MEM_COMMIT, PAGE_READWRITE))
-        return false;
+        {
+            DWORD error = GetLastError();  // Capture the error code
+            char errorMsg[512];
+            snprintf(errorMsg, sizeof(errorMsg), "Memory commit failed. Error code: %lu", error);
+            OutputDebugStringA(errorMsg);
+            // OutputDebugString("AAAAAAAAAAAAAAA\n");
+            return false;
+        }
     return true;
 }
 
@@ -240,29 +257,34 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
 
         case WM_MOUSEMOVE:
             {
-                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_cursorX = lParam & 0x0000FFFF;
+                curr_cursorY = lParam & 0xFFFF0000 >> 16;
                 curr_mouseflags_to_set |= MOUSE_MOVE;
             } break;
 
             // @TODO figure out if I need to make a cursor for these two (4...)
         case WM_LBUTTONUP:
             {
-                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_cursorX = lParam & 0x0000FFFF;
+                curr_cursorY = lParam & 0xFFFF0000 >> 16;
                 curr_mouseflags_to_unset |= MOUSE_M1;
             } break;
         case WM_LBUTTONDOWN:
             {
-                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_cursorX = lParam & 0x0000FFFF;
+                curr_cursorY = lParam & 0xFFFF0000 >> 16;
                 curr_mouseflags_to_set |= MOUSE_M1;
             } break;
         case WM_RBUTTONUP:
             {
-                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_cursorX = lParam & 0x0000FFFF;
+                curr_cursorY = lParam & 0xFFFF0000 >> 16;
                 curr_mouseflags_to_unset |= MOUSE_M2;
             } break;
         case WM_RBUTTONDOWN:
             {
-                curr_cursor = V2(lParam & 0x0000FFFF, (lParam & 0xFFFF0000) >> 16);
+                curr_cursorX = lParam & 0x0000FFFF;
+                curr_cursorY = lParam & 0xFFFF0000 >> 16;
                 curr_mouseflags_to_set |= MOUSE_M2;
             } break;
             
@@ -325,24 +347,26 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     DWORD virtualReserveGranularity = systemInfo.dwAllocationGranularity;
     
     u64 totalReservedMemory = terabytes(1);
+    totalReservedMemory = align_up(totalReservedMemory, virtualReserveGranularity);
     void* base_ptr = VirtualAlloc(0, totalReservedMemory, MEM_RESERVE, PAGE_READWRITE);
     u64 initialCommitMemorySize = INITIAL_COMMIT_SIZE_BY_PLATFORM;
+    u64 alignedShize = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, (u64)virtualReserveGranularity);
     commit_memory((u8*)base_ptr, initialCommitMemorySize);
     
-    Globals* globalsToPass = (Globals*)base_ptr;
+    // Globals* globalsToPass = (Globals*)base_ptr;
+    PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
     
     PLATFORM_API.platformDisplay.bytesPerPixel = bytes_per_pixel;
     PLATFORM_API.platformMemory.reservedMemory = totalReservedMemory;
-    PLATFORM_API.platformMemory.pageSize = pageSize;
+    PLATFORM_API.platformMemory.pageSize = ( pageSize < virtualReserveGranularity ? virtualReserveGranularity : pageSize);
 #if USE_DLL
     PLATFORM_API.platformProcedures.readFile = read_file;
     PLATFORM_API.platformProcedures.writeFile = write_file;
     PLATFORM_API.platformProcedures.commitMemory = commit_memory;
 #endif
 
-    PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
 
-    void* window_buffer_memory = (void*)FRAME_BUFFER;
+    void* window_buffer_memory = (void*)&FRAME_BUFFER;
     
     int window_offset_x = 50;
     int window_offset_y = 50;
@@ -382,7 +406,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
     FRAME_BUFFER_WIDTH = 1280;
     FRAME_BUFFER_HEIGHT = 720;
-    POINT center = { FRAME_BUFFER_WIDTH/2, FRAME_BUFFER_HEIGHT/2 };
+    POINT center = { (LONG)FRAME_BUFFER_WIDTH/2, (LONG)FRAME_BUFFER_HEIGHT/2 };
     ClientToScreen(window, &center);
     SetCursorPos(center.x, center.y);
     
@@ -426,7 +450,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                             curr_keyflags_to_unset,
                                             curr_mouseflags_to_set,
                                             curr_mouseflags_to_unset,
-                                            curr_cursor); // can use get cursor pos instead of messages
+                                            curr_cursorX,
+                                            curr_cursorY); // can use get cursor pos instead of messages
             if (camera_mode)
                 {
                     ShowCursor(false);
@@ -440,7 +465,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             UPDATE_AND_RENDER();
 
             window_buffer_info.bmiHeader.biWidth = FRAME_BUFFER_WIDTH;
-            window_buffer_info.bmiHeader.biHeight = -FRAME_BUFFER_HEIGHT;
+            window_buffer_info.bmiHeader.biHeight = -((s32)FRAME_BUFFER_HEIGHT);
 
             
             // @TODO figure out if I need to have two different types of

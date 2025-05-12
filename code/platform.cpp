@@ -1,5 +1,7 @@
-#include "../project.h"
-// alias stuff
+// "W:\\Projects\\vgengine\\code\\"
+
+#include "project.h"
+// #include "alias.h"
 
 #if USE_DLL
 
@@ -8,21 +10,14 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "basic.h"
-#include "vector.h"
-#include "matrix.h"
-#include "quaternion.h"
+#include "core/basic.h"
+#include "core/arena.h"
 
-#include "arena.h"
-
-#include "new_mani.h"
-
-#include "platform.h"
-#include "engine.h"
+#include "platform/platform.h"
+#include "platform/engine.h"
 
 #endif
 
 #if PLATFORM_WINDOWS
-#include "windows.cpp"
+#include "platform/windows.cpp"
 #endif
-

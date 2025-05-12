@@ -1,3 +1,5 @@
+// "W:\\Projects\\vgengine\\code\\"
+
 #include "project.h"
 
 #if !USE_DLL
@@ -15,41 +17,40 @@
 // for sqrt, sin, cos, (winapi?) signbit
 #include <math.h>
 
-// #if !USE_DLL
-// #define dbg_print(str) OutputDebugString(str);
-// #else
-// #define dbg_print(str) ((void)0)
-// #endif
+#if !USE_DLL
+#define dbg_print(str) OutputDebugString(str);
+#else
+#define dbg_print(str) ((void)0)
+#endif
 
-#include "basic.h"
+#include "core/basic.h"
 
 #include "math/vector.h"
-#include "matrix.h"
-#include "quaternion.h"
+#include "math/matrix.h"
+#include "math/quaternion.h"
 #include "math/transform.h"
 
-#include "rect.h"
+#include "core/rect.h"
 
-#include "arena.h"
+#include "core/arena.h"
 
-#include "camera.h"
+#include "graphics/camera.h"
 // #include "graphics/clip.h"
-#include "framebuffer.h"
-// #include "line.h"
+#include "graphics/framebuffer.h"
+// #include "graphics/line.h"
 #include "graphics/pixel.h"
-// #include "graphics/renderer.h"
+#include "graphics/renderer.h"
 
 
 #include "new_mani.h"
 
-#include "platform.h"
-
-#include "init.h"
-#include "input.h"
-
+#include "platform/platform.h"
 #if !USE_DLL
 #include "platform/engine.h"
 #endif
+
+#include "init.h"
+#include "input.h"
 
 // .cpps here probably.....
 #include "math/matrix.cpp"
@@ -63,7 +64,7 @@
 #include "init.cpp"
 #include "input.cpp"
 
-#include "engine.cpp"
+#include "platform/engine.cpp"
 #if !USE_DLL
-#include "platform/platform.cpp"
+#include "platform.cpp"
 #endif

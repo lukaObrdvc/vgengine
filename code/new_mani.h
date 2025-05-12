@@ -6,7 +6,7 @@ struct EngineState
 {
     b32 inited;
     FrameBuffer frameBuffer;
-    u8* zBuffer;
+    r32* zBuffer;
     Camera mainCamera;
 
     // shize ------------------------------------
@@ -21,7 +21,6 @@ struct EngineState
 
     b32 tested_once;
     r32 camera_angle;
-    b32 log_to_file_once;
     b32 reverse_winding;
 
     r32 line_angle;
@@ -40,13 +39,14 @@ struct EngineState
 #define FRAME_BUFFER_HEIGHT FRAME_BUFFER.height
 #define FRAME_BUFFER_BYTPP PLATFORM_API.platformDisplay.bytesPerPixel
 #define FRAME_BUFFER_PITCH (FRAME_BUFFER_HEIGHT * FRAME_BUFFER_BYTPP)
-#define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_WIDTH * FRAME_BUFFER_BYTPP)
+#define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT * FRAME_BUFFER_BYTPP)
 
 // @doc when we offset these like this, then we can - on y coordinate
 // which allows the rest of the code to use y is up, and then this
 // will map it to y is down
 #define FRAME_BUFFER_BASE (FRAME_BUFFER.base + FRAME_BUFFER_BYTESIZE - FRAME_BUFFER_PITCH)
-#define Z_BUFFER (ENGINESTATE->zBuffer + FRAME_BUFFER_BYTESIZE - FRAME_BUFFER_PITCH)
+// #define Z_BUFFER (((r32*)ENGINESTATE->zBuffer) + FRAME_BUFFER_WIDTH*(FRAME_BUFFER_HEIGHT -1))
+#define Z_BUFFER (ENGINESTATE->zBuffer)
 
 
 

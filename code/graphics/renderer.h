@@ -6,11 +6,11 @@
 // only some min/max constraint that is not very useful (maybe can check
 // just in case); this means we have a variable size array of v3's and
 // a variable size array of u16's
-typedef struct tagMesh
+struct Mesh
 {
-    v3* vertices;
+    Vec3f* vertices;
     u16* indices;
-} Mesh;
+};
 
 // we can say that if clipping->triangulation leads to additional geometry,
 // append triangles to end of mesh arrays, and stop rasterization of
@@ -49,7 +49,7 @@ typedef struct tagMesh
 //     next frame just do everything again
 
 
-inline u32 color_make(float r, float g, float b, float a)
+inline u32 color_make(r32 r, r32 g, r32 b, r32 a)
 {
     u32 R = (u32)Floor(r*255);
     u32 G = (u32)Floor(g*255);

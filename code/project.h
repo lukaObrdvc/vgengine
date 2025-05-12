@@ -1,6 +1,7 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+// @todo wrap around USE_WINDOWS, and then place proper stuff in .bat .sh
 #define PLATFORM_WINDOWS 1
 
 #if BUILD_DEVELOPER
@@ -23,5 +24,9 @@
 #define LOG_PATH     DATA_PATH    "logs\\"
 #define MESHES_PATH  ASSET_PATH   "meshes\\"
 
+#define CORE_PATH     CODE_PATH "core\\"
+#define GRAPHICS_PATH CODE_PATH "graphics\\"
+#define MATH_PATH     CODE_PATH "math\\"
+#define PLATFORM_PATH CODE_PATH "platform\\"
 
 #endif

@@ -3,15 +3,16 @@ void arena_init(Arena* arena, u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 
 {
     ArenaManager* arenaManager = &ARENA_MANAGER;
     ASSERT(arenaManager->virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
+    u64 commitSize = align_up(initialCommit, PAGE_SIZE);
     
     arena->base = arenaManager->base + arenaManager->virtualMemoryUsed;
     arena->used = 0;
-    arena->commited = initialCommit;
+    arena->commited = commitSize;
 #if DEVELOPER
     arena->reserved = reserveSize;
 #endif
- 
-    COMMIT_MEMORY(arena->base, initialCommit);
+    
+    COMMIT_MEMORY(arena->base, commitSize);
     arenaManager->virtualMemoryUsed += reserveSize;
 }
 
@@ -22,11 +23,12 @@ Arena* arena_make(u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 initialCommi
     ASSERT(++ARENA_COUNT <= MAX_ARENAS);
     ArenaManager* arenaManager = &ARENA_MANAGER;
     ASSERT(arenaManager->virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
-    
+    u64 commitSize = align_up(initialCommit, PAGE_SIZE);
+   
     Arena newArena;
     newArena.base = arenaManager->base + arenaManager->virtualMemoryUsed;
     newArena.used = 0;
-    newArena.commited = initialCommit;
+    newArena.commited = commitSize;
 #if DEVELOPER
     newArena.reserved = reserveSize;
 #endif
@@ -52,6 +54,7 @@ void* arena_push_size(Arena* arena, u64 size, u64 alignment)
     }
 
     arena->used = totalMemoryNeeded;
+    // arena->used += (alignedBaseAddr - (u64)(arena->base + arena->used)) + size;
     return (void*)alignedBaseAddr;
 }
 

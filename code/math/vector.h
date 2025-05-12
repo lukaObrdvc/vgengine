@@ -6,6 +6,8 @@
 // @todo actually bro, when r64 or s64 it should be pointers so maybe
 // just scrap that, or use const & or something...?
 
+// @todo implement vec_negate for everything..
+
 // VECTORS FOR r32
 union Vec2f
 {
@@ -218,6 +220,15 @@ inline Vec2f vec_scale(Vec2f v, r32 s)
 inline Vec3f vec_scale(Vec3f v, r32 s)
 {
     return {s * v.x, s * v.y, s * v.z};
+}
+
+inline Vec2f vec_negate(Vec2f v)
+{
+    return {-1 * v.x, -1 * v.y};
+}
+inline Vec3f vec_negate(Vec3f v)
+{
+    return {-1 * v.x, -1 * v.y, -1 * v.z};
 }
 
 

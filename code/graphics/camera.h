@@ -1,6 +1,12 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+
+#define MAIN_CAMERA ENGINESTATE->mainCamera
+#define Z_NEAR MAIN_CAMERA.zNear
+#define Z_FAR MAIN_CAMERA.zFar
+#define FOV MAIN_CAMERA.fov
+
 // @doc canvas plane is implicitly at zNear;
 // canvas center is (0,0) relative to camera space origin;
 // eye is positioned at camera space origin;
@@ -14,24 +20,6 @@ struct Camera
     r32 zFar;
     r32 fov;
 };
-
-
-inline Camera* get_main_camera()
-{
-    return &get_engine_state()->mainCamera;
-}
-inline r32 get_z_near()
-{
-    return get_main_camera()->zNear;
-}
-inline r32 get_z_far()
-{
-    return get_main_camera()->zFar;
-}
-inline r32 get_fov()
-{
-    return get_main_camera()->fov;
-}
 
 
 #endif

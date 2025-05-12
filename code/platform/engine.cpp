@@ -1,5 +1,3 @@
-#define INITIAL_COMMIT_SIZE_BY_PLATFORM 8388608 // 8MB
-
 // possibilities...:
 
 // @Note this is probably a bad idea
@@ -20,47 +18,66 @@
 /* } */
 
 
-
-inline r32 slope2(v2 vec1, v2 vec2)
+union Triangle
 {
-    r32 result;
+    struct { Vec3f A, B, C; };
+    Vec3f v[3];
+};
 
-    result = (vec1.y - vec2.y) / (vec1.x / vec2.x);
+union TriangleHom
+{
+    struct { Vec4f A, B, C; };
+    Vec4f v[3];
+};
+
+#include "graphics/clip.h"
+
+
+// inline r32 slope2(v2 vec1, v2 vec2)
+// {
+    // r32 result;
+
+    // result = (vec1.y - vec2.y) / (vec1.x / vec2.x);
     
-    return result;
-}
+    // return result;
+// }
 
-inline r32 EdgeFunction(v3 c, v3 b, v3 a)
+inline r32 EdgeFunction(Vec3f c, Vec3f b, Vec3f a)
 {
     return (c.x-a.x)*(b.y-a.y)-(c.y-a.y)*(b.x-a.x);
 }
 
-inline wndrect ObtainTriangleBBox(v3 p0, v3 p1, v3 p2)
+inline Rect ObtainTriangleBBox(Triangle tri)
 {
-    wndrect result;
+    Rect result;
 
-    result.left   = Min(Min(p0.x, p1.x), p2.x);
-    result.right  = Max(Max(p0.x, p1.x), p2.x);
-    result.bottom = Min(Min(p0.y, p1.y), p2.y);
-    result.top    = Max(Max(p0.y, p1.y), p2.y);
+    result.minX = Min(Min(tri.A.x, tri.B.x), tri.C.x);
+    result.maxX = Max(Max(tri.A.x, tri.B.x), tri.C.x);
+    result.minY = Min(Min(tri.A.y, tri.B.y), tri.C.y);
+    result.maxY = Max(Max(tri.A.y, tri.B.y), tri.C.y);
 
     return result;
 }
-        
-void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
+
+void RasterizeTriangle(Triangle tri, u32 color, b32 inv)
 {
     // perspective-correct interpolation
     // top-left rule
     // anti-aliasing
-    wndrect bbox = ObtainTriangleBBox(p0, p1, p2);
+
+    Vec3f p0 = tri.A;
+    Vec3f p1 = tri.B;
+    Vec3f p2 = tri.C;
+    
+    Rect bbox = ObtainTriangleBBox(tri);
     r32 area = EdgeFunction(p2, p1, p0);
 
-    for (s32 j = Floor(bbox.bottom); j < Floor(bbox.top); j++)
+    for (s32 j = Floor(bbox.minY); j < Floor(bbox.maxY); j++)
         {
             
-            for (s32 i = Floor(bbox.left); i < Floor(bbox.right); i++)
+            for (s32 i = Floor(bbox.minX); i < Floor(bbox.maxX); i++)
                 {
-                    v3 p = V3(i+0.5f, j+0.5f, 0);
+                    Vec3f p = vec_make(i+0.5f, j+0.5f, 0.0f);
                     r32 w0 = EdgeFunction(p, p2, p1);
                     r32 w1 = EdgeFunction(p, p0, p2);
                     r32 w2 = EdgeFunction(p, p1, p0);
@@ -72,7 +89,7 @@ void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
                             w2 /= area;
 
                             r32 z = 1/(w0/p0.z+w1/p1.z+w2/p2.z);
-                            r32* zbuffer_point = (r32*)(Z_BUFFER+FRAME_BUFFER_PITCH*j+BYTPP*i);
+                            r32* zbuffer_point = zbuffer_access(i, j);
 
                             u32 r = (u32)(w0*255);
                             u32 g = (u32)(w1*255);
@@ -83,7 +100,7 @@ void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
                             // if (z >= *zbuffer_point)
                             if (z < *zbuffer_point)
                                 {
-                                    *((u32*)(FRAME_BUFFER+j*FRAME_BUFFER_PITCH+i*BYTPP)) = (inv ? intColor : color);
+                                    *framebuffer_access(i, j) = (inv ? intColor : color);
                                     *zbuffer_point = z;
                                 }
                         }
@@ -91,41 +108,29 @@ void RasterizeTriangle(v3 p0, v3 p1, v3 p2, u32 color, b32 inv)
         }
 }
 
-typedef union tagTriangle
+Triangle TriangleWorldToRaster(Triangle tri)
 {
-    struct
-    {
-        v3 A;
-        v3 B;
-        v3 C;
-    };
-    v3 v[3];
-} triangle;
-
-triangle TriangleWorldToRaster(triangle tri)
-{
-    // @TODO refactor to use projection matrix instead
-    triangle result;
+    Triangle result;
 
     // camera space
     
-    v3 A = tri.A;
-    v3 B = tri.B;
-    v3 C = tri.C;
+    Vec3f A = tri.A;
+    Vec3f B = tri.B;
+    Vec3f C = tri.C;
     
     r32 Near = Z_NEAR;
 
     r32 invA = Near/A.z;
     r32 invB = Near/B.z;
     r32 invC = Near/C.z;
-    v3 A_s = V3(A.x*invA, A.y*invA, A.z);
-    v3 B_s = V3(B.x*invB, B.y*invB, B.z);
-    v3 C_s = V3(C.x*invC, C.y*invC, C.z);
+    Vec3f A_s = vec_make(A.x*invA, A.y*invA, A.z);
+    Vec3f B_s = vec_make(B.x*invB, B.y*invB, B.z);
+    Vec3f C_s = vec_make(C.x*invC, C.y*invC, C.z);
     
-    r32 Fov = FOV;
+    r32 fov = FOV;
     r32 aspect_ratio = (FRAME_BUFFER_WIDTH*1.0f)/FRAME_BUFFER_HEIGHT;
 
-    r32 r = -Near*tan(radians(Fov/2));
+    r32 r = -Near*tan(radians(fov/2));
     r32 l = -r;
     r32 t = r/aspect_ratio; // is it the opposite here actually, first t then r?
     r32 b = -t;
@@ -135,9 +140,9 @@ triangle TriangleWorldToRaster(triangle tri)
 
     // ndc space
     
-    v3 A_ndc = V3(A_s.x/r, A_s.y/t, A_s.z);
-    v3 B_ndc = V3(B_s.x/r, B_s.y/t, B_s.z);
-    v3 C_ndc = V3(C_s.x/r, C_s.y/t, C_s.z);
+    Vec3f A_ndc = vec_make(A_s.x/r, A_s.y/t, A_s.z);
+    Vec3f B_ndc = vec_make(B_s.x/r, B_s.y/t, B_s.z);
+    Vec3f C_ndc = vec_make(C_s.x/r, C_s.y/t, C_s.z);
 
     /* v3 A_r = V3((A_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (1-(A_ndc.y+1)/2)*(FRAME_BUFFER_HEIGHT-1), A_ndc.z); */
     /* v3 B_r = V3((B_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (1-(B_ndc.y+1)/2)*(FRAME_BUFFER_HEIGHT-1), B_ndc.z); */
@@ -145,9 +150,9 @@ triangle TriangleWorldToRaster(triangle tri)
 
     // raster space
     
-    v3 A_r = V3((A_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (A_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), A_ndc.z);
-    v3 B_r = V3((B_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (B_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), B_ndc.z);
-    v3 C_r = V3((C_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (C_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), C_ndc.z);
+    Vec3f A_r = vec_make((A_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (A_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), A_ndc.z);
+    Vec3f B_r = vec_make((B_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (B_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), B_ndc.z);
+    Vec3f C_r = vec_make((C_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (C_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), C_ndc.z);
 
     result.A = A_r;
     result.B = B_r;
@@ -156,19 +161,13 @@ triangle TriangleWorldToRaster(triangle tri)
     return result;
 }
 
-typedef struct TagTriangleHom
+
+inline void matrix_proj(Matrix4x4f* proj)
 {
-    v4 A;
-    v4 B;
-    v4 C;
-} TriangleHom;
+    matrix_unit(proj);
 
-#include "clip.h"
-
-inline m4 M4Proj()
-{
-    m4 result = M4Unit();
-
+    // @todo unsigned vs signed mismatch?
+    // make rad, deg, kb, mb, gb..?
     r32 aspectRatio = (FRAME_BUFFER_WIDTH*1.0f) / FRAME_BUFFER_HEIGHT;
     r32 fov = FOV;
     
@@ -177,40 +176,40 @@ inline m4 M4Proj()
     r32 t = tan(radians(fov / 2)) * n;
     r32 r = t * aspectRatio;
 
-    result.m[0][0] = n / r;
-    result.m[1][1] = n / t;
-    result.m[2][2] = - (f + n) / (f - n);
-    result.m[3][3] = 0;
-    result.m[2][3] = - 1;
-    result.m[3][2] = - (2 * f * n) / (f - n);
-
-    return result;
+    proj->e[0][0] = n / r;
+    proj->e[1][1] = n / t;
+    proj->e[2][2] = - (f + n) / (f - n);
+    proj->e[3][3] = 0;
+    proj->e[2][3] = - 1;
+    proj->e[3][2] = - (2 * f * n) / (f - n);
 }
 
-int TriangleWorldToRasterPROJ(triangle tri, TriangleHom* out_triangles)
+s32 TriangleWorldToRasterPROJ(Triangle* tri, TriangleHom* out_triangles)
 {
-    m4 PROJ = M4Proj();
+    Matrix4x4f* PROJ = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    matrix_proj(PROJ);
 
-    v3 A_clip3 = M4Mul(tri.A, PROJ);
-    v3 B_clip3 = M4Mul(tri.B, PROJ);
-    v3 C_clip3 = M4Mul(tri.C, PROJ);
+    Vec3f A_clip3 = matrix_mul(PROJ, tri->A);
+    Vec3f B_clip3 = matrix_mul(PROJ, tri->B);
+    Vec3f C_clip3 = matrix_mul(PROJ, tri->C);
 
-    v4 A_clip = V4(A_clip3.x, A_clip3.y, A_clip3.z, -tri.A.z);
-    v4 B_clip = V4(B_clip3.x, B_clip3.y, B_clip3.z, -tri.B.z);
-    v4 C_clip = V4(C_clip3.x, C_clip3.y, C_clip3.z, -tri.C.z);
-    
-    int count = ClipTriangle(A_clip, B_clip, C_clip, out_triangles);
-    for (int i = 0; i < count; i++)
+    Vec4f A_clip = vec_make(A_clip3.x, A_clip3.y, A_clip3.z, -tri->A.z);
+    Vec4f B_clip = vec_make(B_clip3.x, B_clip3.y, B_clip3.z, -tri->B.z);
+    Vec4f C_clip = vec_make(C_clip3.x, C_clip3.y, C_clip3.z, -tri->C.z);
+
+    TriangleHom* tri_clip = arena_push<TriangleHom>(&FRAME_ARENA);
+    s32 count = ClipTriangle(tri_clip, out_triangles);
+    for (s32 i = 0; i < count; i++)
         {
             TriangleHom t = out_triangles[i];
             
-            v4 A_ndc = V4(t.A.x/t.A.w, t.A.y/t.A.w, t.A.z/t.A.w, 1);
-            v4 B_ndc = V4(t.B.x/t.B.w, t.B.y/t.B.w, t.B.z/t.B.w, 1);
-            v4 C_ndc = V4(t.C.x/t.C.w, t.C.y/t.C.w, t.C.z/t.C.w, 1);
+            Vec4f A_ndc = vec_make(t.A.x/t.A.w, t.A.y/t.A.w, t.A.z/t.A.w, 1.0f);
+            Vec4f B_ndc = vec_make(t.B.x/t.B.w, t.B.y/t.B.w, t.B.z/t.B.w, 1.0f);
+            Vec4f C_ndc = vec_make(t.C.x/t.C.w, t.C.y/t.C.w, t.C.z/t.C.w, 1.0f);
 
-            v4 A_r = V4((A_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (A_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), A_ndc.z, 1);
-            v4 B_r = V4((B_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (B_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), B_ndc.z, 1);
-            v4 C_r = V4((C_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (C_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), C_ndc.z, 1);
+            Vec4f A_r = vec_make((A_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (A_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), A_ndc.z, 1.0f);
+            Vec4f B_r = vec_make((B_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (B_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), B_ndc.z, 1.0f);
+            Vec4f C_r = vec_make((C_ndc.x+1)/2*(FRAME_BUFFER_WIDTH-1), (C_ndc.y+1)/2*(FRAME_BUFFER_HEIGHT-1), C_ndc.z, 1.0f);
 
             t.A = A_r;
             t.B = B_r;
@@ -239,24 +238,40 @@ int TriangleWorldToRasterPROJ(triangle tri, TriangleHom* out_triangles)
 
 
 
-// #include "test.h"
+#include "test2.cpp"
 
-void update_and_render(void)
+void fill_background()
 {
-    FrameBuffer frameBuffer = get_frame_buffer();
-    u8* zBuffer = get_z_buffer();
-    u32 bytpp = get_frame_buffer_bytpp();
-    u32 pitch = framebuffer_pitch(frameBuffer.height, bytpp);
-    
-    if (!ENGINESTATE->inited)
+    for (u32 y = 0; y < FRAME_BUFFER_HEIGHT; y++)
+        {
+            for (u32 x = 0; x < FRAME_BUFFER_WIDTH; x++)
+                {
+                    *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)125 << 16) | ((u32)0 << 8) | ((u32)125);
+                }
+        }
+}
+
+extern "C" void update_and_render()
+{
+    EngineState* engineState = ENGINESTATE;
+    if (!engineState->inited)
         {
             init_memory();
             init_engine_state();
             
-            ENGINESTATE->inited = true;
+            engineState->inited = true;
         }
-    // test();
     
-    zbuffer_reset(zBuffer, pitch, bytpp, frameBuffer.width, frameBuffer.height);
+    // @todo maybe just cache through engineState directly
+    FrameBuffer frameBuffer = FRAME_BUFFER;
+    r32* zBuffer = Z_BUFFER;
+    u32 bytpp = FRAME_BUFFER_BYTPP;
+    u32 pitch = framebuffer_pitch(frameBuffer.height, bytpp);
+    
+    fill_background();
+    
+    test();
+    
+    zbuffer_reset(zBuffer, pitch, frameBuffer.width, frameBuffer.height);
 }
 

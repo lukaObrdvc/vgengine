@@ -3,7 +3,7 @@ setlocal
 
 set OPTIMIZATIONS=0
 set DEVELOPER=1
-set USE_DLL=1
+set USE_DLL=0
 
 if "%DEVELOPER%"=="0" set USE_DLL=0
 
@@ -48,7 +48,7 @@ pushd ..\exe
 del /Q *.obj *.pdb *.dll *.exe >nul 2>nul
 if "%USE_DLL%"=="1" (
     cl %CompilerFlags% -Fmmain.map     ..\code\main.cpp /LD /link %LinkerFlags% %Exports%
-    cl %CompilerFlags% -Fmplatform.map ..\code\platform\platform.cpp /link %LinkerFlags% %Imports%
+    cl %CompilerFlags% -Fmplatform.map ..\code\platform.cpp /link %LinkerFlags% %Imports%
 ) else (
     cl %CompilerFlags% -Fmmain.map     ..\code\main.cpp     /link %LinkerFlags% %Imports%
 )

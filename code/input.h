@@ -30,8 +30,8 @@ enum KEYCODE
     KEY_O     = (1 << 15)
 };
 
-b32 process_input(u64 keyflags_to_set,
-                  u64 keyflags_to_unset,
-                  u8  mouseflags_to_set,
-                  u8  mouseflags_to_unset,
-                  Vec2f  cursor);
+// extern "C" b32 process_input(u64 keyflags_to_set,
+                             // u64 keyflags_to_unset,
+                             // u8  mouseflags_to_set,
+                             // u8  mouseflags_to_unset,
+                             // Vec2f  cursor);
