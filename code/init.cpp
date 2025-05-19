@@ -14,47 +14,27 @@ void init_memory()
     ArenaManager* arenaManager = &ARENA_MANAGER;
     arenaManager->base = (u8*)(globals + 1);
     arenaManager->virtualMemoryUsed = sizeof(Globals);
-    // @todo assert onto arenaManager here?
-
+    ASSERT(arenaManager->virtualMemoryUsed <= TOTAL_RESERVED_MEMORY);
+    
     // @pot do I need to align down/up, if sizeof(Globals) makes it
     // unaligned or something?
     u64 firstArenaSize = INITIAL_COMMIT_SIZE_BY_PLATFORM - sizeof(Globals);
-    firstArenaSize = align_up(firstArenaSize, PAGE_SIZE);
+    // firstArenaSize = align_up(firstArenaSize, PAGE_SIZE);
     arena_init(&PERM_ARENA, firstArenaSize, firstArenaSize);
-
-    MEMORY_BASIC_INFORMATION mbi3;
-    VirtualQuery((&PERM_ARENA)->base + (&PERM_ARENA)->commited + 100, &mbi3, sizeof(mbi3));
-    
     arena_init(&FRAME_ARENA, gigabytes(4));
-
-    MEMORY_BASIC_INFORMATION mbi4;
-    VirtualQuery((&FRAME_ARENA)->base + (&FRAME_ARENA)->commited, &mbi4, sizeof(mbi4));
-
-    MEMORY_BASIC_INFORMATION mbi2;
-    VirtualQuery(ARENA_MANAGER.base + ARENA_MANAGER.virtualMemoryUsed, &mbi2, sizeof(mbi2));
     
-    EngineState* engineState = ENGINESTATE;
-    engineState = arena_push<EngineState>(&PERM_ARENA);
-    engineState->frameBuffer.base = arena_push<u8>(&PERM_ARENA, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP);
-    // engineState->frameBuffer.base = (u8*)arena_push<u32>(&PERM_ARENA, MAX_FRAME_BUFFER_SIZE);
-    engineState->zBuffer = arena_push<r32>(&PERM_ARENA, MAX_FRAME_BUFFER_SIZE);
-    // commit_memory((u8*)ENGINESTATE->zBuffer, MAX_FRAME_BUFFER_SIZE * sizeof(r32));
-    ASSERT(ENGINESTATE->zBuffer != NULL);
-    MEMORY_BASIC_INFORMATION mbi;
-    VirtualQuery(ENGINESTATE->zBuffer, &mbi, sizeof(mbi));
-    int i = 0;
-    i++;
-
-    u8* zStart = (u8*)ENGINESTATE->zBuffer;
-    u8* zEnd   = zStart + (MAX_FRAME_BUFFER_SIZE * sizeof(r32));
-    u8* commitStart = ARENA_MANAGER.base;
-    u8* commitEnd   = ARENA_MANAGER.base + INITIAL_COMMIT_SIZE_BY_PLATFORM;
-
-    ASSERT(zStart >= commitStart && zEnd <= commitEnd);
+    EngineState* engine_state = ENGINESTATE;
+    engine_state = arena_push<EngineState>(&PERM_ARENA);
+    Arena frame_buffer_arena;
+    Arena zbuffer_arena;
+    arena_init(&frame_buffer_arena, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP);
+    arena_init(&zbuffer_arena, MAX_FRAME_BUFFER_SIZE, MAX_FRAME_BUFFER_SIZE);
+    engine_state->frameBuffer.base = frame_buffer_arena.base;
+    engine_state->zBuffer = (r32*)zbuffer_arena.base;
+    
+    // enginestate->frameBuffer.base = arena_push<u8>(&PERM_ARENA, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP);
+    // engineState->zBuffer = arena_push<r32>(&PERM_ARENA, MAX_FRAME_BUFFER_SIZE);
 }
-
-// 4194304
-// 20971520
 
 void init_engine_state()
 {
@@ -74,7 +54,7 @@ void init_engine_state()
                     
     ENGINESTATE->camera_angle = 0;
     ENGINESTATE->reverse_winding = false;
-
+    
     ENGINESTATE->keyflags = 0;
     ENGINESTATE->mouseflags = 0;
                     
@@ -107,32 +87,6 @@ void init_engine_state()
     ENGINESTATE->keymap[0x55] = 14;
     ENGINESTATE->keymap[0x4F] = 15;
 
-
-    ASSERT(ENGINESTATE->zBuffer != NULL);
-    MEMORY_BASIC_INFORMATION mbi;
-    VirtualQuery(ENGINESTATE->zBuffer, &mbi, sizeof(mbi));
-    
-    *(Z_BUFFER) = Z_BUFFER_RESET_VALUE;
-    
-    r32* zb = ENGINESTATE->zBuffer;
-    r32* zb_end = zb + MAX_FRAME_BUFFER_SIZE;
-    
-    r32* zbuffer_base = Z_BUFFER;
-    
-    r32* access_00 = zbuffer_access(0, 0);
-    r32* access_00_end = access_00 + 1;
-    
-    ASSERT(zbuffer_base >= zb && zbuffer_base < zb_end);
-    ASSERT(access_00 >= zb && access_00_end <= zb_end);
-    
-    r32* raw_start = (r32*)ENGINESTATE->zBuffer;
-    r32* raw_end   = raw_start + FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT;
-    
-    r32* test_ptr = zbuffer_access(0, 0);
-    ASSERT(test_ptr >= raw_start && test_ptr < raw_end);
-    *test_ptr = Z_BUFFER_RESET_VALUE;
-    // *zbuffer_access(0, 0) = Z_BUFFER_RESET_VALUE;
-    
     zbuffer_reset();
         
 

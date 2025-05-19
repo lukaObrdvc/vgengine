@@ -53,35 +53,35 @@ HMODULE load_game()
     HMODULE dll = LoadLibrary(COPIED_DLL);
     
     if (dll)
-        {
-            valid_dll = true;
-            engineAPI.platformInitMemoryBase = (fpPlatformInitMemoryBase) GetProcAddress(dll, "platform_init_memory_base");
-            engineAPI.updateAndRender = (fpUpdateAndRender) GetProcAddress(dll, "update_and_render");
-            engineAPI.processInput = (fpProcessInput) GetProcAddress(dll, "process_input");
-        }
+    {
+        valid_dll = true;
+        engineAPI.platformInitMemoryBase = (fpPlatformInitMemoryBase) GetProcAddress(dll, "platform_init_memory_base");
+        engineAPI.updateAndRender = (fpUpdateAndRender) GetProcAddress(dll, "update_and_render");
+        engineAPI.processInput = (fpProcessInput) GetProcAddress(dll, "process_input");
+    }
     else
-        {
-            valid_dll = false;
-            engineAPI.platformInitMemoryBase = platform_init_memory_base_stub;
-            engineAPI.updateAndRender = update_and_render_stub;
-            engineAPI.processInput = process_input_stub;
-        }
+    {
+        valid_dll = false;
+        engineAPI.platformInitMemoryBase = platform_init_memory_base_stub;
+        engineAPI.updateAndRender = update_and_render_stub;
+        engineAPI.processInput = process_input_stub;
+    }
 
     if (!engineAPI.platformInitMemoryBase)
-        {
-            valid_dll = false;
-            engineAPI.platformInitMemoryBase = platform_init_memory_base_stub;
-        }
+    {
+        valid_dll = false;
+        engineAPI.platformInitMemoryBase = platform_init_memory_base_stub;
+    }
     if (!engineAPI.updateAndRender)
-        {
-            valid_dll = false;
-            engineAPI.updateAndRender = update_and_render_stub;
-        }
+    {
+        valid_dll = false;
+        engineAPI.updateAndRender = update_and_render_stub;
+    }
     if (!engineAPI.processInput)
-        {
-            valid_dll = false;
-            engineAPI.processInput = process_input_stub;
-        }
+    {
+        valid_dll = false;
+        engineAPI.processInput = process_input_stub;
+    }
 
     return dll;
 }
@@ -126,14 +126,9 @@ inline window_rect_dims get_window_rect_dims(HWND window)
 inline b32 commit_memory(u8* address, u64 size)
 {
     if (!VirtualAlloc(address, size, MEM_COMMIT, PAGE_READWRITE))
-        {
-            DWORD error = GetLastError();  // Capture the error code
-            char errorMsg[512];
-            snprintf(errorMsg, sizeof(errorMsg), "Memory commit failed. Error code: %lu", error);
-            OutputDebugStringA(errorMsg);
-            // OutputDebugString("AAAAAAAAAAAAAAA\n");
-            return false;
-        }
+    {
+        return false;
+    }
     return true;
 }
 
@@ -148,25 +143,25 @@ b32 read_file(u8* filename, void* buffer, u32* buffer_size)
 {
     HANDLE filehandle = dbg_open_file(filename);
     if (filehandle == INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(filehandle);
-            return false;
-        }
+    {
+        CloseHandle(filehandle);
+        return false;
+    }
 
     *buffer_size = (u32) GetFileSize(filehandle, 0);
     if (*buffer_size == INVALID_FILE_SIZE)
-        {
-            CloseHandle(filehandle);
-            return false;
-        }
+    {
+        CloseHandle(filehandle);
+        return false;
+    }
 
     u32 bytes_read;
     ReadFile(filehandle, buffer, *buffer_size, (LPDWORD)&bytes_read, 0);
     if (bytes_read != *buffer_size)
-        {
-            CloseHandle(filehandle);
-            return false;
-        }
+    {
+        CloseHandle(filehandle);
+        return false;
+    }
 
     CloseHandle(filehandle);
     return true;
@@ -176,21 +171,21 @@ b32 write_file(u8* filename, void* buffer, u32 buffer_size)
 {
     HANDLE filehandle = dbg_open_file(filename);
     if (filehandle == INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(filehandle);
-            return false;
-        }
+    {
+        CloseHandle(filehandle);
+        return false;
+    }
 
     u32 bytes_written;
     WriteFile(filehandle, buffer, buffer_size, (LPDWORD)&bytes_written, 0);
     if (bytes_written != buffer_size)
-        {
-            CloseHandle(filehandle);
-            return false;
-        }
+    {
+        CloseHandle(filehandle);
+        return false;
+    }
 
     CloseHandle(filehandle);
-     return true;
+    return true;
 }
 
 void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPINFO* window_buffer_info,int window_width, int window_height)
@@ -198,18 +193,18 @@ void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPIN
     // @Note this is what actually blits to the scree/window
     // @Note what if we on purpose create a bitmap of different size in order to map it into the window??
     StretchDIBits(
-                  dc,
-                  0, 0,
-                  window_buffer_info->bmiHeader.biWidth,
-                  -window_buffer_info->bmiHeader.biHeight,
-                  0, 0,
-                  window_width,
-                  window_height,
-                  window_buffer_memory,
-                  window_buffer_info,
-                  DIB_RGB_COLORS,
-                  SRCCOPY
-                  );
+        dc,
+        0, 0,
+        window_buffer_info->bmiHeader.biWidth,
+        -window_buffer_info->bmiHeader.biHeight,
+        0, 0,
+        window_width,
+        window_height,
+        window_buffer_memory,
+        window_buffer_info,
+        DIB_RGB_COLORS,
+        SRCCOPY
+        );
 }
 
 LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
@@ -217,105 +212,105 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     LRESULT result = 0;
     
     switch(message)
-        {
+    {
             
-        case WM_ACTIVATEAPP:
-            {
-                OutputDebugString("WM_ACTIVATEAPP\n");
-            } break;
+    case WM_ACTIVATEAPP:
+    {
+        OutputDebugString("WM_ACTIVATEAPP\n");
+    } break;
 
-        case WM_SIZE:
-            {
-                /* window_rect_dims rect = get_window_rect_dims(window); */
-                /* realloc_window_bitmap_buffer(rect.width, rect.height); */
-            } break;
+    case WM_SIZE:
+    {
+        /* window_rect_dims rect = get_window_rect_dims(window); */
+        /* realloc_window_bitmap_buffer(rect.width, rect.height); */
+    } break;
 
-        case WM_KEYUP:
-            {
-                curr_keyflags_to_unset |= (u64)(1 << keymap[(u8)wParam]);
-            } break;
-        case WM_KEYDOWN:
+    case WM_KEYUP:
+    {
+        curr_keyflags_to_unset |= (u64)(1 << keymap[(u8)wParam]);
+    } break;
+    case WM_KEYDOWN:
         /* case WM_SYSKEYDOWN: */
         /* case WM_SYSKEYUP: */
-            {
-                //@Note I need to know key code, is_down, was_down
-                // ... and potentially repeat_count and syskey ...
+    {
+        //@Note I need to know key code, is_down, was_down
+        // ... and potentially repeat_count and syskey ...
                 
-                u16 repeat_count = lParam & 0x0000FFFF;
+        u16 repeat_count = lParam & 0x0000FFFF;
 
-                // @TODO figure out how to map when having more than 64 flags for keys
-                curr_keyflags_to_set |= (u64)(1 << keymap[(u8)wParam]);
+        // @TODO figure out how to map when having more than 64 flags for keys
+        curr_keyflags_to_set |= (u64)(1 << keymap[(u8)wParam]);
                 
-                // curr_frame_key.is_down = (message == WM_KEYDOWN);
-                // curr_frame_key.was_down = lParam & 0x40000000;
+        // curr_frame_key.is_down = (message == WM_KEYDOWN);
+        // curr_frame_key.was_down = lParam & 0x40000000;
 
-                /* if ((message == WM_SYSKEYUP && wParam == VK_F4) || (wParam == VK_ESCAPE)) */
-                /*     { */
-                /*         running = false; */
-                /*     } */
-            } break;
+        /* if ((message == WM_SYSKEYUP && wParam == VK_F4) || (wParam == VK_ESCAPE)) */
+        /*     { */
+        /*         running = false; */
+        /*     } */
+    } break;
 
-        case WM_MOUSEMOVE:
-            {
-                curr_cursorX = lParam & 0x0000FFFF;
-                curr_cursorY = lParam & 0xFFFF0000 >> 16;
-                curr_mouseflags_to_set |= MOUSE_MOVE;
-            } break;
+    case WM_MOUSEMOVE:
+    {
+        curr_cursorX = lParam & 0x0000FFFF;
+        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_mouseflags_to_set |= MOUSE_MOVE;
+    } break;
 
-            // @TODO figure out if I need to make a cursor for these two (4...)
-        case WM_LBUTTONUP:
-            {
-                curr_cursorX = lParam & 0x0000FFFF;
-                curr_cursorY = lParam & 0xFFFF0000 >> 16;
-                curr_mouseflags_to_unset |= MOUSE_M1;
-            } break;
-        case WM_LBUTTONDOWN:
-            {
-                curr_cursorX = lParam & 0x0000FFFF;
-                curr_cursorY = lParam & 0xFFFF0000 >> 16;
-                curr_mouseflags_to_set |= MOUSE_M1;
-            } break;
-        case WM_RBUTTONUP:
-            {
-                curr_cursorX = lParam & 0x0000FFFF;
-                curr_cursorY = lParam & 0xFFFF0000 >> 16;
-                curr_mouseflags_to_unset |= MOUSE_M2;
-            } break;
-        case WM_RBUTTONDOWN:
-            {
-                curr_cursorX = lParam & 0x0000FFFF;
-                curr_cursorY = lParam & 0xFFFF0000 >> 16;
-                curr_mouseflags_to_set |= MOUSE_M2;
-            } break;
+    // @TODO figure out if I need to make a cursor for these two (4...)
+    case WM_LBUTTONUP:
+    {
+        curr_cursorX = lParam & 0x0000FFFF;
+        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_mouseflags_to_unset |= MOUSE_M1;
+    } break;
+    case WM_LBUTTONDOWN:
+    {
+        curr_cursorX = lParam & 0x0000FFFF;
+        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_mouseflags_to_set |= MOUSE_M1;
+    } break;
+    case WM_RBUTTONUP:
+    {
+        curr_cursorX = lParam & 0x0000FFFF;
+        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_mouseflags_to_unset |= MOUSE_M2;
+    } break;
+    case WM_RBUTTONDOWN:
+    {
+        curr_cursorX = lParam & 0x0000FFFF;
+        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_mouseflags_to_set |= MOUSE_M2;
+    } break;
             
-        case WM_CLOSE:
-            {
-                OutputDebugString("WM_CLOSE\n");
-                running = false;
-                //PostQuitMessage(wParam);
-            } break;
+    case WM_CLOSE:
+    {
+        OutputDebugString("WM_CLOSE\n");
+        running = false;
+        //PostQuitMessage(wParam);
+    } break;
 
-        case WM_DESTROY: // @Note when closing window with X message WM_CLOSE is sent not this, so what do with this...?
-            {
-                OutputDebugString("WM_DESTROY\n");
-                running = false;
-                //PostQuitMessage(wParam);
-            } break;
+    case WM_DESTROY: // @Note when closing window with X message WM_CLOSE is sent not this, so what do with this...?
+    {
+        OutputDebugString("WM_DESTROY\n");
+        running = false;
+        //PostQuitMessage(wParam);
+    } break;
 
-        case WM_PAINT: {
-            // @IMPORTANT you need this shit, or otherwise the window
-            // will be blank, if you process the entire message queue,
-            // if you don't then you can leave this blank....
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(window, &ps);
-            EndPaint(window, &ps);
-        } break;
+    case WM_PAINT: {
+        // @IMPORTANT you need this shit, or otherwise the window
+        // will be blank, if you process the entire message queue,
+        // if you don't then you can leave this blank....
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(window, &ps);
+        EndPaint(window, &ps);
+    } break;
             
-        default:
-            {
-                result = DefWindowProc(window, message, wParam, lParam);
-            }            
-        }
+    default:
+    {
+        result = DefWindowProc(window, message, wParam, lParam);
+    }            
+    }
 
     
     return result;
@@ -341,17 +336,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
     SYSTEM_INFO systemInfo;
     GetSystemInfo(&systemInfo);
-    // commiting memory with VirtualAlloc will be a multiple of this
     DWORD pageSize = systemInfo.dwPageSize;
-    // reserving memory with VirtualAlloc will be a multiple of this
+    // commiting memory with VirtualAlloc will be a multiple of this
     DWORD virtualReserveGranularity = systemInfo.dwAllocationGranularity;
     
     u64 totalReservedMemory = terabytes(1);
     totalReservedMemory = align_up(totalReservedMemory, virtualReserveGranularity);
     void* base_ptr = VirtualAlloc(0, totalReservedMemory, MEM_RESERVE, PAGE_READWRITE);
     u64 initialCommitMemorySize = INITIAL_COMMIT_SIZE_BY_PLATFORM;
-    u64 alignedShize = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, (u64)virtualReserveGranularity);
-    commit_memory((u8*)base_ptr, initialCommitMemorySize);
+    u64 aligned_initial_commit = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, (u64)virtualReserveGranularity);
+    commit_memory((u8*)base_ptr, aligned_initial_commit);
     
     // Globals* globalsToPass = (Globals*)base_ptr;
     PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
@@ -395,7 +389,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                0,
                                hInstance,
                                0
-                               );
+        );
     
     // default resolution is 1087x584, UL=(0,0)
     BITMAPINFO window_buffer_info = {0};
@@ -414,115 +408,115 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     QueryPerformanceFrequency(&counter_frequency);
     
     while (running)
-        {
+    {
 #if USE_DLL
-            // maybe delete previous dll?
-            // not perfectly reloading....
-            dll_filehandle = FindFirstFile((LPCSTR)ACTUAL_DLL, &find_data);
-            FindClose(dll_filehandle);
-            dll_filetime_curr = find_data.ftLastWriteTime;
-            if (dll_filetime_curr.dwLowDateTime > dll_filetime_prev.dwLowDateTime)
-                {
-                    unload_game(dll);
-                    dll = load_game();
-                    dll_filetime_prev = dll_filetime_curr;
+        // maybe delete previous dll?
+        // not perfectly reloading....
+        dll_filehandle = FindFirstFile((LPCSTR)ACTUAL_DLL, &find_data);
+        FindClose(dll_filehandle);
+        dll_filetime_curr = find_data.ftLastWriteTime;
+        if (dll_filetime_curr.dwLowDateTime > dll_filetime_prev.dwLowDateTime)
+        {
+            unload_game(dll);
+            dll = load_game();
+            dll_filetime_prev = dll_filetime_curr;
                     
-                    PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
-                }
-#endif         
-            u64 begin_cycle_count = __rdtsc();
-
-            LARGE_INTEGER begin_time_count;
-            QueryPerformanceCounter(&begin_time_count);
-            
-            MSG message;
-            while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
-                {
-                    if (message.message == WM_QUIT)
-                        {
-                            running = false;
-                            break;
-                        }
-                    TranslateMessage(&message);
-                    DispatchMessage(&message);
-                }
-            b32 camera_mode = PROCESS_INPUT(curr_keyflags_to_set,
-                                            curr_keyflags_to_unset,
-                                            curr_mouseflags_to_set,
-                                            curr_mouseflags_to_unset,
-                                            curr_cursorX,
-                                            curr_cursorY); // can use get cursor pos instead of messages
-            if (camera_mode)
-                {
-                    ShowCursor(false);
-                    SetCursorPos(center.x, center.y);
-                }
-            else
-                {
-                    ShowCursor(true);
-                }
-            
-            UPDATE_AND_RENDER();
-
-            window_buffer_info.bmiHeader.biWidth = FRAME_BUFFER_WIDTH;
-            window_buffer_info.bmiHeader.biHeight = -((s32)FRAME_BUFFER_HEIGHT);
-
-            
-            // @TODO figure out if I need to have two different types of
-            // resizing, one that resizes the buffer, and the other
-            // that resizes the window rect, and then if not the same
-            // it will stretch
-            // @TODO resize window rect??? (AjdustWindowRect)
-            
-            HDC dc = GetDC(window);
-            window_rect_dims rect = get_window_rect_dims(window);
-            stretch_and_draw_window_buffer(dc,
-                                           window_buffer_memory,
-                                           &window_buffer_info,
-                                           rect.width,
-                                           rect.height);
-            ReleaseDC(window, dc);
-
-            curr_keyflags_to_set = 0;
-            curr_keyflags_to_unset = 0;
-            curr_mouseflags_to_set = 0;
-            curr_mouseflags_to_unset = MOUSE_MOVE;
-
-            // @TODO better caching and calculation and precision of these counters
-            u64 end_cycle_count = __rdtsc();
-
-            u64 cycles_per_frame = end_cycle_count - begin_cycle_count;
-            
-            LARGE_INTEGER end_time_count;
-            QueryPerformanceCounter(&end_time_count);
-
-            r64 ms_per_frame = ((end_time_count.QuadPart - begin_time_count.QuadPart)*1000.0)/counter_frequency.QuadPart;
-
-            LARGE_INTEGER begin_sleep_time_count;
-            QueryPerformanceCounter(&begin_sleep_time_count);
-
-            // @Note this doesn't wait precisely for 60fps, a little more, a little less, how to improve this and does it matter??
-            if (ms_per_frame < 16.67)
-                {
-                    Sleep((u32)(16.67-ms_per_frame));
-                }
-            
-            LARGE_INTEGER end_sleep_time_count;
-            QueryPerformanceCounter(&end_sleep_time_count);
-
-            r64 slept_ms = ((end_sleep_time_count.QuadPart - begin_sleep_time_count.QuadPart)*1000.0)/counter_frequency.QuadPart;
-            ms_per_frame+=slept_ms;
-            
-            r64 fps = 1000 / ms_per_frame;
-            
-            char debug_str[256];
-            sprintf(debug_str,"%f fps : %f ms : %I64d cycles\n", fps, ms_per_frame, cycles_per_frame );
-
-            // @Note turned off for now
-            // OutputDebugStringA(debug_str);
-
-            //Sleep(200);
+            PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
         }
+#endif         
+        u64 begin_cycle_count = __rdtsc();
+
+        LARGE_INTEGER begin_time_count;
+        QueryPerformanceCounter(&begin_time_count);
+            
+        MSG message;
+        while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
+        {
+            if (message.message == WM_QUIT)
+            {
+                running = false;
+                break;
+            }
+            TranslateMessage(&message);
+            DispatchMessage(&message);
+        }
+        b32 camera_mode = PROCESS_INPUT(curr_keyflags_to_set,
+                                        curr_keyflags_to_unset,
+                                        curr_mouseflags_to_set,
+                                        curr_mouseflags_to_unset,
+                                        curr_cursorX,
+                                        curr_cursorY); // can use get cursor pos instead of messages
+        if (camera_mode)
+        {
+            ShowCursor(false);
+            SetCursorPos(center.x, center.y);
+        }
+        else
+        {
+            ShowCursor(true);
+        }
+            
+        UPDATE_AND_RENDER();
+
+        window_buffer_info.bmiHeader.biWidth = FRAME_BUFFER_WIDTH;
+        window_buffer_info.bmiHeader.biHeight = -((s32)FRAME_BUFFER_HEIGHT);
+
+            
+        // @TODO figure out if I need to have two different types of
+        // resizing, one that resizes the buffer, and the other
+        // that resizes the window rect, and then if not the same
+        // it will stretch
+        // @TODO resize window rect??? (AjdustWindowRect)
+            
+        HDC dc = GetDC(window);
+        window_rect_dims rect = get_window_rect_dims(window);
+        stretch_and_draw_window_buffer(dc,
+                                       window_buffer_memory,
+                                       &window_buffer_info,
+                                       rect.width,
+                                       rect.height);
+        ReleaseDC(window, dc);
+
+        curr_keyflags_to_set = 0;
+        curr_keyflags_to_unset = 0;
+        curr_mouseflags_to_set = 0;
+        curr_mouseflags_to_unset = MOUSE_MOVE;
+
+        // @TODO better caching and calculation and precision of these counters
+        u64 end_cycle_count = __rdtsc();
+
+        u64 cycles_per_frame = end_cycle_count - begin_cycle_count;
+            
+        LARGE_INTEGER end_time_count;
+        QueryPerformanceCounter(&end_time_count);
+
+        r64 ms_per_frame = ((end_time_count.QuadPart - begin_time_count.QuadPart)*1000.0)/counter_frequency.QuadPart;
+
+        LARGE_INTEGER begin_sleep_time_count;
+        QueryPerformanceCounter(&begin_sleep_time_count);
+
+        // @Note this doesn't wait precisely for 60fps, a little more, a little less, how to improve this and does it matter??
+        if (ms_per_frame < 16.67)
+        {
+            Sleep((u32)(16.67-ms_per_frame));
+        }
+            
+        LARGE_INTEGER end_sleep_time_count;
+        QueryPerformanceCounter(&end_sleep_time_count);
+
+        r64 slept_ms = ((end_sleep_time_count.QuadPart - begin_sleep_time_count.QuadPart)*1000.0)/counter_frequency.QuadPart;
+        ms_per_frame+=slept_ms;
+            
+        r64 fps = 1000 / ms_per_frame;
+            
+        char debug_str[256];
+        sprintf(debug_str,"%f fps : %f ms : %I64d cycles\n", fps, ms_per_frame, cycles_per_frame );
+
+        // @Note turned off for now
+        // OutputDebugStringA(debug_str);
+
+        //Sleep(200);
+    }
 
     return 0;
 }

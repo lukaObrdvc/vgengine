@@ -73,39 +73,39 @@ void RasterizeTriangle(Triangle tri, u32 color, b32 inv)
     r32 area = EdgeFunction(p2, p1, p0);
 
     for (s32 j = Floor(bbox.minY); j < Floor(bbox.maxY); j++)
-        {
+    {
             
-            for (s32 i = Floor(bbox.minX); i < Floor(bbox.maxX); i++)
-                {
-                    Vec3f p = vec_make(i+0.5f, j+0.5f, 0.0f);
-                    r32 w0 = EdgeFunction(p, p2, p1);
-                    r32 w1 = EdgeFunction(p, p0, p2);
-                    r32 w2 = EdgeFunction(p, p1, p0);
+        for (s32 i = Floor(bbox.minX); i < Floor(bbox.maxX); i++)
+        {
+            Vec3f p = vec_make(i+0.5f, j+0.5f, 0.0f);
+            r32 w0 = EdgeFunction(p, p2, p1);
+            r32 w1 = EdgeFunction(p, p0, p2);
+            r32 w2 = EdgeFunction(p, p1, p0);
 
-                    if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test
-                        {
-                            w0 /= area; // these are barycentric coords
-                            w1 /= area;
-                            w2 /= area;
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test
+            {
+                w0 /= area; // these are barycentric coords
+                w1 /= area;
+                w2 /= area;
 
-                            r32 z = 1/(w0/p0.z+w1/p1.z+w2/p2.z);
-                            r32* zbuffer_point = zbuffer_access(i, j);
+                r32 z = 1/(w0/p0.z+w1/p1.z+w2/p2.z);
+                r32* zbuffer_point = zbuffer_access(i, j);
 
-                            u32 r = (u32)(w0*255);
-                            u32 g = (u32)(w1*255);
-                            u32 b = (u32)(w2*255);
+                u32 r = (u32)(w0*255);
+                u32 g = (u32)(w1*255);
+                u32 b = (u32)(w2*255);
 
-                            u32 intColor = (((u32)255 << 24) | (r << 16) | (g << 8) | b);
+                u32 intColor = (((u32)255 << 24) | (r << 16) | (g << 8) | b);
                             
-                            // if (z >= *zbuffer_point)
-                            if (z < *zbuffer_point)
-                                {
-                                    *framebuffer_access(i, j) = (inv ? intColor : color);
-                                    *zbuffer_point = z;
-                                }
-                        }
+                // if (z >= *zbuffer_point)
+                if (z < *zbuffer_point)
+                {
+                    *framebuffer_access(i, j) = (inv ? intColor : color);
+                    *zbuffer_point = z;
                 }
+            }
         }
+    }
 }
 
 Triangle TriangleWorldToRaster(Triangle tri)
@@ -119,7 +119,7 @@ Triangle TriangleWorldToRaster(Triangle tri)
     Vec3f C = tri.C;
     
     r32 Near = Z_NEAR;
-
+    
     r32 invA = Near/A.z;
     r32 invB = Near/B.z;
     r32 invC = Near/C.z;

@@ -1,8 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-// #define INITIAL_COMMIT_SIZE_BY_PLATFORM 20971520 // 20MB
-#define INITIAL_COMMIT_SIZE_BY_PLATFORM (4294967296/4)
+#define INITIAL_COMMIT_SIZE_BY_PLATFORM 10485760 // 10MB
 
 
 // @TODO whether you use pointers here -> or not . depends on the size of
@@ -60,6 +59,8 @@ struct Globals
     ArenaManager arenaManager;
     Arena permArena;
     Arena frameArena;
+    // Arena frameBufferArena;
+    // Arena zBufferArena;
     u16 arenaCount;
     Arena arenas[MAX_ARENAS];
 };
