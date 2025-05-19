@@ -201,6 +201,17 @@ inline s32 trunc(s64 n)
     return (s32)n;
 }
 
+inline s32 to_unsigned(u32 n)
+{
+    ASSERT(n <= MAX_S32 - 1);
+    return (s32)n;
+}
+
+inline u32 to_signed(s32 n)
+{
+    ASSERT(n >= 0);
+    return (u32)n;
+}
 
 // @todo replace 360/tau and tau/360 with precomputed values
 inline r32 radians(r32 angle)

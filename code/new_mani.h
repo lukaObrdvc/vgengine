@@ -2,12 +2,12 @@
 #define NEW_MANI_H
 
 
-struct EngineState
+struct Engine_state
 {
     b32 inited;
-    FrameBuffer frameBuffer;
-    r32* zBuffer;
-    Camera mainCamera;
+    Frame_buffer frame_buffer;
+    r32* zbuffer;
+    Camera main_camera;
 
     // shize ------------------------------------
     // @TODO methinks VK combines mouse keys with keyboard keys.....
@@ -32,12 +32,12 @@ struct EngineState
     // temporary-----------------------------
 };
 
-#define ENGINESTATE ((EngineState*)&PERM_ARENA)
+#define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA.base))
 
-#define FRAME_BUFFER ENGINESTATE->frameBuffer
+#define FRAME_BUFFER ENGINE_STATE->frame_buffer
 #define FRAME_BUFFER_WIDTH FRAME_BUFFER.width
 #define FRAME_BUFFER_HEIGHT FRAME_BUFFER.height
-#define FRAME_BUFFER_BYTPP PLATFORM_API.platformDisplay.bytesPerPixel
+#define FRAME_BUFFER_BYTPP PLATFORM_API.bytes_per_pixel
 #define FRAME_BUFFER_PITCH (FRAME_BUFFER_HEIGHT * FRAME_BUFFER_BYTPP)
 #define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT * FRAME_BUFFER_BYTPP)
 
@@ -46,7 +46,7 @@ struct EngineState
 // will map it to y is down
 #define FRAME_BUFFER_BASE (FRAME_BUFFER.base + FRAME_BUFFER_BYTESIZE - FRAME_BUFFER_PITCH)
 // #define Z_BUFFER (((r32*)ENGINESTATE->zBuffer) + FRAME_BUFFER_WIDTH*(FRAME_BUFFER_HEIGHT -1))
-#define Z_BUFFER (ENGINESTATE->zBuffer)
+#define Z_BUFFER (ENGINE_STATE->zBuffer)
 
 
 

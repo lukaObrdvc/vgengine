@@ -33,7 +33,6 @@ struct Globals
     Arena managing_arena;
     Arena permanent_arena;
     Arena temporary_arena;
-    Arena dynarr_arena;
 };
 
 global_variable Globals* globals;

@@ -11,31 +11,18 @@ extern "C" void platform_init_memory_base(Globals* memoryBase)
 void init_memory()
 {
     Arena* managing_arena = &MANAGING_ARENA;
-    // @todo do I have to align this address?
-    managing_arena.base = (u8*)(globals + 1);
+    managing_arena.base = globals; // assume this address is aligned
     managing_arena.size = sizeof(Globals);
     managing_arena.highest_size = sizeof(Globals);
     managing_arena.capacity = TOTAL_PROGRAM_MEMORY;
     ASSERT(managing_arena.size <= managing_arena.capacity);
     
-    // @pot do I need to align down/up, if sizeof(Globals) makes it
-    // unaligned or something?
-    u64 firstArenaSize = INITIAL_COMMIT_SIZE_BY_PLATFORM - sizeof(Globals);
-    // firstArenaSize = align_up(firstArenaSize, PAGE_SIZE);
-    arena_init(&PERM_ARENA, firstArenaSize, firstArenaSize);
-    arena_init(&FRAME_ARENA, gigabytes(4));
+    arena_init(&PERMANENT_ARENA, megabytes(2));
+    arena_init(&TEMPORARY_ARENA, gigabytes(2));
     
-    EngineState* engine_state = ENGINESTATE;
-    engine_state = arena_push<EngineState>(&PERM_ARENA);
-    Arena frame_buffer_arena;
-    Arena zbuffer_arena;
-    arena_init(&frame_buffer_arena, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP);
-    arena_init(&zbuffer_arena, MAX_FRAME_BUFFER_SIZE, MAX_FRAME_BUFFER_SIZE);
-    engine_state->frameBuffer.base = frame_buffer_arena.base;
-    engine_state->zBuffer = (r32*)zbuffer_arena.base;
-    
-    // enginestate->frameBuffer.base = arena_push<u8>(&PERM_ARENA, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP);
-    // engineState->zBuffer = arena_push<r32>(&PERM_ARENA, MAX_FRAME_BUFFER_SIZE);
+    Engine_state* engine_state = arena_push<EngineState>(&PERMANENT_ARENA);
+    engine_state->frame_buffer.base = arena_push<u8>(&PERMANENT_ARENA, MAX_FRAME_BUFFER_SIZE * FRAME_BUFFER_BYTPP);
+    engine_state->zbuffer = arena_push<r32>(&PERMANENT_ARENA, MAX_FRAME_BUFFER_SIZE);
 }
 
 void init_engine_state()

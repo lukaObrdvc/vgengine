@@ -2,12 +2,9 @@
 #define ARENA_H
 
 
-#define DYNARR_ARENA_DEFAULT_CAPACITY 4096 // 4 KB
-
 #define MANAGING_ARENA globals->managing_arena
 #define PERMANENT_ARENA globals->permanent_arena
 #define TEMPORARY_ARENA globals->temporary_arena
-#define DYNARR_ARENA globals->dynarr_arena
 
 
 // if you wanna reuse space for temporary arena, you cache it's current
@@ -17,20 +14,20 @@
 // @todo array stuff
 // @pot free list version, which can reuse space
 
+// @todo maybe I need u32 or something
 struct Arena
 {
     u8* base;
     s32 size;
 #if DEVELOPER
-    s32 highest_size; // max(size, highest_size) when pushing
-    s32 capacity; // assert(size+sizetopush <= capacity) when pushing
+    s32 highest_size;
+    s32 capacity;
 #endif
 };
 
 
-void arena_init(Arena* arena, u64 reserveSize, u64 commitSize);
-Arena* arena_make(u64 reserveSize, u64 commitSize);
-void* arena_push_size(Arena* arena, u64 size, u64 alignment);
+void arena_init(Arena* arena, s32 capacity);
+void* arena_push_size(Arena* arena, u32 size, u32 alignment);
 
 template<typename T>
 T* arena_push(Arena* arena, u32 count = 1)
@@ -40,16 +37,22 @@ T* arena_push(Arena* arena, u32 count = 1)
 
 inline void zero_memory(void* ptr, u64 size)
 {
-    u8* bytePtr = (u8*)ptr;
-    for (u64 i = 0; i < size; ++i)
-        {
-            bytePtr[i] = 0;
-        }
+    u8* byte_ptr = (u8*)ptr;
+    for (u64 i = 0; i < size; i++)
+    {
+        byte_ptr[i] = 0;
+    }
 }
 
 inline void arena_reset(Arena* arena)
 {
-    arena->used = 0;
+    arena->size = 0;
+}
+
+inline void arena_set_size(Arena* arena, u32 size)
+{
+    ASSERT(size <= arena->size);
+    arena->size = size;
 }
 
 

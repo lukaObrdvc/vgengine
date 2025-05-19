@@ -1,60 +1,29 @@
 // @doc this is for arenas you know you want, and you make them once in init somewhere
-void arena_init(Arena* arena, u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 initialCommit = ARENA_DEFAULT_COMMIT_SIZE)
+void arena_make(Arena* arena, s32 capacity)
 {
-    ArenaManager* arenaManager = &ARENA_MANAGER;
-    ASSERT(arenaManager->virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
-    u64 commitSize = align_up(initialCommit, PAGE_SIZE);
+    Arena* managing_arena = &MANAGING_ARENA;
+    u8* unaligned_base = managing_arena->base + managing_arena->size;
+    u8* aligned_base = align_up(unaligned_base, 2); // is this good?
     
-    arena->base = arenaManager->base + arenaManager->virtualMemoryUsed;
-    arena->used = 0;
-    arena->commited = commitSize;
+    arena->base = aligned_base;
+    arena->size = 0;
 #if DEVELOPER
-    arena->reserved = reserveSize;
+    arena->highest_size = 0;
+    arena->capacity = capacity;
 #endif
-    
-    COMMIT_MEMORY(arena->base, commitSize);
-    arenaManager->virtualMemoryUsed += reserveSize;
+
+    managing_arena->size += capacity + (aligned_base - unaligned_base);
+    ASSERT(managing_arena->size <= managing_arena->capacity);
+    managing_arena->highest_size = Max(managing_arena->highest_size, managing_arena->size);
 }
 
-// @todo maybe caches ARENAS and ARENA_COUNT in scope?
-// @doc this is for arenas that are not fixe and you wanna make a lot of
-Arena* arena_make(u64 reserveSize = ARENA_DEFAULT_RESERVE_SIZE, u64 initialCommit = ARENA_DEFAULT_COMMIT_SIZE)
+void* arena_push_size(Arena* arena, u32 size, u32 alignment)
 {
-    ASSERT(++ARENA_COUNT <= MAX_ARENAS);
-    ArenaManager* arenaManager = &ARENA_MANAGER;
-    ASSERT(arenaManager->virtualMemoryUsed + reserveSize <= TOTAL_RESERVED_MEMORY);
-    u64 commitSize = align_up(initialCommit, PAGE_SIZE);
-   
-    Arena newArena;
-    newArena.base = arenaManager->base + arenaManager->virtualMemoryUsed;
-    newArena.used = 0;
-    newArena.commited = commitSize;
-#if DEVELOPER
-    newArena.reserved = reserveSize;
-#endif
- 
-    COMMIT_MEMORY(newArena.base, initialCommit);
-    arenaManager->virtualMemoryUsed += reserveSize;
-    ARENAS[ARENA_COUNT] = newArena;
-    return ARENAS + ARENA_COUNT;
-}
-
-void* arena_push_size(Arena* arena, u64 size, u64 alignment)
-{
-    u64 unalignedBaseAddr = (u64)(arena->base + arena->used);
-    u64 alignedBaseAddr = align_up(unalignedBaseAddr, alignment);
-    u64 totalMemoryNeeded = arena->used + (alignedBaseAddr - unalignedBaseAddr) + size;
-
-    if (totalMemoryNeeded > arena->commited)
-    {
-        u64 commitSize = align_up(totalMemoryNeeded - arena->commited, PAGE_SIZE);
-        ASSERT(arena->commited + commitSize <= arena->reserved);
-        COMMIT_MEMORY(arena->base + arena->commited, commitSize);
-        arena->commited += commitSize;
-    }
-
-    arena->used = totalMemoryNeeded;
-    // arena->used += (alignedBaseAddr - (u64)(arena->base + arena->used)) + size;
-    return (void*)alignedBaseAddr;
+    u32 unaligned_base = (u32)(arena->base + arena->size);
+    u32 aligned_base = align_up(unaligned_base, alignment);
+    arena->size += size + (aligned_base - unaligned_base);
+    ASSERT(arena->size <= arena->capacity);
+    arena->highest_size = Max(arena->highest_size, arena->size);
+    return (void*)aligned_base;
 }
 
