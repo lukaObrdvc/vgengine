@@ -1,89 +1,58 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#define INITIAL_COMMIT_SIZE_BY_PLATFORM 10485760 // 10MB
+#define INITIAL_COMMIT_SIZE_BY_PLATFORM 5368709120 // 5 GB
 
-
-// @TODO whether you use pointers here -> or not . depends on the size of
-// the structs, and whether you want to copy them or not, figure out
-// this later...
 
 #if USE_DLL
-typedef b32 (*fpReadFile) (u8*, void*, u32*);
-typedef b32 (*fpWriteFile) (u8*, void*, u32);
-typedef b32 (*fpCommitMemory) (u8*, u64);
 
-struct PlatformProcedures
-{
-    fpReadFile readFile;
-    fpWriteFile writeFile;
-    fpCommitMemory commitMemory;
-};
+typedef b32 (*Read_file) (u8*, void*, u32*);
+typedef b32 (*Write_file) (u8*, void*, u32);
 
 #else
 
-b32 read_file(u8* path, void* buff, u32* buffSize);
-b32 write_file(u8* path, void* buff, u32 buffSize);
-b32 commit_memory(u8* address, u64 size);
+b32 read_file(u8* path, void* buff, u32* buff_size);
+b32 write_file(u8* path, void* buff, u32 buff_size);
 
 #endif
 
-struct PlatformMemory
-{
-    u64 reservedMemory;
-    u64 pageSize;
-};
-
-// @TODO not sure if you want a macro for something like this instead
-// and then use preproc to make it portable
-struct PlatformDisplay
-{
-    u32 bytesPerPixel;
-};
-
-
-struct PlatformAPI
+struct Platform_api
 {
 #if USE_DLL
-    PlatformProcedures platformProcedures;
+    Read_file read_file;
+    Write_file write_file;
 #endif
-    PlatformMemory platformMemory;
-    PlatformDisplay platformDisplay;
+    u64 total_program_memory;
+    u64 allocation_step;
+    s32 bytes_per_pixel;
 };
-
-
 
 struct Globals
 {
-    PlatformAPI platformAPI;
-    ArenaManager arenaManager;
-    Arena permArena;
-    Arena frameArena;
-    // Arena frameBufferArena;
-    // Arena zBufferArena;
-    u16 arenaCount;
-    Arena arenas[MAX_ARENAS];
+    Platform_api platform_api;
+    Arena managing_arena;
+    Arena permanent_arena;
+    Arena temporary_arena;
+    Arena dynarr_arena;
 };
 
 global_variable Globals* globals;
 
 
-#define PLATFORM_API globals->platformAPI
-#define TOTAL_RESERVED_MEMORY PLATFORM_API.platformMemory.reservedMemory
-#define PAGE_SIZE PLATFORM_API.platformMemory.pageSize
+#define PLATFORM_API globals->platform_api
+#define TOTAL_PROGRAM_MEMORY PLATFORM_API.total_program_memory
+#define ALLOCATION_STEP PLATFORM_API.allocation_step
 
 
 #if USE_DLL
 
-#define READ_FILE(path, buff, buffSize) PLATFORM_API.platformProcedures.readFile((path), (buff), (buffSize))
-#define WRITE_FILE(path, buff, buffSize) PLATFORM_API.platformProcedures.writeFile((path), (buff), (buffSize))
-#define COMMIT_MEMORY(address, size) PLATFORM_API.platformProcedures.commitMemory((address), (size))
+#define READ_FILE(path, buff, buff_size) PLATFORM_API.read_file((path), (buff), (buff_size))
+#define WRITE_FILE(path, buff, buff_size) PLATFORM_API.write_file((path), (buff), (buff_size))
 
 #else
 
-#define READ_FILE(path, buff, buffSize) read_file((path), (buff), (buffSize))
-#define WRITE_FILE(path, buff, buffSize) write_file((path), (buff), (buffSize))
-#define COMMIT_MEMORY(address, size) commit_memory((address), (size))
+#define READ_FILE(path, buff, buff_size) read_file((path), (buff), (buff_size))
+#define WRITE_FILE(path, buff, buff_size) write_file((path), (buff), (buff_size))
 
 #endif
 

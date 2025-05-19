@@ -332,31 +332,28 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     FILETIME dll_filetime_curr;
 #endif
 
-    u8 bytes_per_pixel = 4;
+    s32 bytes_per_pixel = 4;
 
     SYSTEM_INFO systemInfo;
     GetSystemInfo(&systemInfo);
-    DWORD pageSize = systemInfo.dwPageSize;
-    // commiting memory with VirtualAlloc will be a multiple of this
-    DWORD virtualReserveGranularity = systemInfo.dwAllocationGranularity;
+    // VirtualAlloc aligns reserves and commits by this
+    u64 allocation_step = (u64) Max(systemInfo.dwPageSize,
+                                    systemInfo.dwAllocationGranularity);
     
     u64 totalReservedMemory = terabytes(1);
-    totalReservedMemory = align_up(totalReservedMemory, virtualReserveGranularity);
-    void* base_ptr = VirtualAlloc(0, totalReservedMemory, MEM_RESERVE, PAGE_READWRITE);
+    total_program_memory = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, allocation_step);
+    void* base_ptr = VirtualAlloc(0, total_program_memory, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     u64 initialCommitMemorySize = INITIAL_COMMIT_SIZE_BY_PLATFORM;
     u64 aligned_initial_commit = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, (u64)virtualReserveGranularity);
-    commit_memory((u8*)base_ptr, aligned_initial_commit);
     
-    // Globals* globalsToPass = (Globals*)base_ptr;
     PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
     
-    PLATFORM_API.platformDisplay.bytesPerPixel = bytes_per_pixel;
-    PLATFORM_API.platformMemory.reservedMemory = totalReservedMemory;
-    PLATFORM_API.platformMemory.pageSize = ( pageSize < virtualReserveGranularity ? virtualReserveGranularity : pageSize);
+    PLATFORM_API.bytes_per_pixel = bytes_per_pixel;
+    PLATFORM_API.total_program_memory = total_program_memory;
+    PLATFORM_API.allocation_step = allocation_step;
 #if USE_DLL
-    PLATFORM_API.platformProcedures.readFile = read_file;
-    PLATFORM_API.platformProcedures.writeFile = write_file;
-    PLATFORM_API.platformProcedures.commitMemory = commit_memory;
+    PLATFORM_API.read_file = read_file;
+    PLATFORM_API.write_file = write_file;
 #endif
 
 

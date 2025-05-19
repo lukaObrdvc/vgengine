@@ -8,13 +8,15 @@ extern "C" void platform_init_memory_base(Globals* memoryBase)
 
 // @todo you can probably export this stuff and call it once
 
-// @important debug arena stuff THOROUGHLY
 void init_memory()
 {
-    ArenaManager* arenaManager = &ARENA_MANAGER;
-    arenaManager->base = (u8*)(globals + 1);
-    arenaManager->virtualMemoryUsed = sizeof(Globals);
-    ASSERT(arenaManager->virtualMemoryUsed <= TOTAL_RESERVED_MEMORY);
+    Arena* managing_arena = &MANAGING_ARENA;
+    // @todo do I have to align this address?
+    managing_arena.base = (u8*)(globals + 1);
+    managing_arena.size = sizeof(Globals);
+    managing_arena.highest_size = sizeof(Globals);
+    managing_arena.capacity = TOTAL_PROGRAM_MEMORY;
+    ASSERT(managing_arena.size <= managing_arena.capacity);
     
     // @pot do I need to align down/up, if sizeof(Globals) makes it
     // unaligned or something?
@@ -65,7 +67,7 @@ void init_engine_state()
     ENGINESTATE->camera_offs_x = 0;
     ENGINESTATE->camera_offs_y = 0;
 
-
+    
     // @TODO you should probably have a default for everything but whatever
     // @TODO is this a good way to set a keymap, just setting powers of two.............
     ENGINESTATE->keymap[0x25] = 0;

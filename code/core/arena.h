@@ -2,37 +2,30 @@
 #define ARENA_H
 
 
-#define MAX_ARENAS 20
-#define ARENA_DEFAULT_RESERVE_SIZE 4294967296 // 4GB
-#define ARENA_DEFAULT_COMMIT_SIZE PAGE_SIZE
-#define ARENA_COMMIT_STEP PAGE_SIZE
+#define DYNARR_ARENA_DEFAULT_CAPACITY 4096 // 4 KB
 
-#define ARENA_MANAGER globals->arenaManager
-#define ARENA_COUNT globals->arenaCount
-#define PERM_ARENA globals->permArena
-#define FRAME_ARENA globals->frameArena
-#define ARENAS globals->arenas
+#define MANAGING_ARENA globals->managing_arena
+#define PERMANENT_ARENA globals->permanent_arena
+#define TEMPORARY_ARENA globals->temporary_arena
+#define DYNARR_ARENA globals->dynarr_arena
 
 
-struct ArenaManager
-{
-    u8* base;
-    u64 virtualMemoryUsed;
-};
+// if you wanna reuse space for temporary arena, you cache it's current
+// size in scope, and then you set it to that after a number of function
+// calls or end of scope
+
+// @todo array stuff
+// @pot free list version, which can reuse space
 
 struct Arena
 {
     u8* base;
-    u64 used;
-    u64 commited;
+    s32 size;
 #if DEVELOPER
-    u64 reserved;
+    s32 highest_size; // max(size, highest_size) when pushing
+    s32 capacity; // assert(size+sizetopush <= capacity) when pushing
 #endif
 };
-
-
-// pop (but this is probably only for scratch based)
-// free (with free list stuff)
 
 
 void arena_init(Arena* arena, u64 reserveSize, u64 commitSize);
