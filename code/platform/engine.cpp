@@ -268,6 +268,6 @@ extern "C" void update_and_render()
     
     test();
 
-    zbuffer_reset(zbuffer, pitch, framebuffer.width, framebuffer.height);
+    zbuffer_reset(zbuffer, framebuffer.width, framebuffer.width, framebuffer.height);
 }
 
