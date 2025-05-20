@@ -55,18 +55,25 @@ HMODULE load_game()
     if (dll)
     {
         valid_dll = true;
-        engine_api.platform_init_memory_base = (Platform_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
+        engine_api.platform_init_engine = (Platform_init_engine) GetProcAddress(dll, "platform_init_engine");
+        engine_api.platform_memory_base = (Platform_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
         engine_api.update_and_render = (Update_and_render) GetProcAddress(dll, "update_and_render");
         engine_api.process_input = (Process_input) GetProcAddress(dll, "process_input");
     }
     else
     {
         valid_dll = false;
+        engine_api.platform_init_engine = platform_init_engine_stub;
         engine_api.platform_init_memory_base = platform_init_memory_base_stub;
         engine_api.update_and_render = update_and_render_stub;
         engine_api.process_input = process_input_stub;
     }
 
+    if (!engine_api.platform_init_engine)
+    {
+        valid_dll = false;
+        engine_api.platform_init_engine = platform_init_engine_stub;
+    }
     if (!engine_api.platform_init_memory_base)
     {
         valid_dll = false;
@@ -91,6 +98,7 @@ void unload_game(HMODULE dll)
     FreeLibrary(dll);
     //DeleteFile(COPIED_DLL);
     valid_dll = false;
+    engine_api.platform_init_engine = platform_init_engine_stub;
     engine_api.platform_init_memory_base = platform_init_memory_base_stub;
     engine_api.update_and_render = update_and_render_stub;
     engine_api.process_input = process_input_stub;    
@@ -204,12 +212,11 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     
     switch(message)
     {
-            
     case WM_ACTIVATEAPP:
     {
         OutputDebugString("WM_ACTIVATEAPP\n");
     } break;
-
+    
     case WM_SIZE:
     {
         /* Window_rect_dims rect = get_Window_rect_dims(window); */
@@ -302,7 +309,6 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
         result = DefWindowProc(window, message, wParam, lParam);
     }            
     }
-
     
     return result;
 }
@@ -344,6 +350,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     PLATFORM_API.write_file = write_file;
 #endif
 
+    PLATFORM_INIT_ENGINE();
+    
     int window_offset_x = 50;
     int window_offset_y = 50;
 
@@ -391,7 +399,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     QueryPerformanceFrequency(&counter_frequency);
 
     b32 once = true;
-    void* window_buffer_memory = 0;
+    void* window_buffer_memory = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
     
     while (running)
     {
@@ -427,13 +435,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             DispatchMessage(&message);
         }
 
-        if (once)
-        {
-            UPDATE_AND_RENDER();
-            once = false;
-            window_buffer_memory = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
-        }
-        
         b32 camera_mode = PROCESS_INPUT(curr_keyflags_to_set,
                                         curr_keyflags_to_unset,
                                         curr_mouseflags_to_set,
@@ -449,6 +450,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         {
             ShowCursor(true);
         }
+        
         UPDATE_AND_RENDER();
 
         window_buffer_info.bmiHeader.biWidth = FRAMEBUFFER_WIDTH;

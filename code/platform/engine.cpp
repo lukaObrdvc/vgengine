@@ -257,18 +257,7 @@ void fill_background()
 
 extern "C" void update_and_render()
 {
-    Engine_state* engine_state;
-    b32 inited = false;
-    if (!inited)
-    {
-        init_memory();
-        init_engine_state();
-
-        engine_state = ENGINE_STATE;
-        engine_state->inited = true;
-        inited = true;
-    }
-    engine_state = ENGINE_STATE;
+    Engine_state* engine_state = ENGINE_STATE;
     
     Framebuffer framebuffer = engine_state->framebuffer;
     r32* zbuffer = engine_state->zbuffer;
@@ -279,12 +268,6 @@ extern "C" void update_and_render()
     
     test();
 
-    if (engine_state->do_da_thing)
-    {
-        fill_background();
-        engine_state->do_da_thing = false;
-    }
-    
     zbuffer_reset(zbuffer, pitch, framebuffer.width, framebuffer.height);
 }
 

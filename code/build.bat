@@ -15,7 +15,7 @@ set WarningFlags=-W4 -WX -wd4100 -wd4091 -wd4459 -wd4996 -wd4189 -wd4201 -wd4804
 set BaseFlags=-GR -EHa -nologo /std:c++20
 set LinkerFlags=-incremental:no -opt:ref
 set Imports=user32.lib gdi32.lib kernel32.lib winmm.lib
-set Exports=/EXPORT:update_and_render /EXPORT:process_input
+set Exports=/EXPORT:update_and_render /EXPORT:process_input /EXPORT:platform_init_engine
 
 set Defines=
 

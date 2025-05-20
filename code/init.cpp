@@ -1,13 +1,3 @@
-#if USE_DLL
-extern "C" void platform_init_memory_base(Globals* memory_base)
-{    
-    globals = memory_base;
-}
-#endif
-
-
-// @todo you can probably export this stuff and call it once
-
 void init_memory()
 {
     Arena* managing_arena = &MANAGING_ARENA;
@@ -57,8 +47,6 @@ void init_engine_state()
     ENGINE_STATE->camera_offs_x = 0;
     ENGINE_STATE->camera_offs_y = 0;
 
-    ENGINE_STATE->do_da_thing = false;
-    
     // @TODO you should probably have a default for everything but whatever
     // @TODO is this a good way to set a keymap, just setting powers of two.............
     ENGINE_STATE->keymap[0x25] = 0;
@@ -84,7 +72,21 @@ void init_engine_state()
         
 
     // ENGINE_STATE->brushes[BRUSH_SCANLINE2] = (((u32)255 << 24) |
-                                             // ((u32)0 << 16) |
-                                             // ((u32)0 << 8) |
-                                             // 255);
+    // ((u32)0 << 16) |
+    // ((u32)0 << 8) |
+    // 255);
 }
+
+extern "C" void platform_init_engine()
+{
+    init_memory();
+    init_engine_state();
+}
+
+#if USE_DLL
+extern "C" void platform_init_memory_base(Globals* memory_base)
+{
+    globals = memory_base;
+}
+#endif
+

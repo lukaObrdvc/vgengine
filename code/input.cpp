@@ -16,7 +16,7 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
     // then moving by Y is not the same
     
     // @TODO fix moving faster diagonally if you care...
-    
+
     u64 prev_kflags = ENGINE_STATE->keyflags;
     ENGINE_STATE->keyflags |= curr_keyflags_to_set;
     ENGINE_STATE->keyflags &= ~curr_keyflags_to_unset;
@@ -57,7 +57,6 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
     
     if (ExtractKey(kflags, KEY_D))
     {
-        ENGINE_STATE->do_da_thing = true;
         ENGINE_STATE->camera_angle += PI/256;
     }
 
