@@ -14,7 +14,7 @@ struct Framebuffer
 
 inline s32 framebuffer_pitch(s32 height, s32 bytpp);
 inline s32 framebuffer_bytesize(s32 width, s32 height, s32 bytpp);
-inline s32* framebuffer_access(s32 x, s32 y, u8* buff, s32 pitch, s32 bytpp);
+inline u32* framebuffer_access(s32 x, s32 y, u8* buff, s32 pitch, s32 bytpp);
 inline r32* zbuffer_access(s32 x, s32 y, u8* buff, s32 pitch, s32 bytpp);
 inline void zbuffer_reset(u8* buff, s32 pitch, s32 bytpp, s32 width, s32 height);
 

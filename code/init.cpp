@@ -17,11 +17,11 @@ void init_memory()
     managing_arena->capacity = TOTAL_PROGRAM_MEMORY;
     ASSERT(managing_arena->size <= managing_arena->capacity);
     
-    arena_make(&PERMANENT_ARENA, megabytes(2));
-    arena_make(&TEMPORARY_ARENA, gigabytes(2));
+    arena_make(&PERMANENT_ARENA, megabytes(20));
+    arena_make(&TEMPORARY_ARENA, gigabytes(2) - 1);
     
     Engine_state* engine_state = arena_push<Engine_state>(&PERMANENT_ARENA);
-    engine_state->framebuffer.base = arena_push<u8>(&PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * FRAMEBUFFER_BYTPP);
+    engine_state->framebuffer.base = arena_push<u8>(&PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * to_unsigned(FRAMEBUFFER_BYTPP));
     engine_state->zbuffer = arena_push<r32>(&PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE);
 }
 
@@ -34,6 +34,9 @@ void init_engine_state()
     
     ENGINE_STATE->framebuffer.width = 1280.0f;
     ENGINE_STATE->framebuffer.height = 720.0f;
+
+    ENGINE_STATE->framebuffer.base += FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH;
+    ENGINE_STATE->zbuffer += FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - 1);
 
     MAIN_CAMERA.position = vec_make(640.0f, 360.0f, 0.0f);
     MAIN_CAMERA.orientation = quaternion_identity();
@@ -54,6 +57,7 @@ void init_engine_state()
     ENGINE_STATE->camera_offs_x = 0;
     ENGINE_STATE->camera_offs_y = 0;
 
+    ENGINE_STATE->do_da_thing = false;
     
     // @TODO you should probably have a default for everything but whatever
     // @TODO is this a good way to set a keymap, just setting powers of two.............

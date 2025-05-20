@@ -3,22 +3,28 @@
 
 typedef Vector4 Vertex4;
 
-b32 InsideRight(Vector4 v) {
+b32 InsideRight(Vector4 v)
+{
     return v.x <= v.w;
 }
-b32 InsideLeft(Vector4 v) {
+b32 InsideLeft(Vector4 v)
+{
     return v.x >= -v.w;
 }
-b32 InsideTop(Vector4 v) {
+b32 InsideTop(Vector4 v)
+{
     return v.y <= v.w;
 }
-b32 InsideBottom(Vector4 v) {
+b32 InsideBottom(Vector4 v)
+{
     return v.y >= -v.w;
 }
-b32 InsideNear(Vector4 v) {
+b32 InsideNear(Vector4 v)
+{
     return v.z >= -v.w;
 }
-b32 InsideFar(Vector4 v) {
+b32 InsideFar(Vector4 v)
+{
     return v.z <= v.w;
 }
 
@@ -32,27 +38,33 @@ inline Vector4 lerp(Vector4 a, Vector4 b, r32 t)
     return result;
 }
 
-Vector4 IntersectRight(Vector4 a, Vector4 b) {
+Vector4 IntersectRight(Vector4 a, Vector4 b)
+{
     r32 t = (a.w - a.x) / ((a.w - a.x) - (b.w - b.x));
     return lerp(a, b, t);
 }
-Vector4 IntersectLeft(Vector4 a, Vector4 b) {
+Vector4 IntersectLeft(Vector4 a, Vector4 b)
+{
     r32 t = (a.w + a.x) / ((a.w + a.x) - (b.w + b.x));
     return lerp(a, b, t);
 }
-Vector4 IntersectTop(Vector4 a, Vector4 b) {
+Vector4 IntersectTop(Vector4 a, Vector4 b)
+{
     r32 t = (a.w - a.y) / ((a.w - a.y) - (b.w - b.y));
     return lerp(a, b, t);
 }
-Vector4 IntersectBottom(Vector4 a, Vector4 b) {
+Vector4 IntersectBottom(Vector4 a, Vector4 b)
+{
     r32 t = (a.w + a.y) / ((a.w + a.y) - (b.w + b.y));
     return lerp(a, b, t);
 }
-Vector4 IntersectNear(Vector4 a, Vector4 b) {
+Vector4 IntersectNear(Vector4 a, Vector4 b)
+{
     r32 t = (a.z) / (a.z - b.z);
     return lerp(a, b, t);
 }
-Vector4 IntersectFar(Vector4 a, Vector4 b) {
+Vector4 IntersectFar(Vector4 a, Vector4 b)
+{
     r32 t = (a.w - a.z) / ((a.w - a.z) - (b.w - b.z));
     return lerp(a, b, t);
 }
@@ -64,19 +76,23 @@ s32 ClipAgainstPlane(Vertex4* in_vertices, s32 in_count, Vertex4* out_vertices,
     s32 out_count = 0;
     Vertex4 prev = in_vertices[in_count-1];
 
-    for (s32 i = 0; i < in_count; i++) {
+    for (s32 i = 0; i < in_count; i++)
+    {
         Vertex4 curr = in_vertices[i];
 
         b32 prev_inside = Inside(prev);
         b32 curr_inside = Inside(curr);
 
-        if (curr_inside) {
-            if (!prev_inside) {
+        if (curr_inside)
+        {
+            if (!prev_inside)
+            {
                 out_vertices[out_count++] = Intersect(prev, curr);
             }
             out_vertices[out_count++] = curr;
         }
-        else if (prev_inside) {
+        else if (prev_inside)
+        {
             out_vertices[out_count++] = Intersect(prev, curr);
         }
 
@@ -122,7 +138,8 @@ s32 ClipTriangle(TriangleHom* in_tri, TriangleHom* out_triangles)
 
     // Now temp2 holds final polygon
     // Triangulate fan (0,1,2), (0,2,3), (0,3,4), etc
-    for (s32 i = 1; i < count-1; i++) {
+    for (s32 i = 1; i < count-1; i++)
+    {
         out_triangles[i-1].A = temp2[0];
         out_triangles[i-1].B = temp2[i];
         out_triangles[i-1].C = temp2[i+1];

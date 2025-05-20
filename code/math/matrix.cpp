@@ -16,6 +16,7 @@ void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result)
     {
         for (s32 j=0; j < 4; j++)
         {
+            result->e[i][j] = 0; // is this goodio?
             for (s32 k=0; k < 4; k++)
             {
                 result->e[i][j] += m1->e[i][k] * m2->e[k][j];

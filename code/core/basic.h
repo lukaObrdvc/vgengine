@@ -200,13 +200,13 @@ inline s32 trunc(s64 n)
     return (s32)n;
 }
 
-inline s32 to_unsigned(u32 n)
+inline s32 to_signed(u32 n)
 {
-    ASSERT(n <= MAX_S32 - 1);
+    ASSERT(n <= MAX_S32);
     return (s32)n;
 }
 
-inline u32 to_signed(s32 n)
+inline u32 to_unsigned(s32 n)
 {
     ASSERT(n >= 0);
     return (u32)n;

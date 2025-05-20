@@ -28,23 +28,26 @@ struct Engine_state
 
     r32 camera_offs_x;
     r32 camera_offs_y;
+
+    b32 do_da_thing;
     
     // temporary-----------------------------
 };
 
 #define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA.base))
 
-#define FRAMEBUFFER ENGINE_STATE->framebuffer
-#define FRAMEBUFFER_WIDTH FRAMEBUFFER.width
-#define FRAMEBUFFER_HEIGHT FRAMEBUFFER.height
-#define FRAMEBUFFER_BYTPP PLATFORM_API.bytes_per_pixel
-#define FRAMEBUFFER_PITCH (FRAMEBUFFER_HEIGHT * FRAMEBUFFER_BYTPP)
+#define FRAMEBUFFER (ENGINE_STATE->framebuffer)
+#define FRAMEBUFFER_WIDTH (FRAMEBUFFER.width)
+#define FRAMEBUFFER_HEIGHT (FRAMEBUFFER.height)
+#define FRAMEBUFFER_BYTPP (PLATFORM_API.bytes_per_pixel)
+#define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * FRAMEBUFFER_BYTPP)
 #define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * FRAMEBUFFER_BYTPP)
 
 // @doc when we offset these like this, then we can - on y coordinate
 // which allows the rest of the code to use y is up, and then this
 // will map it to y is down
-#define FRAMEBUFFER_BASE (FRAMEBUFFER.base + FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH)
+// #define FRAMEBUFFER_BASE (FRAMEBUFFER.base + FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH)
+#define FRAMEBUFFER_BASE (FRAMEBUFFER.base)
 // #define Z_BUFFER (((r32*)ENGINESTATE->zBuffer) + FRAME_BUFFER_WIDTH*(FRAME_BUFFER_HEIGHT -1))
 #define ZBUFFER (ENGINE_STATE->zbuffer)
 

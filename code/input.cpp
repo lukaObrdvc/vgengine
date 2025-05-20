@@ -6,7 +6,7 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
                              r32 curr_cursorY)
 {
     // dude am I doing zbuffering correctly, maybe that's the problem??
-    b32 result = true;
+    b32 result = false;
 
     // need to make WASD work in the direction camera is facing
     // moving by Y can be the same because we don't want to ever yaw
@@ -44,90 +44,91 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
     ENGINE_STATE->cursor.y = curr_cursorY;
 
     if (ExtractKey(kflags_trans_to_up, KEY_U))
+    {
+        if (ENGINE_STATE->reverse_winding)
         {
-            if (ENGINE_STATE->reverse_winding)
-                {
-                    ENGINE_STATE->reverse_winding = false;
-                }
-            else
-                {
-                    ENGINE_STATE->reverse_winding = true;
-                }
+            ENGINE_STATE->reverse_winding = false;
         }
+        else
+        {
+            ENGINE_STATE->reverse_winding = true;
+        }
+    }
     
     if (ExtractKey(kflags, KEY_D))
-        {
-            // ENGINE_STATE->camera_angle += pi/256;
-        }
+    {
+        ENGINE_STATE->do_da_thing = true;
+        ENGINE_STATE->camera_angle += PI/256;
+    }
 
     if (ExtractKey(kflags, KEY_A))
-        {            
-            // ENGINE_STATE->camera_angle -= pi/256;
-        }
+    {            
+        ENGINE_STATE->camera_angle -= PI/256;
+    }
     
     if (ExtractKey(kflags, KEY_UP))
-        {
-            ENGINE_STATE->camera_offs_y += 5.0f;
-        }
+    {
+        ENGINE_STATE->camera_offs_y += 5.0f;
+    }
     if (ExtractKey(kflags, KEY_DOWN))
-        {
-            ENGINE_STATE->camera_offs_y -= 5.0f;            
-        }
+    {
+        ENGINE_STATE->camera_offs_y -= 5.0f;            
+    }
     if (ExtractKey(kflags, KEY_LEFT))
-        {
-            ENGINE_STATE->camera_offs_x -= 5.0f;
-        }
+    {
+        ENGINE_STATE->camera_offs_x -= 5.0f;
+    }
     if (ExtractKey(kflags, KEY_RIGHT))
-        {
-            ENGINE_STATE->camera_offs_x += 5.0f;
-        }
+    {
+        ENGINE_STATE->camera_offs_x += 5.0f;
+    }
     
     Vector3 camera_movement = vec_zero3();
     if (ExtractKey(kflags, KEY_W))
-        {
-            camera_movement.z -= 2.0f;
-        }
+    {
+        camera_movement.z -= 2.0f;
+    }
     if (ExtractKey(kflags, KEY_S))
-        {
-            camera_movement.z += 2.0f;
-        }
+    {
+        camera_movement.z += 2.0f;
+    }
     if (ExtractKey(kflags, KEY_A))
-        {
-            camera_movement.x -= 2.0f;
-        }
+    {
+        camera_movement.x -= 2.0f;
+    }
     if (ExtractKey(kflags, KEY_D))
-        {
-            camera_movement.x += 2.0f;
-        }
+    {
+        camera_movement.x += 2.0f;
+    }
     if (ExtractKey(kflags, KEY_Q))
-        {
-            camera_movement.y -= 2.0f;
-        }
+    {
+        camera_movement.y -= 2.0f;
+    }
     if (ExtractKey(kflags, KEY_E))
-        {
-            camera_movement.y += 2.0f;
-        }    
+    {
+        camera_movement.y += 2.0f;
+    }    
 
     // m4 rotationMatrix = M4Compose(2,
-                                  // M4RotX(camera.roll),
-                                  // M4RotY(camera.pitch)
-                                  // );
+    // M4RotX(camera.roll),
+    // M4RotY(camera.pitch)
+    // );
     // camera_movement = M4Mul(camera_movement, rotationMatrix);
     // camera.fpoint = add3(camera.fpoint, camera_movement);
     
     if (result)
-        {
-            MAIN_CAMERA = camera;
-        }
+    {
+        MAIN_CAMERA = camera;
+    }
     
     if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
-        {
+    {
 
-        }
+    }
     if (ExtractKey(mflags_trans_to_up, MOUSE_M2))
-        {
+    {
 
-        }
+    }
 
     return result;
 }

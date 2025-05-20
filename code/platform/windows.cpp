@@ -344,9 +344,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     PLATFORM_API.write_file = write_file;
 #endif
 
-
-    void* window_buffer_memory = (void*)&FRAMEBUFFER;
-    
     int window_offset_x = 50;
     int window_offset_y = 50;
 
@@ -394,6 +391,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     QueryPerformanceFrequency(&counter_frequency);
 
     b32 once = true;
+    void* window_buffer_memory = 0;
     
     while (running)
     {
@@ -433,6 +431,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         {
             UPDATE_AND_RENDER();
             once = false;
+            window_buffer_memory = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
         }
         
         b32 camera_mode = PROCESS_INPUT(curr_keyflags_to_set,
@@ -453,9 +452,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         UPDATE_AND_RENDER();
 
         window_buffer_info.bmiHeader.biWidth = FRAMEBUFFER_WIDTH;
-        window_buffer_info.bmiHeader.biHeight = -((s32)FRAMEBUFFER_HEIGHT);
+        window_buffer_info.bmiHeader.biHeight = -FRAMEBUFFER_HEIGHT;
 
-            
         // @TODO figure out if I need to have two different types of
         // resizing, one that resizes the buffer, and the other
         // that resizes the window rect, and then if not the same

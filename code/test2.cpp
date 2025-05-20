@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING final_giga_test
+#define CURRENTLY_TESTING orbiting_camera_test
 #define TEST_ONLY_ONCE ENGINE_STATE->tested_once = true
 
 void final_giga_test()
@@ -39,9 +39,9 @@ void final_giga_test()
     swap(camera_matrix, tmp);
     
     for (s32 i = 0; i < 8; i++)
-        {
-            s_vertices[i] = matrix_mul(camera_matrix, s_vertices[i]);
-        }
+    {
+        s_vertices[i] = matrix_mul(camera_matrix, s_vertices[i]);
+    }
 
     Mesh cube;
     cube.vertices = s_vertices;
@@ -51,44 +51,44 @@ void final_giga_test()
     s32 j = -1;
     u32 color = f_color;
     for (s32 i = 0; i < ARR_COUNT(s_indices)/3; i++)
+    {
+        if (i % 2 == 0)
         {
-            if (i % 2 == 0)
-                {
-                    j++;
-                    color = colors[j];
-                }
-            
-            u16 i0 = cube.indices[b];
-            u16 i1 = cube.indices[b+1];
-            u16 i2 = cube.indices[b+2];
-            
-            Vector3 A = cube.vertices[i0];
-            Vector3 B = cube.vertices[i1];
-            Vector3 C = cube.vertices[i2];
-
-            Triangle t = {A, B, C};
-            TriangleHom extraGeometry[4];
-            s32 count = TriangleWorldToRasterPROJ(&t, extraGeometry);
-
-            for (s32 k = 0; k < count; k++)
-                {
-                    TriangleHom tHom = extraGeometry[k];
-                    Triangle tri;
-                    tri.A = vec_make(tHom.A.x, tHom.A.y, tHom.A.z);
-                    tri.B = vec_make(tHom.B.x, tHom.B.y, tHom.B.z);
-                    tri.C = vec_make(tHom.C.x, tHom.C.y, tHom.C.z);
-            
-                    if (ENGINE_STATE->reverse_winding)
-                        {
-                            RasterizeTriangle(tri, color, false);
-                        }
-                    else
-                        {
-                            RasterizeTriangle(tri, color, false);
-                        }
-                }
-            b += 3;
+            j++;
+            color = colors[j];
         }
+            
+        u16 i0 = cube.indices[b];
+        u16 i1 = cube.indices[b+1];
+        u16 i2 = cube.indices[b+2];
+            
+        Vector3 A = cube.vertices[i0];
+        Vector3 B = cube.vertices[i1];
+        Vector3 C = cube.vertices[i2];
+
+        Triangle t = {A, B, C};
+        TriangleHom extraGeometry[4];
+        s32 count = TriangleWorldToRasterPROJ(&t, extraGeometry);
+
+        for (s32 k = 0; k < count; k++)
+        {
+            TriangleHom tHom = extraGeometry[k];
+            Triangle tri;
+            tri.A = vec_make(tHom.A.x, tHom.A.y, tHom.A.z);
+            tri.B = vec_make(tHom.B.x, tHom.B.y, tHom.B.z);
+            tri.C = vec_make(tHom.C.x, tHom.C.y, tHom.C.z);
+            
+            if (ENGINE_STATE->reverse_winding)
+            {
+                RasterizeTriangle(tri, color, false);
+            }
+            else
+            {
+                RasterizeTriangle(tri, color, false);
+            }
+        }
+        b += 3;
+    }
 }
 
 void orbiting_camera_test()
@@ -104,7 +104,7 @@ void orbiting_camera_test()
     Vector3 C2 = vec_make(-70.0f, 60.0f, -120.0f);
 
 #define RotCamera 1
-#define RotTriangles 0
+#define RotTriangles 1
 #define ChangeAngle 1
 #define ORBIT_OFFS 180
     
@@ -118,6 +118,7 @@ void orbiting_camera_test()
     Matrix4* tempRotY = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_rotation_y(tempRotY, camera_angle);
     Matrix4* tempTrans = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    matrix_unit(tempTrans);
     matrix_translate(tempTrans, vec_make(0.0f, 0.0f, (r32)-ORBIT_OFFS));
 #if RotCamera
     orbiting_point = matrix_mul(tempRotY, orbiting_point);
@@ -126,6 +127,7 @@ void orbiting_camera_test()
 
     Matrix4* tempRotY2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
     Matrix4* tempTrans2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    matrix_unit(tempTrans2);
     matrix_translate(tempTrans2, orbiting_point);
 #if RotCamera
     matrix_rotation_y(tempRotY2, camera_angle);
@@ -140,7 +142,7 @@ void orbiting_camera_test()
     Matrix4* rot1 = arena_push<Matrix4>(&TEMPORARY_ARENA);
     Matrix4* rot2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_rotation_x(rot1, angle);
-    matrix_rotation_x(rot2, -(angle+pi/4));
+    matrix_rotation_x(rot2, -(angle+PI/4));
 
     A = matrix_mul(rot1, A);
     B = matrix_mul(rot1, B);
@@ -171,15 +173,15 @@ void orbiting_camera_test()
     // when rotating behind the triangles, they are getting culled
     // because winding is reversed, how fix this?
     if (ENGINE_STATE->reverse_winding)
-        {
-            RasterizeTriangle(t, color, true);
-            RasterizeTriangle(t2, color, false);
-        }
+    {
+        RasterizeTriangle(t, color, true);
+        RasterizeTriangle(t2, color, false);
+    }
     else
-        {
-            RasterizeTriangle(t, color, true);
-            RasterizeTriangle(t2, color, false);
-        }
+    {
+        RasterizeTriangle(t, color, true);
+        RasterizeTriangle(t2, color, false);
+    }
 #if ChangeAngle
     ENGINE_STATE->line_angle += PI / 256;
 #endif
@@ -199,7 +201,7 @@ void none_test(void)
 void test(void)
 {
     if (!ENGINE_STATE->tested_once)
-        {
-            _TEST;
-        }
+    {
+        _TEST;
+    }
 }

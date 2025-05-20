@@ -72,17 +72,21 @@ void RasterizeTriangle(Triangle tri, u32 color, b32 inv)
     Rect bbox = ObtainTriangleBBox(tri);
     r32 area = EdgeFunction(p2, p1, p0);
 
-    for (s32 j = Floor(bbox.min_y); j < Floor(bbox.max_y); j++)
+    for (s32 j = Floor(bbox.min_y); j <= Floor(bbox.max_y); j++)
     {
-            
-        for (s32 i = Floor(bbox.min_x); i < Floor(bbox.max_x); i++)
+        for (s32 i = Floor(bbox.min_x); i <= Floor(bbox.max_x); i++)
         {
             Vector3 p = vec_make(i+0.5f, j+0.5f, 0.0f);
             r32 w0 = EdgeFunction(p, p2, p1);
             r32 w1 = EdgeFunction(p, p0, p2);
             r32 w2 = EdgeFunction(p, p1, p0);
 
-            if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test
+            b32 cond = (ENGINE_STATE->reverse_winding ?
+                        w0 >= 0 && w1 >= 0 && w2 >= 0 :
+                        w0 <= 0 && w1 <= 0 && w2 <= 0);
+            // if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test
+            // if (w0 <= 0 && w1 <= 0 && w2 <= 0) // inside test
+            if (cond)
             {
                 w0 /= area; // these are barycentric coords
                 w1 /= area;
@@ -266,15 +270,20 @@ extern "C" void update_and_render()
     }
     engine_state = ENGINE_STATE;
     
-    // @todo maybe just cache through engineState directly
-    Framebuffer framebuffer = FRAMEBUFFER;
-    r32* zbuffer = ZBUFFER;
+    Framebuffer framebuffer = engine_state->framebuffer;
+    r32* zbuffer = engine_state->zbuffer;
     s32 bytpp = FRAMEBUFFER_BYTPP;
     s32 pitch = framebuffer_pitch(framebuffer.height, bytpp);
     
     fill_background();
     
     test();
+
+    if (engine_state->do_da_thing)
+    {
+        fill_background();
+        engine_state->do_da_thing = false;
+    }
     
     zbuffer_reset(zbuffer, pitch, framebuffer.width, framebuffer.height);
 }

@@ -39,7 +39,7 @@ global_variable Engine_api engine_api = {
     };
 
 #define UPDATE_AND_RENDER() engine_api.update_and_render()
-#define PLATFORM_INIT_MEMORY_BASE(memoryBase) engine_api.platform_init_memory_base((memory_base))
+#define PLATFORM_INIT_MEMORY_BASE(memory_base) engine_api.platform_init_memory_base((memory_base))
 #define PROCESS_INPUT(kts, ktus, mts, mtus, cX, cY) engine_api.process_input((kts), (ktus), (mts), (mtus), (cX), (cY))
 
 #else
