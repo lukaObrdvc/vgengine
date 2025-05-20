@@ -1,10 +1,10 @@
 #define CURRENTLY_TESTING final_giga_test
-#define TEST_ONLY_ONCE ENGINESTATE->tested_once = true
+#define TEST_ONLY_ONCE ENGINE_STATE->tested_once = true
 
 void final_giga_test()
 {
     u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
-    u32 b_color = color_make(1.0f, 1.0f, 1.0f, 1.0f);
+    u32 b_color = color_make(1, 1.0f, 1.0f, 1.0f);
     u32 l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
     u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
     u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
@@ -16,7 +16,7 @@ void final_giga_test()
         d_color, u_color
     };
     
-    Vec3f s_vertices[8] = {
+    Vector3 s_vertices[8] = {
         vec_make(-10.0f, -10.0f, -150.0f) , vec_make(-10.0f, 10.0f, -150.0f) ,
         vec_make(10.0f, 10.0f, -150.0f)   , vec_make(10.0f, -10.0f, -150.0f) ,
         vec_make(-10.0f, -10.0f, -170.0f) , vec_make(-10.0f, 10.0f, -170.0f) ,
@@ -29,18 +29,18 @@ void final_giga_test()
     };
 
     Camera* camera = &MAIN_CAMERA;
-    Matrix4x4f* cameraMatrix = arena_push<Matrix4x4f>(&FRAME_ARENA);
-    matrix_unit(cameraMatrix);
-    matrix_translate(cameraMatrix, vec_negate(camera->position));
-    Matrix4x4f* tmp = arena_push<Matrix4x4f>(&FRAME_ARENA);
-    Matrix4x4f* tmp2 = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    Matrix4* camera_matrix = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    matrix_unit(camera_matrix);
+    matrix_translate(camera_matrix, vec_negate(camera->position));
+    Matrix4* tmp = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    Matrix4* tmp2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
     quaternion_to_matrix(camera->orientation, tmp2);
-    matrix_mul(cameraMatrix, tmp2, tmp);
-    swap(cameraMatrix, tmp);
+    matrix_mul(camera_matrix, tmp2, tmp);
+    swap(camera_matrix, tmp);
     
     for (s32 i = 0; i < 8; i++)
         {
-            s_vertices[i] = matrix_mul(cameraMatrix, s_vertices[i]);
+            s_vertices[i] = matrix_mul(camera_matrix, s_vertices[i]);
         }
 
     Mesh cube;
@@ -50,7 +50,7 @@ void final_giga_test()
     s32 b = 0;
     s32 j = -1;
     u32 color = f_color;
-    for (s32 i = 0; i < ArrCount(s_indices)/3; i++)
+    for (s32 i = 0; i < ARR_COUNT(s_indices)/3; i++)
         {
             if (i % 2 == 0)
                 {
@@ -62,9 +62,9 @@ void final_giga_test()
             u16 i1 = cube.indices[b+1];
             u16 i2 = cube.indices[b+2];
             
-            Vec3f A = cube.vertices[i0];
-            Vec3f B = cube.vertices[i1];
-            Vec3f C = cube.vertices[i2];
+            Vector3 A = cube.vertices[i0];
+            Vector3 B = cube.vertices[i1];
+            Vector3 C = cube.vertices[i2];
 
             Triangle t = {A, B, C};
             TriangleHom extraGeometry[4];
@@ -78,7 +78,7 @@ void final_giga_test()
                     tri.B = vec_make(tHom.B.x, tHom.B.y, tHom.B.z);
                     tri.C = vec_make(tHom.C.x, tHom.C.y, tHom.C.z);
             
-                    if (ENGINESTATE->reverse_winding)
+                    if (ENGINE_STATE->reverse_winding)
                         {
                             RasterizeTriangle(tri, color, false);
                         }
@@ -95,50 +95,50 @@ void orbiting_camera_test()
 {
     u32 color = ((u32)255 << 24) | ((u32)0 << 16) | ((u32)0 << 8) | ((u32)0);
 
-    Vec3f A = vec_make(-50.0f, -20.0f, -120.0f); // A->C->B = clockwise winding
-    Vec3f B = vec_make(60.0f, 0.0f, -150.0f);
-    Vec3f C = vec_make(-70.0f, 60.0f, -200.0f);
+    Vector3 A = vec_make(-50.0f, -20.0f, -120.0f); // A->C->B = clockwise winding
+    Vector3 B = vec_make(60.0f, 0.0f, -150.0f);
+    Vector3 C = vec_make(-70.0f, 60.0f, -200.0f);
 
-    Vec3f A2 = vec_make(-50.0f, -20.0f, -200.0f);
-    Vec3f B2 = vec_make(60.0f, 0.0f, -150.0f);
-    Vec3f C2 = vec_make(-70.0f, 60.0f, -120.0f);
+    Vector3 A2 = vec_make(-50.0f, -20.0f, -200.0f);
+    Vector3 B2 = vec_make(60.0f, 0.0f, -150.0f);
+    Vector3 C2 = vec_make(-70.0f, 60.0f, -120.0f);
 
 #define RotCamera 1
 #define RotTriangles 0
 #define ChangeAngle 1
 #define ORBIT_OFFS 180
     
-    Matrix4x4f* WtoC = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    Matrix4* WtoC = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_unit(WtoC);
-    Vec3f orbiting_point = vec_make(0.0f, 0.0f, (r32)ORBIT_OFFS); // assuming it's in 0,0,-180 coordsys
+    Vector3 orbiting_point = vec_make(0.0f, 0.0f, (r32)ORBIT_OFFS); // assuming it's in 0,0,-180 coordsys
     
-    r32 angle = ENGINESTATE->line_angle;
-    r32 camera_angle = ENGINESTATE->camera_angle;
+    r32 angle = ENGINE_STATE->line_angle;
+    r32 camera_angle = ENGINE_STATE->camera_angle;
 
-    Matrix4x4f* tempRotY = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    Matrix4* tempRotY = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_rotation_y(tempRotY, camera_angle);
-    Matrix4x4f* tempTrans = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    Matrix4* tempTrans = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_translate(tempTrans, vec_make(0.0f, 0.0f, (r32)-ORBIT_OFFS));
 #if RotCamera
     orbiting_point = matrix_mul(tempRotY, orbiting_point);
 #endif
     orbiting_point = matrix_mul(tempTrans, orbiting_point);
 
-    Matrix4x4f* tempRotY2 = arena_push<Matrix4x4f>(&FRAME_ARENA);
-    Matrix4x4f* tempTrans2 = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    Matrix4* tempRotY2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    Matrix4* tempTrans2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_translate(tempTrans2, orbiting_point);
 #if RotCamera
     matrix_rotation_y(tempRotY2, camera_angle);
 #else
     matrix_rotation_y(tempRotY2, 0);
 #endif
-    Matrix4x4f* tempResult = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    Matrix4* tempResult = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_mul(WtoC, tempRotY2, tempResult);
     matrix_mul(tempResult, tempTrans2, WtoC);
     
 #if RotTriangles
-    Matrix4x4f* rot1 = arena_push<Matrix4x4f>(&FRAME_ARENA);
-    Matrix4x4f* rot2 = arena_push<Matrix4x4f>(&FRAME_ARENA);
+    Matrix4* rot1 = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    Matrix4* rot2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_rotation_x(rot1, angle);
     matrix_rotation_x(rot2, -(angle+pi/4));
 
@@ -170,7 +170,7 @@ void orbiting_camera_test()
     
     // when rotating behind the triangles, they are getting culled
     // because winding is reversed, how fix this?
-    if (ENGINESTATE->reverse_winding)
+    if (ENGINE_STATE->reverse_winding)
         {
             RasterizeTriangle(t, color, true);
             RasterizeTriangle(t2, color, false);
@@ -181,7 +181,7 @@ void orbiting_camera_test()
             RasterizeTriangle(t2, color, false);
         }
 #if ChangeAngle
-    ENGINESTATE->line_angle += pi / 256;
+    ENGINE_STATE->line_angle += PI / 256;
 #endif
 
 #undef RotCamera
@@ -198,7 +198,7 @@ void none_test(void)
 #define _TEST CURRENTLY_TESTING()
 void test(void)
 {
-    if (!ENGINESTATE->tested_once)
+    if (!ENGINE_STATE->tested_once)
         {
             _TEST;
         }

@@ -55,32 +55,32 @@ HMODULE load_game()
     if (dll)
     {
         valid_dll = true;
-        engineAPI.platformInitMemoryBase = (fpPlatformInitMemoryBase) GetProcAddress(dll, "platform_init_memory_base");
-        engineAPI.updateAndRender = (fpUpdateAndRender) GetProcAddress(dll, "update_and_render");
-        engineAPI.processInput = (fpProcessInput) GetProcAddress(dll, "process_input");
+        engine_api.platform_init_memory_base = (Platform_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
+        engine_api.update_and_render = (Update_and_render) GetProcAddress(dll, "update_and_render");
+        engine_api.process_input = (Process_input) GetProcAddress(dll, "process_input");
     }
     else
     {
         valid_dll = false;
-        engineAPI.platformInitMemoryBase = platform_init_memory_base_stub;
-        engineAPI.updateAndRender = update_and_render_stub;
-        engineAPI.processInput = process_input_stub;
+        engine_api.platform_init_memory_base = platform_init_memory_base_stub;
+        engine_api.update_and_render = update_and_render_stub;
+        engine_api.process_input = process_input_stub;
     }
 
-    if (!engineAPI.platformInitMemoryBase)
+    if (!engine_api.platform_init_memory_base)
     {
         valid_dll = false;
-        engineAPI.platformInitMemoryBase = platform_init_memory_base_stub;
+        engine_api.platform_init_memory_base = platform_init_memory_base_stub;
     }
-    if (!engineAPI.updateAndRender)
+    if (!engine_api.update_and_render)
     {
         valid_dll = false;
-        engineAPI.updateAndRender = update_and_render_stub;
+        engine_api.update_and_render = update_and_render_stub;
     }
-    if (!engineAPI.processInput)
+    if (!engine_api.process_input)
     {
         valid_dll = false;
-        engineAPI.processInput = process_input_stub;
+        engine_api.process_input = process_input_stub;
     }
 
     return dll;
@@ -91,9 +91,9 @@ void unload_game(HMODULE dll)
     FreeLibrary(dll);
     //DeleteFile(COPIED_DLL);
     valid_dll = false;
-    engineAPI.platformInitMemoryBase = platform_init_memory_base_stub;
-    engineAPI.updateAndRender = update_and_render_stub;
-    engineAPI.processInput = process_input_stub;    
+    engine_api.platform_init_memory_base = platform_init_memory_base_stub;
+    engine_api.update_and_render = update_and_render_stub;
+    engine_api.process_input = process_input_stub;    
 }
 #endif
 
@@ -107,29 +107,20 @@ global_variable u8  curr_mouseflags_to_unset = 0;
 global_variable r32 curr_cursorX = 640;
 global_variable r32 curr_cursorY = 360;
 
-typedef struct Window_rect_dims
+struct Window_rect_dims
 {
     s32 width;
     s32 height;
-} window_rect_dims;
+};
 
-inline window_rect_dims get_window_rect_dims(HWND window)
+inline Window_rect_dims get_window_rect_dims(HWND window)
 {
     RECT window_rect;
     GetClientRect(window, &window_rect);
-    window_rect_dims rect = {
-        .width = window_rect.right - window_rect.left,
-        .height = window_rect.bottom - window_rect.top };
+    Window_rect_dims rect;
+    rect.width = window_rect.right - window_rect.left;
+    rect.height = window_rect.bottom - window_rect.top;
     return rect;
-}
-
-inline b32 commit_memory(u8* address, u64 size)
-{
-    if (!VirtualAlloc(address, size, MEM_COMMIT, PAGE_READWRITE))
-    {
-        return false;
-    }
-    return true;
 }
 
 HANDLE dbg_open_file(u8* filename)
@@ -188,7 +179,7 @@ b32 write_file(u8* filename, void* buffer, u32 buffer_size)
     return true;
 }
 
-void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPINFO* window_buffer_info,int window_width, int window_height)
+void stretch_and_draw_window_buffer(HDC dc, void* window_buffer_memory, BITMAPINFO* window_buffer_info, int window_width, int window_height)
 {
     // @Note this is what actually blits to the scree/window
     // @Note what if we on purpose create a bitmap of different size in order to map it into the window??
@@ -221,7 +212,7 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
 
     case WM_SIZE:
     {
-        /* window_rect_dims rect = get_window_rect_dims(window); */
+        /* Window_rect_dims rect = get_Window_rect_dims(window); */
         /* realloc_window_bitmap_buffer(rect.width, rect.height); */
     } break;
 
@@ -340,11 +331,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     u64 allocation_step = (u64) Max(systemInfo.dwPageSize,
                                     systemInfo.dwAllocationGranularity);
     
-    u64 totalReservedMemory = terabytes(1);
-    total_program_memory = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, allocation_step);
+    u64 total_program_memory = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, allocation_step);
     void* base_ptr = VirtualAlloc(0, total_program_memory, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    u64 initialCommitMemorySize = INITIAL_COMMIT_SIZE_BY_PLATFORM;
-    u64 aligned_initial_commit = align_up(INITIAL_COMMIT_SIZE_BY_PLATFORM, (u64)virtualReserveGranularity);
     
     PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
     
@@ -357,7 +345,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 #endif
 
 
-    void* window_buffer_memory = (void*)&FRAME_BUFFER;
+    void* window_buffer_memory = (void*)&FRAMEBUFFER;
     
     int window_offset_x = 50;
     int window_offset_y = 50;
@@ -395,9 +383,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     window_buffer_info.bmiHeader.biBitCount = bytes_per_pixel*8;
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
 
-    FRAME_BUFFER_WIDTH = 1280;
-    FRAME_BUFFER_HEIGHT = 720;
-    POINT center = { (LONG)FRAME_BUFFER_WIDTH/2, (LONG)FRAME_BUFFER_HEIGHT/2 };
+    FRAMEBUFFER_WIDTH = 1280;
+    FRAMEBUFFER_HEIGHT = 720;
+    POINT center = { (LONG)FRAMEBUFFER_WIDTH/2, (LONG)FRAMEBUFFER_HEIGHT/2 };
     ClientToScreen(window, &center);
     SetCursorPos(center.x, center.y);
     
@@ -455,8 +443,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             
         UPDATE_AND_RENDER();
 
-        window_buffer_info.bmiHeader.biWidth = FRAME_BUFFER_WIDTH;
-        window_buffer_info.bmiHeader.biHeight = -((s32)FRAME_BUFFER_HEIGHT);
+        window_buffer_info.bmiHeader.biWidth = FRAMEBUFFER_WIDTH;
+        window_buffer_info.bmiHeader.biHeight = -((s32)FRAMEBUFFER_HEIGHT);
 
             
         // @TODO figure out if I need to have two different types of
@@ -466,7 +454,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         // @TODO resize window rect??? (AjdustWindowRect)
             
         HDC dc = GetDC(window);
-        window_rect_dims rect = get_window_rect_dims(window);
+        Window_rect_dims rect = get_window_rect_dims(window);
         stretch_and_draw_window_buffer(dc,
                                        window_buffer_memory,
                                        &window_buffer_info,

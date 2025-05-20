@@ -17,72 +17,72 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
     
     // @TODO fix moving faster diagonally if you care...
     
-    u64 prev_kflags = ENGINESTATE->keyflags;
-    ENGINESTATE->keyflags |= curr_keyflags_to_set;
-    ENGINESTATE->keyflags &= ~curr_keyflags_to_unset;
-    u64 kflags = ENGINESTATE->keyflags;
+    u64 prev_kflags = ENGINE_STATE->keyflags;
+    ENGINE_STATE->keyflags |= curr_keyflags_to_set;
+    ENGINE_STATE->keyflags &= ~curr_keyflags_to_unset;
+    u64 kflags = ENGINE_STATE->keyflags;
     u64 kflags_trans = kflags ^ prev_kflags;
     u64 kflags_trans_to_up = kflags_trans & prev_kflags;
     u64 kflags_trans_to_down = kflags_trans & (~prev_kflags);
     
-    u8 prev_mflags = ENGINESTATE->mouseflags;
-    ENGINESTATE->mouseflags |= curr_mouseflags_to_set;
-    ENGINESTATE->mouseflags &= ~curr_mouseflags_to_unset;
-    u8 mflags = ENGINESTATE->mouseflags;
+    u8 prev_mflags = ENGINE_STATE->mouseflags;
+    ENGINE_STATE->mouseflags |= curr_mouseflags_to_set;
+    ENGINE_STATE->mouseflags &= ~curr_mouseflags_to_unset;
+    u8 mflags = ENGINE_STATE->mouseflags;
     u8 mflags_trans = mflags ^ prev_mflags;
     u8 mflags_trans_to_up = mflags_trans & prev_mflags;
     u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
 
     Camera camera = MAIN_CAMERA;
     curr_cursorY = to_yisup(curr_cursorY);
-    Vec2f cursor_difference;
-    cursor_difference.x = curr_cursorX - FRAME_BUFFER_WIDTH/2;
-    cursor_difference.y = curr_cursorY - FRAME_BUFFER_HEIGHT/2;
+    Vector2 cursor_difference;
+    cursor_difference.x = curr_cursorX - FRAMEBUFFER_WIDTH/2;
+    cursor_difference.y = curr_cursorY - FRAMEBUFFER_HEIGHT/2;
     // camera.roll += cursor_difference.y / kilobytes(1);
     // camera.pitch -= cursor_difference.x / kilobytes(1);
-    ENGINESTATE->cursor.x = curr_cursorX;
-    ENGINESTATE->cursor.y = curr_cursorY;
+    ENGINE_STATE->cursor.x = curr_cursorX;
+    ENGINE_STATE->cursor.y = curr_cursorY;
 
     if (ExtractKey(kflags_trans_to_up, KEY_U))
         {
-            if (ENGINESTATE->reverse_winding)
+            if (ENGINE_STATE->reverse_winding)
                 {
-                    ENGINESTATE->reverse_winding = false;
+                    ENGINE_STATE->reverse_winding = false;
                 }
             else
                 {
-                    ENGINESTATE->reverse_winding = true;
+                    ENGINE_STATE->reverse_winding = true;
                 }
         }
     
     if (ExtractKey(kflags, KEY_D))
         {
-            // ENGINESTATE->camera_angle += pi/256;
+            // ENGINE_STATE->camera_angle += pi/256;
         }
 
     if (ExtractKey(kflags, KEY_A))
         {            
-            // ENGINESTATE->camera_angle -= pi/256;
+            // ENGINE_STATE->camera_angle -= pi/256;
         }
     
     if (ExtractKey(kflags, KEY_UP))
         {
-            ENGINESTATE->camera_offs_y += 5.0f;
+            ENGINE_STATE->camera_offs_y += 5.0f;
         }
     if (ExtractKey(kflags, KEY_DOWN))
         {
-            ENGINESTATE->camera_offs_y -= 5.0f;            
+            ENGINE_STATE->camera_offs_y -= 5.0f;            
         }
     if (ExtractKey(kflags, KEY_LEFT))
         {
-            ENGINESTATE->camera_offs_x -= 5.0f;
+            ENGINE_STATE->camera_offs_x -= 5.0f;
         }
     if (ExtractKey(kflags, KEY_RIGHT))
         {
-            ENGINESTATE->camera_offs_x += 5.0f;
+            ENGINE_STATE->camera_offs_x += 5.0f;
         }
     
-    Vec3f camera_movement = vec_zero3f();
+    Vector3 camera_movement = vec_zero3();
     if (ExtractKey(kflags, KEY_W))
         {
             camera_movement.z -= 2.0f;

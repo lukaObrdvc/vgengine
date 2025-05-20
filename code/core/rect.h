@@ -4,60 +4,60 @@
 // @doc assumes y is up, x is right
 union Rect
 {
-    struct {r32 minX, minY, maxX, maxY;};
-    struct {Vec2f botLeft, topRight;};
+    struct {r32 min_x, min_y, max_x, max_y;};
+    struct {Vector2 bot_left, top_right;};
 };
 
-union RectInt
+union Recti
 {
-    struct {s32 minX, minY, maxX, maxY;};
-    struct {Vec2i botLeft, topRight;};
+    struct {s32 min_x, min_y, max_x, max_y;};
+    struct {Vector2i bot_left, top_right;};
 };
 
 
-// FUNCTIONS FOR 332
+// FUNCTIONS FOR r32
 
-inline Rect rect_make(r32 minX, r32 minY, r32 maxX, r32 maxY)
+inline Rect rect_make(r32 min_x, r32 min_y, r32 max_x, r32 max_y)
 {
-    return {minX, minY, maxX, maxY};
+    return {min_x, min_y, max_x, max_y};
 }
 
 inline r32 rect_width(Rect rect)
 {
-    return rect.maxX - rect.minX;
+    return rect.max_x - rect.min_x;
 }
 inline r32 rect_height(Rect rect)
 {
-    return rect.maxY - rect.minY;
+    return rect.max_y - rect.min_y;
 }
 
-inline Rect rect_from_botLeft(Vec2f botLeft, r32 width, r32 height)
+inline Rect rect_from_bot_left(Vector2 bot_left, r32 width, r32 height)
 {
-    return {botLeft.x,
-            botLeft.y,
-            botLeft.x + width,
-            botLeft.y + height};
+    return {bot_left.x,
+            bot_left.y,
+            bot_left.x + width,
+            bot_left.y + height};
 }
-inline Rect rect_from_botRight(Vec2f botRight, r32 width, r32 height)
+inline Rect rect_from_bot_right(Vector2 bot_right, r32 width, r32 height)
 {
-    return {botRight.x - width,
-            botRight.y,
-            botRight.x,
-            botRight.y + height};
+    return {bot_right.x - width,
+            bot_right.y,
+            bot_right.x,
+            bot_right.y + height};
 }
-inline Rect rect_from_topLeft(Vec2f topLeft, r32 width, r32 height)
+inline Rect rect_from_top_left(Vector2 top_left, r32 width, r32 height)
 {
-    return {topLeft.x,
-            topLeft.y - height,
-            topLeft.x + width,
-            topLeft.y};
+    return {top_left.x,
+            top_left.y - height,
+            top_left.x + width,
+            top_left.y};
 }
-inline Rect rect_from_topRight(Vec2f topRight, r32 width, r32 height)
+inline Rect rect_from_top_right(Vector2 top_right, r32 width, r32 height)
 {
-    return {topRight.x - width,
-            topRight.y - height,
-            topRight.x,
-            topRight.y};
+    return {top_right.x - width,
+            top_right.y - height,
+            top_right.x,
+            top_right.y};
 }
 
 // translating rect
@@ -67,18 +67,18 @@ inline Rect rect_from_topRight(Vec2f topRight, r32 width, r32 height)
 
 // FUNCTIONS FOR s32
 
-inline RectInt rect_make(s32 minX, s32 minY, s32 maxX, s32 maxY)
+inline Recti rect_make(s32 min_x, s32 min_y, s32 max_x, s32 max_y)
 {
-    return {minX, minY, maxX, maxY};
+    return {min_x, min_y, max_x, max_y};
 }
 
-inline s32 rect_width(RectInt rect)
+inline s32 rect_width(Recti rect)
 {
-    return rect.maxX - rect.minX;
+    return rect.max_x - rect.min_x;
 }
-inline s32 rect_height(RectInt rect)
+inline s32 rect_height(Recti rect)
 {
-    return rect.maxY - rect.minY;
+    return rect.max_y - rect.min_y;
 }
 
 

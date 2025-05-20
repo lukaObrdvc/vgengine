@@ -18,10 +18,10 @@ Quaternion quaternion_euler(r32 x, r32 y, r32 z)
     return q;
 }
 
-Vec3f quaternion_rotate(Vec3f v, Quaternion q)
+Vector3 quaternion_rotate(Vector3 v, Quaternion q)
 {
-    Vec3f qv = { q.x, q.y, q.z };
-    Vec3f temp = vec_scale(vec_cross(qv, v), 2.0f);
+    Vector3 qv = { q.x, q.y, q.z };
+    Vector3 temp = vec_scale(vec_cross(qv, v), 2.0f);
     return vec_add(vec_add(v, vec_scale(temp, q.w)),
                    vec_cross(qv, temp));
 }
@@ -43,15 +43,15 @@ Quaternion quaternion_normalize(Quaternion q)
 {
     r32 len = quaternion_len(q);
     if (len == 0.0f) return {0, 0, 0, 1}; // avoid divide-by-zero
-
-    r32 invLen = 1.0f / len;
-    return {q.x * invLen,
-            q.y * invLen,
-            q.z * invLen,
-            q.w * invLen};
+    
+    r32 inv_len = 1.0f / len;
+    return {q.x * inv_len,
+            q.y * inv_len,
+            q.z * inv_len,
+            q.w * inv_len};
 }
 
-void quaternion_to_matrix(Quaternion q, Matrix4x4f* m)
+void quaternion_to_matrix(Quaternion q, Matrix4* m)
 {
     r32 xx = q.x * q.x;
     r32 yy = q.y * q.y;

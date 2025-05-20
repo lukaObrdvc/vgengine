@@ -38,7 +38,7 @@
 // #include "graphics/clip.h"
 #include "graphics/framebuffer.h"
 // #include "graphics/line.h"
-#include "graphics/pixel.h"
+// #include "graphics/pixel.h"
 #include "graphics/renderer.h"
 
 

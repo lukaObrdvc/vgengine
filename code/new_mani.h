@@ -5,7 +5,7 @@
 struct Engine_state
 {
     b32 inited;
-    Frame_buffer frame_buffer;
+    Framebuffer framebuffer;
     r32* zbuffer;
     Camera main_camera;
 
@@ -14,7 +14,7 @@ struct Engine_state
     u64 keyflags;
     u8 keymap[256]; // @Note 254 is the max VK code
     u8 mouseflags;
-    Vec2f cursor;
+    Vector2 cursor;
     // shize ------------------------------------
 
     // temporary-----------------------------
@@ -34,19 +34,19 @@ struct Engine_state
 
 #define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA.base))
 
-#define FRAME_BUFFER ENGINE_STATE->frame_buffer
-#define FRAME_BUFFER_WIDTH FRAME_BUFFER.width
-#define FRAME_BUFFER_HEIGHT FRAME_BUFFER.height
-#define FRAME_BUFFER_BYTPP PLATFORM_API.bytes_per_pixel
-#define FRAME_BUFFER_PITCH (FRAME_BUFFER_HEIGHT * FRAME_BUFFER_BYTPP)
-#define FRAME_BUFFER_BYTESIZE (FRAME_BUFFER_WIDTH * FRAME_BUFFER_HEIGHT * FRAME_BUFFER_BYTPP)
+#define FRAMEBUFFER ENGINE_STATE->framebuffer
+#define FRAMEBUFFER_WIDTH FRAMEBUFFER.width
+#define FRAMEBUFFER_HEIGHT FRAMEBUFFER.height
+#define FRAMEBUFFER_BYTPP PLATFORM_API.bytes_per_pixel
+#define FRAMEBUFFER_PITCH (FRAMEBUFFER_HEIGHT * FRAMEBUFFER_BYTPP)
+#define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * FRAMEBUFFER_BYTPP)
 
 // @doc when we offset these like this, then we can - on y coordinate
 // which allows the rest of the code to use y is up, and then this
 // will map it to y is down
-#define FRAME_BUFFER_BASE (FRAME_BUFFER.base + FRAME_BUFFER_BYTESIZE - FRAME_BUFFER_PITCH)
+#define FRAMEBUFFER_BASE (FRAMEBUFFER.base + FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH)
 // #define Z_BUFFER (((r32*)ENGINESTATE->zBuffer) + FRAME_BUFFER_WIDTH*(FRAME_BUFFER_HEIGHT -1))
-#define Z_BUFFER (ENGINE_STATE->zBuffer)
+#define ZBUFFER (ENGINE_STATE->zbuffer)
 
 
 
@@ -56,8 +56,8 @@ struct Engine_state
 
 // @Note better name?
 // @TODO do I make one for converting a wndrect (has to switch top and bottom)
-#define to_yisdown(y) (FRAME_BUFFER_HEIGHT - (y))
-#define to_yisup(y)   (FRAME_BUFFER_HEIGHT - (y))
+#define to_yisdown(y) (FRAMEBUFFER_HEIGHT - (y))
+#define to_yisup(y)   (FRAMEBUFFER_HEIGHT - (y))
 //#define wndrect_yisdown(y)
 
 

@@ -2,7 +2,7 @@
 #define INIT_H
 
 #if USE_DLL
-extern "C" void platform_init_memory_base(Globals* memoryBase);
+extern "C" void platform_init_memory_base(Globals* memory_base);
 #endif
 
 void init_memory();

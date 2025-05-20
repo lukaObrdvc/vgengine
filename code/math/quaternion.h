@@ -8,10 +8,10 @@ struct Quaternion
 };
 
 Quaternion quaternion_euler(r32 x, r32 y, r32 z);
-Vec3f quaternion_rotate(Vec3f v, Quaternion q);
+Vector3 quaternion_rotate(Vector3 v, Quaternion q);
 Quaternion quaternion_mul(Quaternion q1, Quaternion q2);
 Quaternion quaternion_normalize(Quaternion q);
-void quaternion_to_matrix(Quaternion q, Matrix4x4f* m);
+void quaternion_to_matrix(Quaternion q, Matrix4* m);
 
 inline Quaternion quaternion_identity()
 {
@@ -19,14 +19,14 @@ inline Quaternion quaternion_identity()
 }
 
 // @doc requires radians, and normalized axis
-inline Quaternion quaternion_from_axis(Vec3f axis, r32 angle)
+inline Quaternion quaternion_from_axis(Vector3 axis, r32 angle)
 {
-    r32 halfAngle = angle * 0.5f;
-    r32 s = sinf(halfAngle);
+    r32 half_angle = angle * 0.5f;
+    r32 s = sinf(half_angle);
     return {axis.x * s,
             axis.y * s,
             axis.z * s,
-            cosf(halfAngle)};
+            cosf(half_angle)};
 }
 
 inline r32 quaternion_len(Quaternion q)

@@ -26,7 +26,7 @@ struct Arena
 };
 
 
-void arena_init(Arena* arena, s32 capacity);
+void arena_make(Arena* arena, u32 capacity);
 void* arena_push_size(Arena* arena, u32 size, u32 alignment);
 
 template<typename T>
@@ -49,7 +49,7 @@ inline void arena_reset(Arena* arena)
     arena->size = 0;
 }
 
-inline void arena_set_size(Arena* arena, u32 size)
+inline void arena_set_size(Arena* arena, s32 size)
 {
     ASSERT(size <= arena->size);
     arena->size = size;

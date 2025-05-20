@@ -43,12 +43,11 @@ typedef s64 b64;
 #endif
 
 // THIS IS TEMPORARILY HERE ---------------------------
-#define ArrCount(arr) (sizeof((arr))/sizeof((arr)[0]))
+#define ARR_COUNT(arr) (sizeof((arr))/sizeof((arr)[0]))
 // ---------------------------------------------------
 
-
-inline constexpr r32 pi  = 3.14159265359f;
-inline constexpr r32 tau = 6.28318530718f; // 2*pi
+#define PI  3.14159265359f
+#define TAU 6.28318530718f // 2*PI
 
 
 template<typename T>
@@ -157,33 +156,33 @@ inline r64 decimal(r64 n)
 }
 
 
-inline s32 floor_to_int(r32 n)
+inline s32 floori(r32 n)
 {
     return (s32)(n);
 }
 
-inline s32 ceil_to_int(r32 n)
+inline s32 ceili(r32 n)
 {
     return (s32)(n+1);
 }
 
-inline s32 round_to_int(r32 n)
+inline s32 roundi(r32 n)
 {
     return (s32)(n+0.5);
 }
 
 
-inline s64 floor_to_int(r64 n)
+inline s64 floori(r64 n)
 {
     return (s64)(n);
 }
 
-inline s64 ceil_to_int(r64 n)
+inline s64 ceili(r64 n)
 {
     return (s64)(n+1);
 }
 
-inline s64 round_to_int(r64 n)
+inline s64 roundi(r64 n)
 {
     return (s64)(n+0.5);
 }
@@ -216,23 +215,23 @@ inline u32 to_signed(s32 n)
 // @todo replace 360/tau and tau/360 with precomputed values
 inline r32 radians(r32 angle)
 {
-    return (angle*360)/tau;
+    return (angle*360)/TAU;
 }
 
 inline r64 radians(r64 angle)
 {
-    return (angle*360)/tau;
+    return (angle*360)/TAU;
 }
 
 
 inline r32 degrees(r32 angle)
 {
-    return (angle*tau)/360;
+    return (angle*TAU)/360;
 }
 
 inline r64 degrees(r64 angle)
 {
-    return (angle*tau)/360;
+    return (angle*TAU)/360;
 }
 
 

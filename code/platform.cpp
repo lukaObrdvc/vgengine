@@ -1,7 +1,6 @@
 // "W:\\Projects\\vgengine\\code\\"
 
 #include "project.h"
-// #include "alias.h"
 
 #if USE_DLL
 
@@ -11,7 +10,6 @@
 #include <math.h>
 
 #include "core/basic.h"
-#include "core/arena.h"
 
 #include "platform/platform.h"
 #include "platform/engine.h"

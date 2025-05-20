@@ -8,7 +8,7 @@
 
 #if USE_DLL
 
-void platform_init_memory_base_stub(Globals* memoryBase)
+void platform_init_memory_base_stub(Globals* memory_base)
 {
     return;
 }
@@ -16,43 +16,40 @@ void update_and_render_stub(void)
 {
     return;
 }
-b32 process_input_stub(u64 kts, u64 ktus, u8 mts, u8 mtus, r32 cursorX, r32 cursorY)
+b32 process_input_stub(u64 kts, u64 ktus, u8 mts, u8 mtus, r32 cursor_x, r32 cursor_y)
 {
     return false;
 }
 
-typedef void (*fpPlatformInitMemoryBase) (Globals*);
-typedef void (*fpUpdateAndRender) (void);
-typedef b32 (*fpProcessInput) (u64, u64, u8, u8, r32, r32);
+typedef void (*Platform_init_memory_base) (Globals*);
+typedef void (*Update_and_render) (void);
+typedef b32 (*Process_input) (u64, u64, u8, u8, r32, r32);
 
-#pragma pack(push, 1)
-typedef struct tagEngineAPI
+struct Engine_api
 {
-    fpPlatformInitMemoryBase platformInitMemoryBase;
-    fpUpdateAndRender updateAndRender;
-    fpProcessInput processInput;
-} EngineAPI;
-#pragma pack(pop)
+    Platform_init_memory_base platform_init_memory_base;
+    Update_and_render update_and_render;
+    Process_input process_input;
+};
 
-global_variable EngineAPI engineAPI = {
-    .platformInitMemoryBase = platform_init_memory_base_stub,
-    .updateAndRender = update_and_render_stub,
-    .processInput = process_input_stub
+global_variable Engine_api engine_api = {
+    .platform_init_memory_base = platform_init_memory_base_stub,
+    .update_and_render = update_and_render_stub,
+    .process_input = process_input_stub
     };
 
-#define UPDATE_AND_RENDER() engineAPI.updateAndRender()
-#define PLATFORM_INIT_MEMORY_BASE(memoryBase) engineAPI.platformInitMemoryBase((memoryBase))
-#define PROCESS_INPUT(kts, ktus, mts, mtus, cX, cY) engineAPI.processInput((kts), (ktus), (mts), (mtus), (cX), (cY))
+#define UPDATE_AND_RENDER() engine_api.update_and_render()
+#define PLATFORM_INIT_MEMORY_BASE(memoryBase) engine_api.platform_init_memory_base((memory_base))
+#define PROCESS_INPUT(kts, ktus, mts, mtus, cX, cY) engine_api.process_input((kts), (ktus), (mts), (mtus), (cX), (cY))
 
 #else
 
-/* void platform_init_memory_base(EngineAPI*); */
 extern "C" void update_and_render(void);
 extern "C" b32 process_input(u64, u64, u8, u8, r32, r32);
 
 #define UPDATE_AND_RENDER() update_and_render()
-// this should probably expand to something that just directly sets up the memoryBase for the entire monolithic build
-#define PLATFORM_INIT_MEMORY_BASE(memoryBase) globals = memoryBase
+// this should probably expand to something that just directly sets up the memory_base for the entire monolithic build
+#define PLATFORM_INIT_MEMORY_BASE(memory_base) globals = (memory_base)
 #define PROCESS_INPUT(kts, ktus, mts, mtus, cX, cY) process_input((kts), (ktus), (mts), (mtus), (cX), (cY))
 
 #endif

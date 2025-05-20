@@ -2,9 +2,9 @@
 #define CAMERA_H
 
 
-#define MAIN_CAMERA ENGINESTATE->mainCamera
-#define Z_NEAR MAIN_CAMERA.zNear
-#define Z_FAR MAIN_CAMERA.zFar
+#define MAIN_CAMERA ENGINE_STATE->main_camera
+#define Z_NEAR MAIN_CAMERA.z_near
+#define Z_FAR MAIN_CAMERA.z_far
 #define FOV MAIN_CAMERA.fov
 
 // @doc canvas plane is implicitly at zNear;
@@ -14,10 +14,10 @@
 // canvas aspect ration is implicitly 1, this also means FOVh = FOVv;
 struct Camera
 {
-    Vec3f position;
+    Vector3 position;
     Quaternion orientation;
-    r32 zNear;
-    r32 zFar;
+    r32 z_near;
+    r32 z_far;
     r32 fov;
 };
 

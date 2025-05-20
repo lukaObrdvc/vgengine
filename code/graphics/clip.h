@@ -1,30 +1,30 @@
 #ifndef CLIP_H
 #define CLIP_H
 
-typedef Vec4f Vertex4;
+typedef Vector4 Vertex4;
 
-b32 InsideRight(Vec4f v) {
+b32 InsideRight(Vector4 v) {
     return v.x <= v.w;
 }
-b32 InsideLeft(Vec4f v) {
+b32 InsideLeft(Vector4 v) {
     return v.x >= -v.w;
 }
-b32 InsideTop(Vec4f v) {
+b32 InsideTop(Vector4 v) {
     return v.y <= v.w;
 }
-b32 InsideBottom(Vec4f v) {
+b32 InsideBottom(Vector4 v) {
     return v.y >= -v.w;
 }
-b32 InsideNear(Vec4f v) {
+b32 InsideNear(Vector4 v) {
     return v.z >= -v.w;
 }
-b32 InsideFar(Vec4f v) {
+b32 InsideFar(Vector4 v) {
     return v.z <= v.w;
 }
 
-inline Vec4f lerp(Vec4f a, Vec4f b, r32 t)
+inline Vector4 lerp(Vector4 a, Vector4 b, r32 t)
 {
-    Vec4f result;
+    Vector4 result;
     result.x = a.x + t * (b.x - a.x);
     result.y = a.y + t * (b.y - a.y);
     result.z = a.z + t * (b.z - a.z);
@@ -32,27 +32,27 @@ inline Vec4f lerp(Vec4f a, Vec4f b, r32 t)
     return result;
 }
 
-Vec4f IntersectRight(Vec4f a, Vec4f b) {
+Vector4 IntersectRight(Vector4 a, Vector4 b) {
     r32 t = (a.w - a.x) / ((a.w - a.x) - (b.w - b.x));
     return lerp(a, b, t);
 }
-Vec4f IntersectLeft(Vec4f a, Vec4f b) {
+Vector4 IntersectLeft(Vector4 a, Vector4 b) {
     r32 t = (a.w + a.x) / ((a.w + a.x) - (b.w + b.x));
     return lerp(a, b, t);
 }
-Vec4f IntersectTop(Vec4f a, Vec4f b) {
+Vector4 IntersectTop(Vector4 a, Vector4 b) {
     r32 t = (a.w - a.y) / ((a.w - a.y) - (b.w - b.y));
     return lerp(a, b, t);
 }
-Vec4f IntersectBottom(Vec4f a, Vec4f b) {
+Vector4 IntersectBottom(Vector4 a, Vector4 b) {
     r32 t = (a.w + a.y) / ((a.w + a.y) - (b.w + b.y));
     return lerp(a, b, t);
 }
-Vec4f IntersectNear(Vec4f a, Vec4f b) {
+Vector4 IntersectNear(Vector4 a, Vector4 b) {
     r32 t = (a.z) / (a.z - b.z);
     return lerp(a, b, t);
 }
-Vec4f IntersectFar(Vec4f a, Vec4f b) {
+Vector4 IntersectFar(Vector4 a, Vector4 b) {
     r32 t = (a.w - a.z) / ((a.w - a.z) - (b.w - b.z));
     return lerp(a, b, t);
 }
@@ -88,9 +88,9 @@ s32 ClipAgainstPlane(Vertex4* in_vertices, s32 in_count, Vertex4* out_vertices,
 
 s32 ClipTriangle(TriangleHom* in_tri, TriangleHom* out_triangles)
 {
-    Vec4f A = in_tri->A;
-    Vec4f B = in_tri->B;
-    Vec4f C = in_tri->C;
+    Vector4 A = in_tri->A;
+    Vector4 B = in_tri->B;
+    Vector4 C = in_tri->C;
     
     Vertex4 input[8];
     Vertex4 temp[8];

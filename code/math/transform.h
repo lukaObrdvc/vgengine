@@ -3,9 +3,9 @@
 
 struct Transform
 {
-    Vec3f position;
+    Vector3 position;
     Quaternion orientation;
-    Vec3f scale;
+    Vector3 scale;
 };
 
 

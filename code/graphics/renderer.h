@@ -8,7 +8,7 @@
 // a variable size array of u16's
 struct Mesh
 {
-    Vec3f* vertices;
+    Vector3* vertices;
     u16* indices;
 };
 
