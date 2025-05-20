@@ -200,22 +200,22 @@ s32 TriangleWorldToRasterPROJ(Triangle* tri, TriangleHom* out_triangles)
     TriangleHom* tri_clip = arena_push<TriangleHom>(&TEMPORARY_ARENA);
     s32 count = ClipTriangle(tri_clip, out_triangles);
     for (s32 i = 0; i < count; i++)
-        {
-            TriangleHom t = out_triangles[i];
+    {
+        TriangleHom t = out_triangles[i];
             
-            Vector4 A_ndc = vec_make(t.A.x/t.A.w, t.A.y/t.A.w, t.A.z/t.A.w, 1.0f);
-            Vector4 B_ndc = vec_make(t.B.x/t.B.w, t.B.y/t.B.w, t.B.z/t.B.w, 1.0f);
-            Vector4 C_ndc = vec_make(t.C.x/t.C.w, t.C.y/t.C.w, t.C.z/t.C.w, 1.0f);
+        Vector4 A_ndc = vec_make(t.A.x/t.A.w, t.A.y/t.A.w, t.A.z/t.A.w, 1.0f);
+        Vector4 B_ndc = vec_make(t.B.x/t.B.w, t.B.y/t.B.w, t.B.z/t.B.w, 1.0f);
+        Vector4 C_ndc = vec_make(t.C.x/t.C.w, t.C.y/t.C.w, t.C.z/t.C.w, 1.0f);
 
-            Vector4 A_r = vec_make((A_ndc.x+1)/2*(FRAMEBUFFER_WIDTH-1), (A_ndc.y+1)/2*(FRAMEBUFFER_HEIGHT-1), A_ndc.z, 1.0f);
-            Vector4 B_r = vec_make((B_ndc.x+1)/2*(FRAMEBUFFER_WIDTH-1), (B_ndc.y+1)/2*(FRAMEBUFFER_HEIGHT-1), B_ndc.z, 1.0f);
-            Vector4 C_r = vec_make((C_ndc.x+1)/2*(FRAMEBUFFER_WIDTH-1), (C_ndc.y+1)/2*(FRAMEBUFFER_HEIGHT-1), C_ndc.z, 1.0f);
+        Vector4 A_r = vec_make((A_ndc.x+1)/2*(FRAMEBUFFER_WIDTH-1), (A_ndc.y+1)/2*(FRAMEBUFFER_HEIGHT-1), A_ndc.z, 1.0f);
+        Vector4 B_r = vec_make((B_ndc.x+1)/2*(FRAMEBUFFER_WIDTH-1), (B_ndc.y+1)/2*(FRAMEBUFFER_HEIGHT-1), B_ndc.z, 1.0f);
+        Vector4 C_r = vec_make((C_ndc.x+1)/2*(FRAMEBUFFER_WIDTH-1), (C_ndc.y+1)/2*(FRAMEBUFFER_HEIGHT-1), C_ndc.z, 1.0f);
 
-            t.A = A_r;
-            t.B = B_r;
-            t.C = C_r;
-            out_triangles[i] = t;
-        }
+        t.A = A_r;
+        t.B = B_r;
+        t.C = C_r;
+        out_triangles[i] = t;
+    }
     
     return count;
 }
@@ -243,24 +243,28 @@ s32 TriangleWorldToRasterPROJ(Triangle* tri, TriangleHom* out_triangles)
 void fill_background()
 {
     for (s32 y = 0; y < FRAMEBUFFER_HEIGHT; y++)
+    {
+        for (s32 x = 0; x < FRAMEBUFFER_WIDTH; x++)
         {
-            for (s32 x = 0; x < FRAMEBUFFER_WIDTH; x++)
-                {
-                    *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)125 << 16) | ((u32)0 << 8) | ((u32)125);
-                }
+            *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)125 << 16) | ((u32)0 << 8) | ((u32)125);
         }
+    }
 }
 
 extern "C" void update_and_render()
 {
-    Engine_state* engine_state = ENGINE_STATE;
-    if (!engine_state->inited)
-        {
-            init_memory();
-            init_engine_state();
-            
-            engine_state->inited = true;
-        }
+    Engine_state* engine_state;
+    b32 inited = false;
+    if (!inited)
+    {
+        init_memory();
+        init_engine_state();
+
+        engine_state = ENGINE_STATE;
+        engine_state->inited = true;
+        inited = true;
+    }
+    engine_state = ENGINE_STATE;
     
     // @todo maybe just cache through engineState directly
     Framebuffer framebuffer = FRAMEBUFFER;
