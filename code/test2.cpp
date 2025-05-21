@@ -95,54 +95,73 @@ void orbiting_camera_test()
 {
     u32 color = ((u32)255 << 24) | ((u32)0 << 16) | ((u32)0 << 8) | ((u32)0);
 
-    Vector3 A = vec_make(-50.0f, -20.0f, -120.0f); // A->C->B = clockwise winding
-    Vector3 B = vec_make(60.0f, 0.0f, -150.0f);
-    Vector3 C = vec_make(-70.0f, 60.0f, -200.0f);
+    // Vector3 A = vec_make(-50.0f, -20.0f, -120.0f); // A->C->B = clockwise winding
+    // Vector3 B = vec_make(60.0f, 0.0f, -150.0f);
+    // Vector3 C = vec_make(-70.0f, 60.0f, -200.0f);
 
-    Vector3 A2 = vec_make(-50.0f, -20.0f, -200.0f);
-    Vector3 B2 = vec_make(60.0f, 0.0f, -150.0f);
-    Vector3 C2 = vec_make(-70.0f, 60.0f, -120.0f);
+    // Vector3 A2 = vec_make(-50.0f, -20.0f, -200.0f);
+    // Vector3 B2 = vec_make(60.0f, 0.0f, -150.0f);
+    // Vector3 C2 = vec_make(-70.0f, 60.0f, -120.0f);
+
+    Vector3 A = vec_make(-50.0f, -20.0f, -30.0f); // A->C->B = clockwise winding
+    Vector3 B = vec_make(60.0f, 0.0f, 0.0f);
+    Vector3 C = vec_make(-70.0f, 60.0f, 50.0f);
+
+    Vector3 A2 = vec_make(-50.0f, -20.0f, 50.0f);
+    Vector3 B2 = vec_make(60.0f, 0.0f, 0.0f);
+    Vector3 C2 = vec_make(-70.0f, 60.0f, -30.0f);
 
 #define RotCamera 1
 #define RotTriangles 1
 #define ChangeAngle 1
-#define ORBIT_OFFS 180
+// #define ORBIT_OFFS 180
+#define ORBIT_OFFS 360
     
-    Matrix4* WtoC = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    Matrix4* WtoC = temp_alloc(Matrix4);
+    Matrix4* tempRotY = temp_alloc(Matrix4);
+    Matrix4* tempTrans = temp_alloc(Matrix4);
+    Matrix4* tempRotY2 = temp_alloc(Matrix4);
+    // Matrix4* tempTrans2 = temp_alloc(Matrix4);
     matrix_unit(WtoC);
+    matrix_unit(tempTrans);
+    // matrix_unit(tempTrans2);
     Vector3 orbiting_point = vec_make(0.0f, 0.0f, (r32)ORBIT_OFFS); // assuming it's in 0,0,-180 coordsys
     
     r32 angle = ENGINE_STATE->line_angle;
     r32 camera_angle = ENGINE_STATE->camera_angle;
-
-    Matrix4* tempRotY = arena_push<Matrix4>(&TEMPORARY_ARENA);
+    
     matrix_rotation_y(tempRotY, camera_angle);
-    Matrix4* tempTrans = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    matrix_unit(tempTrans);
-    matrix_translate(tempTrans, vec_make(0.0f, 0.0f, (r32)-ORBIT_OFFS));
 #if RotCamera
     orbiting_point = matrix_mul(tempRotY, orbiting_point);
 #endif
-    orbiting_point = matrix_mul(tempTrans, orbiting_point);
-
-    Matrix4* tempRotY2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    Matrix4* tempTrans2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    matrix_unit(tempTrans2);
-    matrix_translate(tempTrans2, orbiting_point);
+    // these 3 iffy
+    // matrix_translate(tempTrans, vec_make(0.0f, 0.0f, (r32)-ORBIT_OFFS));
+    // orbiting_point = matrix_mul(tempTrans, orbiting_point);
+    // matrix_translate(tempTrans2, orbiting_point);
+    matrix_translate(tempTrans, orbiting_point);
+    
 #if RotCamera
-    matrix_rotation_y(tempRotY2, camera_angle);
+    matrix_rotation_y(tempRotY2, -camera_angle);
 #else
     matrix_rotation_y(tempRotY2, 0);
 #endif
-    Matrix4* tempResult = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    matrix_mul(WtoC, tempRotY2, tempResult);
-    matrix_mul(tempResult, tempTrans2, WtoC);
-    
+    Matrix4* tempResult = temp_alloc(Matrix4);
+    // matrix_mul(WtoC, tempRotY, tempResult);
+    // matrix_mul(WtoC, tempRotY2, tempResult);
+    // matrix_mul(tempResult, tempTrans2, WtoC);
+    // matrix_mul(tempResult, tempTrans, WtoC);
+
+    matrix_mul(WtoC, tempTrans, tempResult);
+    matrix_mul(tempResult, tempRotY2, WtoC);
+
+    // is this part correct?
 #if RotTriangles
-    Matrix4* rot1 = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    Matrix4* rot2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    matrix_rotation_x(rot1, angle);
-    matrix_rotation_x(rot2, -(angle+PI/4));
+    Matrix4* rot1 = temp_alloc(Matrix4);
+    Matrix4* rot2 = temp_alloc(Matrix4);
+    matrix_rotation_y(rot1, angle);
+    // matrix_rotation_y(rot2, -(angle+PI/4));
+    // matrix_rotation_y(rot1, -angle);
+    matrix_rotation_y(rot2, (angle+PI/4));
 
     A = matrix_mul(rot1, A);
     B = matrix_mul(rot1, B);
@@ -172,6 +191,10 @@ void orbiting_camera_test()
     
     // when rotating behind the triangles, they are getting culled
     // because winding is reversed, how fix this?
+
+    // this doesn't work like before because bro you're not
+    // passing vertices anymore, you're passing a Triangle struct
+    // which will always have the same frickin winding
     if (ENGINE_STATE->reverse_winding)
     {
         RasterizeTriangle(t, color, true);
@@ -184,6 +207,7 @@ void orbiting_camera_test()
     }
 #if ChangeAngle
     ENGINE_STATE->line_angle += PI / 256;
+    // ENGINE_STATE->line_angle += PI / kilobytes(2);
 #endif
 
 #undef RotCamera

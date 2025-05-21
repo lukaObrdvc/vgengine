@@ -30,23 +30,18 @@ void init_engine_state()
 
     MAIN_CAMERA.position = vec_make(640.0f, 360.0f, 0.0f);
     MAIN_CAMERA.orientation = quaternion_identity();
-    MAIN_CAMERA.z_near = 5;
-    MAIN_CAMERA.z_far = 500;
+    MAIN_CAMERA.z_near = 500; // 5
+    MAIN_CAMERA.z_far = -500; // 500
     MAIN_CAMERA.fov = 120;
                     
     ENGINE_STATE->camera_angle = 0;
+    ENGINE_STATE->line_angle = 0;
+    
     ENGINE_STATE->reverse_winding = false;
     
     ENGINE_STATE->keyflags = 0;
     ENGINE_STATE->mouseflags = 0;
                     
-                    
-    ENGINE_STATE->line_angle = 0;
-    ENGINE_STATE->rect_angle = 0;
-            
-    ENGINE_STATE->camera_offs_x = 0;
-    ENGINE_STATE->camera_offs_y = 0;
-
     // @TODO you should probably have a default for everything but whatever
     // @TODO is this a good way to set a keymap, just setting powers of two.............
     ENGINE_STATE->keymap[0x25] = 0;

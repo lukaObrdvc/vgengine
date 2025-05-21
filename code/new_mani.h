@@ -4,7 +4,8 @@
 
 struct Engine_state
 {
-    b32 inited;
+    b32 tested_once;
+    
     Framebuffer framebuffer;
     r32* zbuffer;
     Camera main_camera;
@@ -18,19 +19,9 @@ struct Engine_state
     // shize ------------------------------------
 
     // temporary-----------------------------
-
-    b32 tested_once;
     r32 camera_angle;
-    b32 reverse_winding;
-
     r32 line_angle;
-    r32 rect_angle;
-
-    r32 camera_offs_x;
-    r32 camera_offs_y;
-
-    b32 do_da_thing;
-    
+    b32 reverse_winding;
     // temporary-----------------------------
 };
 

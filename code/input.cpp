@@ -5,17 +5,9 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
                              r32 curr_cursorX,
                              r32 curr_cursorY)
 {
-    // dude am I doing zbuffering correctly, maybe that's the problem??
-    b32 result = false;
+    b32 result = true;
 
-    // need to make WASD work in the direction camera is facing
-    // moving by Y can be the same because we don't want to ever yaw
-    // distance between prev and curr cursor gives you roll and pitch
-    // by x component and y component;
-    // but if you wanted to yaw (do it through keys)
-    // then moving by Y is not the same
-    
-    // @TODO fix moving faster diagonally if you care...
+    // @todo fix moving faster diagonally if you care...
 
     u64 prev_kflags = ENGINE_STATE->keyflags;
     ENGINE_STATE->keyflags |= curr_keyflags_to_set;
@@ -65,23 +57,6 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
         ENGINE_STATE->camera_angle -= PI/256;
     }
     
-    if (ExtractKey(kflags, KEY_UP))
-    {
-        ENGINE_STATE->camera_offs_y += 5.0f;
-    }
-    if (ExtractKey(kflags, KEY_DOWN))
-    {
-        ENGINE_STATE->camera_offs_y -= 5.0f;            
-    }
-    if (ExtractKey(kflags, KEY_LEFT))
-    {
-        ENGINE_STATE->camera_offs_x -= 5.0f;
-    }
-    if (ExtractKey(kflags, KEY_RIGHT))
-    {
-        ENGINE_STATE->camera_offs_x += 5.0f;
-    }
-    
     Vector3 camera_movement = vec_zero3();
     if (ExtractKey(kflags, KEY_W))
     {
@@ -122,7 +97,7 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
     
     if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
     {
-
+        
     }
     if (ExtractKey(mflags_trans_to_up, MOUSE_M2))
     {

@@ -84,7 +84,7 @@ void RasterizeTriangle(Triangle tri, u32 color, b32 inv)
             b32 cond = (ENGINE_STATE->reverse_winding ?
                         w0 >= 0 && w1 >= 0 && w2 >= 0 :
                         w0 <= 0 && w1 <= 0 && w2 <= 0);
-            // if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test
+            // if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test original
             // if (w0 <= 0 && w1 <= 0 && w2 <= 0) // inside test
             if (cond)
             {
@@ -101,7 +101,7 @@ void RasterizeTriangle(Triangle tri, u32 color, b32 inv)
 
                 u32 intColor = (((u32)255 << 24) | (r << 16) | (g << 8) | b);
                             
-                // if (z >= *zbuffer_point)
+                // if (z >= *zbuffer_point) // original
                 if (z < *zbuffer_point)
                 {
                     *framebuffer_access(i, j) = (inv ? intColor : color);
@@ -269,5 +269,6 @@ extern "C" void update_and_render()
     test();
 
     zbuffer_reset(zbuffer, framebuffer.width, framebuffer.width, framebuffer.height);
+    arena_reset(&TEMPORARY_ARENA);
 }
 

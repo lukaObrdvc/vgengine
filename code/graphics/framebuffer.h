@@ -2,7 +2,8 @@
 #define FRAMEBUFFER_H
 
 #define MAX_FRAMEBUFFER_SIZE 2073600 // 1920*1080
-#define Z_BUFFER_RESET_VALUE 1.0f
+#define Z_BUFFER_RESET_VALUE 500.0f
+// #define Z_BUFFER_RESET_VALUE 1.0f
 
 
 struct Framebuffer

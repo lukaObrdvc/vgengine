@@ -1,9 +1,8 @@
-// @doc this is for arenas you know you want, and you make them once in init somewhere
 void arena_make(Arena* arena, u32 capacity)
 {
     Arena* managing_arena = &MANAGING_ARENA;
     u64 unaligned_base = (u64)(managing_arena->base + managing_arena->size);
-    u64 aligned_base = align_up(unaligned_base, 2); // is this good?
+    u64 aligned_base = align_up(unaligned_base, 1); // is this good?
     
     arena->base = (u8*)aligned_base;
     arena->size = 0;
@@ -27,3 +26,4 @@ void* arena_push_size(Arena* arena, const u64& size, const u64& alignment)
     return (void*)aligned_base;
 }
 
+#define temp_alloc(type, ...) arena_push<type>(&TEMPORARY_ARENA, __VA_ARGS__)

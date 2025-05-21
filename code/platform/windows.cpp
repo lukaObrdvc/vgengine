@@ -388,10 +388,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     window_buffer_info.bmiHeader.biBitCount = bytes_per_pixel*8;
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
 
-    // FRAMEBUFFER_WIDTH = 1280;
-    // FRAMEBUFFER_HEIGHT = 720;
-    // POINT center = { (LONG)FRAMEBUFFER_WIDTH/2, (LONG)FRAMEBUFFER_HEIGHT/2 };
-    POINT center = { (LONG)1280/2, (LONG)720/2 };
+    POINT center = { (LONG)FRAMEBUFFER_WIDTH/2, (LONG)FRAMEBUFFER_HEIGHT/2 };
+    // POINT center = { (LONG)1280/2, (LONG)720/2 };
     ClientToScreen(window, &center);
     SetCursorPos(center.x, center.y);
     
