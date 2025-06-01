@@ -7,11 +7,12 @@ struct Quaternion
     r32 x, y, z, w;
 };
 
-Quaternion quaternion_euler(r32 x, r32 y, r32 z);
-Vector3 quaternion_rotate(Vector3 v, Quaternion q);
-Quaternion quaternion_mul(Quaternion q1, Quaternion q2);
+Quaternion quaternion_from_euler(r32 x, r32 y, r32 z);
+Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q);
+Quaternion quaternion_chain(const Quaternion& q1, const Quaternion& q2);
 Quaternion quaternion_normalize(Quaternion q);
-void quaternion_to_matrix(Quaternion q, Matrix4* m);
+void quaternion_to_matrix(const Quaternion& q, Matrix4* m);
+Matrix4* quaternion_to_tmatrix(Quaternion q);
 
 inline Quaternion quaternion_identity()
 {

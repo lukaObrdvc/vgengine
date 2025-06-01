@@ -1,6 +1,6 @@
 // @todo figure out if clocwise vs anti-clockwise?
 // @doc this requires radians
-Quaternion quaternion_euler(r32 x, r32 y, r32 z)
+Quaternion quaternion_from_euler(r32 x, r32 y, r32 z)
 {
     // @todo use halfAngle local variables here
     r32 cx = cosf(x * 0.5f);
@@ -18,7 +18,7 @@ Quaternion quaternion_euler(r32 x, r32 y, r32 z)
     return q;
 }
 
-Vector3 quaternion_rotate(Vector3 v, Quaternion q)
+Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q)
 {
     Vector3 qv = { q.x, q.y, q.z };
     Vector3 temp = vec_scale(vec_cross(qv, v), 2.0f);
@@ -29,7 +29,7 @@ Vector3 quaternion_rotate(Vector3 v, Quaternion q)
 // @doc applies q1 first, then q2
 // @doc this chains rotations
 // @todo maybe a better name?
-Quaternion quaternion_mul(Quaternion q1, Quaternion q2)
+Quaternion quaternion_chain(const Quaternion& q1, const Quaternion& q2)
 {
     Quaternion result;
     result.w = q2.w * q1.w - q2.x * q1.x - q2.y * q1.y - q2.z * q1.z;
@@ -51,7 +51,7 @@ Quaternion quaternion_normalize(Quaternion q)
             q.w * inv_len};
 }
 
-void quaternion_to_matrix(Quaternion q, Matrix4* m)
+void quaternion_to_matrix(const Quaternion& q, Matrix4* m)
 {
     r32 xx = q.x * q.x;
     r32 yy = q.y * q.y;
@@ -79,4 +79,11 @@ void quaternion_to_matrix(Quaternion q, Matrix4* m)
     m->e[2][3] = 0.0f;
 
     m->W = {0.0f, 0.0f, 0.0f, 1.0f};
+}
+
+Matrix4* quaternion_to_tmatrix(Quaternion q)
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    quaternion_to_matrix(q, m);
+    return m;
 }
