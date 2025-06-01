@@ -16,7 +16,10 @@ union Matrix4
 
 Vector3 matrix_mul_vector(Matrix4* m, Vector3 v);
 void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result);
+Matrix4* tmatrix_mul(Matrix4* m1, Matrix4* m2);
 void matrix_transpose(Matrix4* m);
+void matrix_compose(s32 count, ...);
+Matrix4* tmatrix_compose(s32 count, ...);
 
 
 // MATRIX FUNCTIONS FOR r32
@@ -85,6 +88,55 @@ inline void matrix_translate(Matrix4* m, Vector3 v)
     m->e[3][0] += v.x;
     m->e[3][1] += v.y;
     m->e[3][2] += v.z;
+}
+
+inline Matrix4* tmatrix_unit()
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    matrix_unit(m);
+    return m;
+}
+
+inline Matrix4* tmatrix_make(Vector4 X, Vector4 Y, Vector4 Z, Vector4 W)
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    matrix_make(m, X, Y, Z, W);
+    return m;
+}
+
+inline Matrix4* tmatrix_rot_x(r32 angle)
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    matrix_rot_x(m, angle);
+    return m;
+}
+
+inline Matrix4* tmatrix_rot_y(r32 angle)
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    matrix_rot_y(m, angle);
+    return m;
+}
+
+inline Matrix4* tmatrix_rot_z(r32 angle)
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    matrix_rot_z(m, angle);
+    return m;
+}
+
+inline Matrix4* tmatrix_scale(Vector3 v)
+{
+    Matrix4* m = tmatrix_unit();
+    matrix_scale(m, v);
+    return m;
+}
+
+inline Matrix4* tmatrix_translate(Vector3 v)
+{
+    Matrix4* m = tmatrix_unit();
+    matrix_translate(m, v);
+    return m;
 }
 
 

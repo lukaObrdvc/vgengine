@@ -25,6 +25,13 @@ void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result)
     }
 }
 
+Matrix4* tmatrix_mul(Matrix4* m1, Matrix4* m2)
+{
+    Matrix4* result = temp_alloc(Matrix4);
+    matrix_mul(m1, m2, result);
+    return result;
+}
+
 void matrix_transpose(Matrix4* m)
 {
     swap(m->e[0][1], m->e[1][0]);
@@ -82,4 +89,39 @@ void matrix_compose(s32 count, ...)
     }
     release_scratch(scratch);
     va_end(matrices);
+}
+
+Matrix4* tmatrix_compose(s32 count, ...)
+{
+    ASSERT(count >= 2);
+    
+    va_list matrices;
+    va_start(matrices, count);
+    Scratch* scratch = get_scratch();
+
+    Matrix4* result = temp_alloc(Matrix4);
+    Matrix4* tmp_results = scratch_push<Matrix4>(scratch, count - 1);
+
+    Matrix4* first = va_arg(matrices, Matrix4*);
+    Matrix4* second = va_arg(matrices, Matrix4*);
+    
+    if (count > 2)
+    {
+        matrix_mul(first, second, &tmp_results[0]);
+    
+        for (s32 i = 0; i < count - 2; i++)
+        {
+            matrix_mul(&tmp_results[i], va_arg(matrices, Matrix4*), &tmp_results[i+1]);
+        }
+    
+        matrix_mul(&tmp_results[count-1], va_arg(matrices, Matrix4*), result);
+    }
+    else
+    {
+        matrix_mul(first, second, result);
+    }
+    release_scratch(scratch);
+    va_end(matrices);
+
+    return result;
 }

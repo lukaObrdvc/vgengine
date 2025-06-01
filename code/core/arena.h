@@ -78,4 +78,7 @@ inline void arena_set_size(Arena* arena, u64 size)
 }
 
 
+#define temp_alloc(type, ...) arena_push<type>(&TEMPORARY_ARENA, __VA_ARGS__)
+
+
 #endif

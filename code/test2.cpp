@@ -103,34 +103,27 @@ void orbiting_camera_test()
     Vector3 B2 = vec_make(60.0f, 0.0f, 0.0f);
     Vector3 C2 = vec_make(-70.0f, 60.0f, -30.0f);
     
-    Matrix4* WtoC = temp_alloc(Matrix4);
-    Matrix4* R = temp_alloc(Matrix4);
-    Matrix4* T = temp_alloc(Matrix4);
-    Matrix4* R2 = temp_alloc(Matrix4);
     Vector3 orbiting_point = vec_make(0.0f, 0.0f, 360.0f);
     
     r32 angle = ENGINE_STATE->line_angle;
     r32 camera_angle = ENGINE_STATE->camera_angle;
     
-    matrix_rot_y(R, camera_angle);
-    matrix_rot_y(R2, -camera_angle);
+    Matrix4* R = tmatrix_rot_y(camera_angle);
+    Matrix4* R2 = tmatrix_rot_y(-camera_angle);
     
     orbiting_point = matrix_mul_vector(R, orbiting_point);
     
-    matrix_unit(T);
-    matrix_translate(T, orbiting_point);
+    Matrix4* T = tmatrix_translate(orbiting_point);
     
-    matrix_unit(WtoC);
-    matrix_compose(3, WtoC, T, R2); // does order here make sense?
+    // does order here make sense?
+    Matrix4* WtoC = tmatrix_compose(2, T, R2);
 
 #define RotTriangles 1
 #define ChangeAngle 0
     
 #if RotTriangles
-    Matrix4* rot1 = temp_alloc(Matrix4);
-    Matrix4* rot2 = temp_alloc(Matrix4);
-    matrix_rot_y(rot1, angle);
-    matrix_rot_y(rot2, (angle+PI/4));
+    Matrix4* rot1 = tmatrix_rot_y(angle);
+    Matrix4* rot2 = tmatrix_rot_y(angle + PI/4);
 
     A = matrix_mul_vector(rot1, A);
     B = matrix_mul_vector(rot1, B);

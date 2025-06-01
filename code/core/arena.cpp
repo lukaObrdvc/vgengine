@@ -28,9 +28,6 @@ void* arena_push_size(Arena* arena, const u64& size, const u64& alignment = 1)
     return (void*)aligned_base;
 }
 
-
-#define temp_alloc(type, ...) arena_push<type>(&TEMPORARY_ARENA, __VA_ARGS__)
-
 inline void temp_reset()
 {
     arena_reset(&TEMPORARY_ARENA);
@@ -40,3 +37,4 @@ inline void temp_set_size(u64 size)
 {
     arena_set_size(&TEMPORARY_ARENA, size);
 }
+

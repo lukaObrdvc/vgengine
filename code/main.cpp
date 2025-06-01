@@ -25,15 +25,17 @@
 
 #include "core/basic.h"
 
+#include "core/arena.h"
+#include "core/scratch.h"
+
+#include "platform/platform.h"
+
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/quaternion.h"
 #include "math/transform.h"
 
 #include "core/rect.h"
-
-#include "core/arena.h"
-#include "core/scratch.h"
 
 #include "graphics/camera.h"
 // #include "graphics/clip.h"
@@ -45,7 +47,6 @@
 
 #include "new_mani.h"
 
-#include "platform/platform.h"
 #if !USE_DLL
 #include "platform/engine.h"
 #endif
