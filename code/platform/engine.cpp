@@ -71,7 +71,7 @@ void RasterizeTriangle(Triangle tri, u32 color, b32 inv)
     
     Rect bbox = ObtainTriangleBBox(tri);
     r32 area = EdgeFunction(p2, p1, p0);
-
+    
     for (s32 j = Floor(bbox.min_y); j <= Floor(bbox.max_y); j++)
     {
         for (s32 i = Floor(bbox.min_x); i <= Floor(bbox.max_x); i++)
@@ -193,9 +193,9 @@ s32 TriangleWorldToRasterPROJ(Triangle* tri, TriangleHom* out_triangles)
     Matrix4* PROJ = arena_push<Matrix4>(&TEMPORARY_ARENA);
     matrix_proj(PROJ);
 
-    Vector3 A_clip3 = matrix_mul(PROJ, tri->A);
-    Vector3 B_clip3 = matrix_mul(PROJ, tri->B);
-    Vector3 C_clip3 = matrix_mul(PROJ, tri->C);
+    Vector3 A_clip3 = matrix_mul_vector(PROJ, tri->A);
+    Vector3 B_clip3 = matrix_mul_vector(PROJ, tri->B);
+    Vector3 C_clip3 = matrix_mul_vector(PROJ, tri->C);
 
     Vector4 A_clip = vec_make(A_clip3.x, A_clip3.y, A_clip3.z, -tri->A.z);
     Vector4 B_clip = vec_make(B_clip3.x, B_clip3.y, B_clip3.z, -tri->B.z);
@@ -268,7 +268,7 @@ extern "C" void update_and_render()
     
     test();
 
-    zbuffer_reset(zbuffer, framebuffer.width, framebuffer.width, framebuffer.height);
-    arena_reset(&TEMPORARY_ARENA);
+    zbuffer_reset(zbuffer, framebuffer.width, framebuffer.height);
+    temp_reset();
 }
 

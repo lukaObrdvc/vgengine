@@ -4,6 +4,8 @@
 // @todo wrap around USE_WINDOWS, and then place proper stuff in .bat .sh
 #define PLATFORM_WINDOWS 1
 
+// @todo should probably not use these tho?
+
 #if BUILD_DEVELOPER
 #define DEVELOPER 1
 #else

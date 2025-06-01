@@ -20,7 +20,4 @@ inline r32* zbuffer_access(s32 x, s32 y, u8* buff, s32 pitch, s32 bytpp);
 inline void zbuffer_reset(u8* buff, s32 pitch, s32 bytpp, s32 width, s32 height);
 
 
-
-
-
 #endif

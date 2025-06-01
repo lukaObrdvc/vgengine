@@ -35,12 +35,12 @@ void final_giga_test()
     Matrix4* tmp = arena_push<Matrix4>(&TEMPORARY_ARENA);
     Matrix4* tmp2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
     quaternion_to_matrix(camera->orientation, tmp2);
-    matrix_mul(camera_matrix, tmp2, tmp);
+    matrix_mul(camera_matrix, tmp, tmp2);
     swap(camera_matrix, tmp);
     
     for (s32 i = 0; i < 8; i++)
     {
-        s_vertices[i] = matrix_mul(camera_matrix, s_vertices[i]);
+        s_vertices[i] = matrix_mul_vector(camera_matrix, s_vertices[i]);
     }
 
     Mesh cube;
@@ -94,15 +94,7 @@ void final_giga_test()
 void orbiting_camera_test()
 {
     u32 color = ((u32)255 << 24) | ((u32)0 << 16) | ((u32)0 << 8) | ((u32)0);
-
-    // Vector3 A = vec_make(-50.0f, -20.0f, -120.0f); // A->C->B = clockwise winding
-    // Vector3 B = vec_make(60.0f, 0.0f, -150.0f);
-    // Vector3 C = vec_make(-70.0f, 60.0f, -200.0f);
-
-    // Vector3 A2 = vec_make(-50.0f, -20.0f, -200.0f);
-    // Vector3 B2 = vec_make(60.0f, 0.0f, -150.0f);
-    // Vector3 C2 = vec_make(-70.0f, 60.0f, -120.0f);
-
+    
     Vector3 A = vec_make(-50.0f, -20.0f, -30.0f); // A->C->B = clockwise winding
     Vector3 B = vec_make(60.0f, 0.0f, 0.0f);
     Vector3 C = vec_make(-70.0f, 60.0f, 50.0f);
@@ -110,75 +102,52 @@ void orbiting_camera_test()
     Vector3 A2 = vec_make(-50.0f, -20.0f, 50.0f);
     Vector3 B2 = vec_make(60.0f, 0.0f, 0.0f);
     Vector3 C2 = vec_make(-70.0f, 60.0f, -30.0f);
-
-#define RotCamera 1
-#define RotTriangles 1
-#define ChangeAngle 1
-// #define ORBIT_OFFS 180
-#define ORBIT_OFFS 360
     
     Matrix4* WtoC = temp_alloc(Matrix4);
-    Matrix4* tempRotY = temp_alloc(Matrix4);
-    Matrix4* tempTrans = temp_alloc(Matrix4);
-    Matrix4* tempRotY2 = temp_alloc(Matrix4);
-    // Matrix4* tempTrans2 = temp_alloc(Matrix4);
-    matrix_unit(WtoC);
-    matrix_unit(tempTrans);
-    // matrix_unit(tempTrans2);
-    Vector3 orbiting_point = vec_make(0.0f, 0.0f, (r32)ORBIT_OFFS); // assuming it's in 0,0,-180 coordsys
+    Matrix4* R = temp_alloc(Matrix4);
+    Matrix4* T = temp_alloc(Matrix4);
+    Matrix4* R2 = temp_alloc(Matrix4);
+    Vector3 orbiting_point = vec_make(0.0f, 0.0f, 360.0f);
     
     r32 angle = ENGINE_STATE->line_angle;
     r32 camera_angle = ENGINE_STATE->camera_angle;
     
-    matrix_rotation_y(tempRotY, camera_angle);
-#if RotCamera
-    orbiting_point = matrix_mul(tempRotY, orbiting_point);
-#endif
-    // these 3 iffy
-    // matrix_translate(tempTrans, vec_make(0.0f, 0.0f, (r32)-ORBIT_OFFS));
-    // orbiting_point = matrix_mul(tempTrans, orbiting_point);
-    // matrix_translate(tempTrans2, orbiting_point);
-    matrix_translate(tempTrans, orbiting_point);
+    matrix_rot_y(R, camera_angle);
+    matrix_rot_y(R2, -camera_angle);
     
-#if RotCamera
-    matrix_rotation_y(tempRotY2, -camera_angle);
-#else
-    matrix_rotation_y(tempRotY2, 0);
-#endif
-    Matrix4* tempResult = temp_alloc(Matrix4);
-    // matrix_mul(WtoC, tempRotY, tempResult);
-    // matrix_mul(WtoC, tempRotY2, tempResult);
-    // matrix_mul(tempResult, tempTrans2, WtoC);
-    // matrix_mul(tempResult, tempTrans, WtoC);
+    orbiting_point = matrix_mul_vector(R, orbiting_point);
+    
+    matrix_unit(T);
+    matrix_translate(T, orbiting_point);
+    
+    matrix_unit(WtoC);
+    matrix_compose(3, WtoC, T, R2); // does order here make sense?
 
-    matrix_mul(WtoC, tempTrans, tempResult);
-    matrix_mul(tempResult, tempRotY2, WtoC);
-
-    // is this part correct?
+#define RotTriangles 1
+#define ChangeAngle 0
+    
 #if RotTriangles
     Matrix4* rot1 = temp_alloc(Matrix4);
     Matrix4* rot2 = temp_alloc(Matrix4);
-    matrix_rotation_y(rot1, angle);
-    // matrix_rotation_y(rot2, -(angle+PI/4));
-    // matrix_rotation_y(rot1, -angle);
-    matrix_rotation_y(rot2, (angle+PI/4));
+    matrix_rot_y(rot1, angle);
+    matrix_rot_y(rot2, (angle+PI/4));
 
-    A = matrix_mul(rot1, A);
-    B = matrix_mul(rot1, B);
-    C = matrix_mul(rot1, C);
+    A = matrix_mul_vector(rot1, A);
+    B = matrix_mul_vector(rot1, B);
+    C = matrix_mul_vector(rot1, C);
 
-    A2 = matrix_mul(rot2, A2);
-    B2 = matrix_mul(rot2, B2);
-    C2 = matrix_mul(rot2, C2);
+    A2 = matrix_mul_vector(rot2, A2);
+    B2 = matrix_mul_vector(rot2, B2);
+    C2 = matrix_mul_vector(rot2, C2);
 #endif
 
-    A = matrix_mul(WtoC, A);
-    B = matrix_mul(WtoC, B);
-    C = matrix_mul(WtoC, C);
+    A = matrix_mul_vector(WtoC, A);
+    B = matrix_mul_vector(WtoC, B);
+    C = matrix_mul_vector(WtoC, C);
 
-    A2 = matrix_mul(WtoC, A2);
-    B2 = matrix_mul(WtoC, B2);
-    C2 = matrix_mul(WtoC, C2);
+    A2 = matrix_mul_vector(WtoC, A2);
+    B2 = matrix_mul_vector(WtoC, B2);
+    C2 = matrix_mul_vector(WtoC, C2);
 
     // vertices are now in camera space
     
@@ -210,10 +179,8 @@ void orbiting_camera_test()
     // ENGINE_STATE->line_angle += PI / kilobytes(2);
 #endif
 
-#undef RotCamera
 #undef RotTriangles
 #undef ChangeAngle
-#undef LogToFile
 }
 
 void none_test(void)

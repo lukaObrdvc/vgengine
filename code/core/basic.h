@@ -57,12 +57,6 @@ T signof(T n)
 }
 
 template<typename T>
-T signof64(T n)
-{
-    return !signbit((r64)(n)) * 2 - 1;
-}
-
-template<typename T>
 T Min(T a, T b)
 {
     return (a < b ? a : b);
@@ -107,11 +101,6 @@ inline r32 lerp(r32 A, r32 B, r32 t)
     return B * t + A * (1 - t);
 }
 
-inline r64 lerp(r64 A, r64 B, r64 t)
-{
-    return B * t + A * (1 - t);
-}
-
 
 // @doc rounding, flooring towards zero
 inline r32 Floor(r32 n)
@@ -135,27 +124,6 @@ inline r32 decimal(r32 n)
 }
 
 
-inline r64 Floor(r64 n)
-{
-    return (r64)(s32)(n);
-}
-
-inline r64 Ceil(r64 n)
-{
-    return (r64)(s32)(n+1);
-}
-
-inline r64 Round(r64 n)
-{
-    return (r64)(s32)(n+0.5);
-}
-
-inline r64 decimal(r64 n)
-{
-    return n-(s32)n;
-}
-
-
 inline s32 floori(r32 n)
 {
     return (s32)(n);
@@ -170,23 +138,6 @@ inline s32 roundi(r32 n)
 {
     return (s32)(n+0.5);
 }
-
-
-inline s64 floori(r64 n)
-{
-    return (s64)(n);
-}
-
-inline s64 ceili(r64 n)
-{
-    return (s64)(n+1);
-}
-
-inline s64 roundi(r64 n)
-{
-    return (s64)(n+0.5);
-}
-
 
 inline u32 trunc(u64 n)
 {
@@ -218,18 +169,8 @@ inline r32 radians(r32 angle)
     return (angle*360)/TAU;
 }
 
-inline r64 radians(r64 angle)
-{
-    return (angle*360)/TAU;
-}
-
 
 inline r32 degrees(r32 angle)
-{
-    return (angle*TAU)/360;
-}
-
-inline r64 degrees(r64 angle)
 {
     return (angle*TAU)/360;
 }

@@ -33,6 +33,7 @@
 #include "core/rect.h"
 
 #include "core/arena.h"
+#include "core/scratch.h"
 
 #include "graphics/camera.h"
 // #include "graphics/clip.h"
@@ -53,10 +54,11 @@
 #include "input.h"
 
 // .cpps here probably.....
+#include "core/arena.cpp"
+#include "core/scratch.cpp"
+
 #include "math/matrix.cpp"
 #include "math/quaternion.cpp"
-
-#include "core/arena.cpp"
 
 // #include "graphics/line.cpp"
 

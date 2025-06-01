@@ -31,6 +31,7 @@ struct Engine_state
 #define FRAMEBUFFER_WIDTH (FRAMEBUFFER.width)
 #define FRAMEBUFFER_HEIGHT (FRAMEBUFFER.height)
 #define FRAMEBUFFER_BYTPP (PLATFORM_API.bytes_per_pixel)
+// @todo maybe calculate these once, cache them in engine_state
 #define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * FRAMEBUFFER_BYTPP)
 #define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * FRAMEBUFFER_BYTPP)
 

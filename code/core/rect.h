@@ -63,7 +63,6 @@ inline Rect rect_from_top_right(Vector2 top_right, r32 width, r32 height)
 // translating rect
 // scaling?
 // clamping
-// look at unity stuff, and think about some stuff yourself
 
 // FUNCTIONS FOR s32
 

@@ -1,10 +1,6 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-// @TODO when converting to cpp, initialize this in the actual structs...
-// well you should have a function that initializes these to stubs
-
-// @TODO same thing about whether you want EngineAPI struct to use -> or .
 
 #if USE_DLL
 
@@ -43,7 +39,7 @@ global_variable Engine_api engine_api = {
     .platform_init_memory_base = platform_init_memory_base_stub,
     .update_and_render = update_and_render_stub,
     .process_input = process_input_stub
-    };
+};
 
 #define UPDATE_AND_RENDER() engine_api.update_and_render()
 #define PLATFORM_INIT_ENGINE() engine_api.platform_init_engine()
@@ -62,5 +58,6 @@ extern "C" void platform_init_engine();
 #define PROCESS_INPUT(kts, ktus, mts, mtus, cX, cY) process_input((kts), (ktus), (mts), (mtus), (cX), (cY))
 
 #endif
+
 
 #endif

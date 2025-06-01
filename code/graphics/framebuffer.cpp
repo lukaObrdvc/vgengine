@@ -21,15 +21,13 @@ inline r32* zbuffer_access(s32 x, s32 y, r32* buff = ZBUFFER, s32 pitch = FRAMEB
     return buff - y*pitch + x;
 }
 
-
-// @todo do not need to pass pitch here if I pass width and height also
-inline void zbuffer_reset(r32* buff = ZBUFFER, s32 pitch = FRAMEBUFFER_WIDTH, s32 width = FRAMEBUFFER_WIDTH, s32 height = FRAMEBUFFER_HEIGHT)
+inline void zbuffer_reset(r32* buff = ZBUFFER, s32 width = FRAMEBUFFER_WIDTH, s32 height = FRAMEBUFFER_HEIGHT)
 {
     for (s32 y = 0; y < height; y++)
     {
         for (s32 x = 0; x < width; x++)
         {
-            *zbuffer_access(x, y, buff, pitch) = Z_BUFFER_RESET_VALUE;
+            *zbuffer_access(x, y, buff, width) = Z_BUFFER_RESET_VALUE;
         }
     }
 }

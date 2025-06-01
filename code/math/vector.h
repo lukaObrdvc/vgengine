@@ -2,7 +2,7 @@
 #define VECTOR_H
 
 // @todo make certain functions like vec_add variadic? but it's also
-// life if you did operator overloading honestly..
+// like if you did operator overloading honestly..
 
 // @todo implement vec_negate for everything..
 

@@ -14,7 +14,7 @@ union Matrix4
     r32 i[16];
 };
 
-Vector3 matrix_mul(Matrix4* m, Vector3 v);
+Vector3 matrix_mul_vector(Matrix4* m, Vector3 v);
 void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result);
 void matrix_transpose(Matrix4* m);
 
@@ -37,7 +37,7 @@ inline void matrix_make(Matrix4* m, Vector4 X, Vector4 Y, Vector4 Z, Vector4 W)
     m->W = W;
 }
 
-inline void matrix_rotation_x(Matrix4* m, r32 angle)
+inline void matrix_rot_x(Matrix4* m, r32 angle)
 {
     r32 sinA = sinf(angle);
     r32 cosA = cosf(angle);
@@ -48,7 +48,7 @@ inline void matrix_rotation_x(Matrix4* m, r32 angle)
     m->W = {0,     0,    0, 1};
 }
 
-inline void matrix_rotation_y(Matrix4* m, r32 angle)
+inline void matrix_rot_y(Matrix4* m, r32 angle)
 {
     r32 sinA = sinf(angle);
     r32 cosA = cosf(angle);
@@ -59,7 +59,7 @@ inline void matrix_rotation_y(Matrix4* m, r32 angle)
     m->W = {0,    0,     0, 1};
 }
 
-inline void matrix_rotation_z(Matrix4* m, r32 angle)
+inline void matrix_rot_z(Matrix4* m, r32 angle)
 {
     r32 sinA = sinf(angle);
     r32 cosA = cosf(angle);
@@ -69,6 +69,9 @@ inline void matrix_rotation_z(Matrix4* m, r32 angle)
     m->Z = {0,        0, 1, 0};
     m->W = {0,        0, 0, 1};
 }
+
+// @todo make versions which already have unit matrix values
+// elsewhere?
 
 inline void matrix_scale(Matrix4* m, Vector3 v)
 {
@@ -83,21 +86,6 @@ inline void matrix_translate(Matrix4* m, Vector3 v)
     m->e[3][1] += v.y;
     m->e[3][2] += v.z;
 }
-
-// @todo matrix_compose_transforms variadic function (or template?)
-
-// inline void MatrixToStr(u8* buff, m4 M)
-// {
-//     s32 pos = 0;
-//     for (s32 i = 0; i < 4; i++)
-//         {
-//             for (s32 j = 0; j < 4; j++)
-//                 {
-//                     pos += sprintf((char* const)(buff+pos), "%8.2f", M.m[i][j]);
-//                 }
-//             pos += sprintf((char* const)(buff+pos), "\n");
-//         }
-// }
 
 
 #endif

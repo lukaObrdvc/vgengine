@@ -33,6 +33,15 @@ struct Globals
     Arena managing_arena;
     Arena permanent_arena;
     Arena temporary_arena;
+    Arena scratch_arena;
+    // @todo abstract into general pool and use that instead
+    Scratch scratch_pool[SCRATCH_POOL_SIZE];
+    // @todo turn into a bitfield instead
+    b32 scratch_in_use[SCRATCH_POOL_SIZE];
+    
+#if DEVELOPER
+    s32 scratch_highest_size;
+#endif
 };
 
 global_variable Globals* globals;
