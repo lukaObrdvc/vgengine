@@ -21,6 +21,7 @@ struct Engine_state
     // temporary-----------------------------
     r32 camera_angle;
     r32 line_angle;
+    r32 spin_angle;
     b32 reverse_winding;
     // temporary-----------------------------
 };

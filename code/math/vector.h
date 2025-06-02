@@ -83,17 +83,31 @@ inline r32 vec_len(Vector3 v)
     return sqrtf(sqr(v.x) + sqr(v.y) + sqr(v.z));
 }
 
-// @pot a version without taking sqrt for performance
+inline r32 vec_len_squared(Vector2 v)
+{
+    return sqr(v.x) + sqr(v.y);
+}
+inline r32 vec_len_squared(Vector3 v)
+{
+    return sqr(v.x) + sqr(v.y) + sqr(v.z);
+}
+
 inline r32 vec_edist(Vector2 v1, Vector2 v2)
 {
-    return sqrtf(sqr(v1.x - v2.x) +
-                 sqr(v1.y - v2.y));
+    return sqrtf(sqr(v1.x - v2.x) + sqr(v1.y - v2.y));
 }
 inline r32 vec_edist(const Vector3& v1, const Vector3& v2)
 {
-    return sqrtf(sqr(v1.x - v2.x) +
-                 sqr(v1.y - v2.y) +
-                 sqr(v1.z - v2.z));
+    return sqrtf(sqr(v1.x - v2.x) + sqr(v1.y - v2.y) + sqr(v1.z - v2.z));
+}
+
+inline r32 vec_edist_squared(Vector2 v1, Vector2 v2)
+{
+    return sqr(v1.x - v2.x) + sqr(v1.y - v2.y);
+}
+inline r32 vec_edist_squared(const Vector3& v1, const Vector3& v2)
+{
+    return sqr(v1.x - v2.x) + sqr(v1.y - v2.y) + sqr(v1.z - v2.z);
 }
 
 // @doc I think you never want to check for normalized status, just

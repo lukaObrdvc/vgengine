@@ -81,9 +81,10 @@ void RasterizeTriangle(Triangle tri, u32 color, b32 inv)
             r32 w1 = EdgeFunction(p, p0, p2);
             r32 w2 = EdgeFunction(p, p1, p0);
 
-            b32 cond = (ENGINE_STATE->reverse_winding ?
-                        w0 >= 0 && w1 >= 0 && w2 >= 0 :
-                        w0 <= 0 && w1 <= 0 && w2 <= 0);
+            // b32 cond = (ENGINE_STATE->reverse_winding ?
+                        // w0 >= 0 && w1 >= 0 && w2 >= 0 :
+                        // w0 <= 0 && w1 <= 0 && w2 <= 0);
+            b32 cond = (w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0);
             // if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test original
             // if (w0 <= 0 && w1 <= 0 && w2 <= 0) // inside test
             if (cond)

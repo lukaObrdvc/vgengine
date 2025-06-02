@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING quaternion_test
+#define CURRENTLY_TESTING composite_rotations_test
 #define TEST_ONLY_ONCE ENGINE_STATE->tested_once = true
 
 void final_giga_test()
@@ -9,13 +9,15 @@ void final_giga_test()
     u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
     u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
     u32 u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
-
+    
     u32 colors[6] = {
         f_color, b_color,
         l_color, r_color,
         d_color, u_color
     };
     
+    // 168 B with mesh
+    // 432 B without mesh
     Vector3 s_vertices[8] = {
         vec_make(-10.0f, -10.0f, -150.0f) , vec_make(-10.0f, 10.0f, -150.0f) ,
         vec_make(10.0f, 10.0f, -150.0f)   , vec_make(10.0f, -10.0f, -150.0f) ,
@@ -91,6 +93,109 @@ void final_giga_test()
     }
 }
 
+void composite_rotations_test()
+{
+    u32 color = ((u32)255 << 24) | ((u32)0 << 16) | ((u32)0 << 8) | ((u32)0);
+    
+    Vector3 A = vec_make(-50.0f, -20.0f, -30.0f); // A->C->B = clockwise winding
+    Vector3 B = vec_make(60.0f, 0.0f, 0.0f);
+    Vector3 C = vec_make(-70.0f, 60.0f, 50.0f);
+
+    Vector3 A2 = vec_make(-50.0f, -20.0f, 50.0f);
+    Vector3 B2 = vec_make(60.0f, 0.0f, 0.0f);
+    Vector3 C2 = vec_make(-70.0f, 60.0f, -30.0f);
+
+    Vector3 orbiting_point = vec_make(0.0f, 0.0f, 360.0f);
+    
+    r32 angle = ENGINE_STATE->line_angle;
+    r32 spin_angle = ENGINE_STATE->spin_angle;
+    r32 camera_angle = ENGINE_STATE->camera_angle;
+
+    Quaternion camera_rot_axis = quaternion_from_axis(vec_make(0.0f, 1.0f, 0.0f), camera_angle);
+
+    orbiting_point = quaternion_rot_vector(orbiting_point, camera_rot_axis);
+    
+    Matrix4* T = tmatrix_translate(orbiting_point);
+    camera_rot_axis.w *= -1; 
+    Matrix4* R = quaternion_to_tmatrix(camera_rot_axis);
+    
+    Matrix4* WtoC = tmatrix_mul(T, R);
+
+#define RotTriangles 1
+#define OrbitTriangles 1
+#define ChangeAngle 1
+    
+#if RotTriangles
+    Vector3 world_y = vec_make(0.0f, 1.0f, 0.0f);
+    Quaternion tilt_rot = quaternion_from_axis(vec_make(1.0f, 0.0f, 0.0f), PI / 8);
+    Vector3 tilt_axis = quaternion_rot_vector(world_y, tilt_rot);
+
+    Quaternion spin_rot1 = quaternion_from_axis(tilt_axis, spin_angle);
+    Quaternion spin_rot2 = quaternion_from_axis(tilt_axis, -spin_angle);
+    
+#if OrbitTriangles
+    Quaternion orbit_rot = quaternion_from_axis(world_y, angle);
+    Quaternion final_rot1 = quaternion_chain(spin_rot1, orbit_rot);
+    Quaternion final_rot2 = quaternion_chain(spin_rot2, orbit_rot);
+#else
+    Quaternion final_rot1 = spin_rot1;
+    Quaternion final_rot2 = spin_rot2;
+#endif
+    Matrix4* rot1 = quaternion_to_tmatrix(final_rot1);
+    Matrix4* rot2 = quaternion_to_tmatrix(final_rot2);
+
+    A = matrix_mul_vector(rot1, A);
+    B = matrix_mul_vector(rot1, B);
+    C = matrix_mul_vector(rot1, C);
+
+    A2 = matrix_mul_vector(rot2, A2);
+    B2 = matrix_mul_vector(rot2, B2);
+    C2 = matrix_mul_vector(rot2, C2);
+#endif
+
+    A = matrix_mul_vector(WtoC, A);
+    B = matrix_mul_vector(WtoC, B);
+    C = matrix_mul_vector(WtoC, C);
+
+    A2 = matrix_mul_vector(WtoC, A2);
+    B2 = matrix_mul_vector(WtoC, B2);
+    C2 = matrix_mul_vector(WtoC, C2);
+
+    // vertices are now in camera space
+    
+    Triangle t = {A, B, C};
+    t = TriangleWorldToRaster(t);
+    Triangle t2 = {A2, B2, C2};
+    t2 = TriangleWorldToRaster(t2);
+
+    // vertices are now in raster space
+    
+    // when rotating behind the triangles, they are getting culled
+    // because winding is reversed, how fix this?
+
+    // this doesn't work like before because bro you're not
+    // passing vertices anymore, you're passing a Triangle struct
+    // which will always have the same frickin winding
+    if (ENGINE_STATE->reverse_winding)
+    {
+        RasterizeTriangle(t, color, true);
+        RasterizeTriangle(t2, color, false);
+    }
+    else
+    {
+        RasterizeTriangle(t, color, true);
+        RasterizeTriangle(t2, color, false);
+    }
+#if ChangeAngle
+    ENGINE_STATE->spin_angle += PI / 516;
+    ENGINE_STATE->line_angle += PI / kilobytes(2);
+    // ENGINE_STATE->line_angle += PI / kilobytes(2);
+#endif
+
+#undef RotTriangles
+#undef ChangeAngle
+}
+
 void quaternion_test()
 {
     u32 color = ((u32)255 << 24) | ((u32)0 << 16) | ((u32)0 << 8) | ((u32)0);
@@ -122,16 +227,16 @@ void quaternion_test()
 #define ChangeAngle 0
     
 #if RotTriangles
-    Quaternion triangle_rot_axis = quaternion_from_axis(vec_make(0.0f, 1.0f, 0.0f), angle);
-    Quaternion triangle_rot_axis2 = quaternion_from_axis(vec_make(0.0f, 1.0f, 0.0f), angle + PI/4);
+    Matrix4* rot1 = tmatrix_rot_y(angle);
+    Matrix4* rot2 = tmatrix_rot_y(angle + PI/4);
 
-    A = quaternion_rot_vector(A, triangle_rot_axis);
-    B = quaternion_rot_vector(B, triangle_rot_axis);
-    C = quaternion_rot_vector(C, triangle_rot_axis);
+    A = matrix_mul_vector(rot1, A);
+    B = matrix_mul_vector(rot1, B);
+    C = matrix_mul_vector(rot1, C);
 
-    A2 = quaternion_rot_vector(A2, triangle_rot_axis2);
-    B2 = quaternion_rot_vector(B2, triangle_rot_axis2);
-    C2 = quaternion_rot_vector(C2, triangle_rot_axis2);
+    A2 = matrix_mul_vector(rot2, A2);
+    B2 = matrix_mul_vector(rot2, B2);
+    C2 = matrix_mul_vector(rot2, C2);
 #endif
 
     A = matrix_mul_vector(WtoC, A);

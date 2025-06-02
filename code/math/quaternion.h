@@ -8,11 +8,12 @@ struct Quaternion
 };
 
 Quaternion quaternion_from_euler(r32 x, r32 y, r32 z);
-Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q);
 Quaternion quaternion_chain(const Quaternion& q1, const Quaternion& q2);
 Quaternion quaternion_normalize(Quaternion q);
+Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q);
 void quaternion_to_matrix(const Quaternion& q, Matrix4* m);
 Matrix4* quaternion_to_tmatrix(Quaternion q);
+// Quaternion quaternion_between_vectors(const Vector3& v1, const Vector3& v2);
 
 inline Quaternion quaternion_identity()
 {

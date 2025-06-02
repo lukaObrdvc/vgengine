@@ -54,6 +54,7 @@ void init_engine_state()
                     
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
+    engine_state->spin_angle = 0;
     
     engine_state->reverse_winding = false;
     

@@ -2,13 +2,16 @@
 // @doc this requires radians
 Quaternion quaternion_from_euler(r32 x, r32 y, r32 z)
 {
-    // @todo use halfAngle local variables here
-    r32 cx = cosf(x * 0.5f);
-    r32 sx = sinf(x * 0.5f);
-    r32 cy = cosf(y * 0.5f);
-    r32 sy = sinf(y * 0.5f);
-    r32 cz = cosf(z * 0.5f);
-    r32 sz = sinf(z * 0.5f);
+    r32 hax = x * 0.5f;
+    r32 hay = y * 0.5f;
+    r32 haz = z * 0.5f;
+    
+    r32 cx = cosf(hax);
+    r32 sx = sinf(hax);
+    r32 cy = cosf(hay);
+    r32 sy = sinf(hay);
+    r32 cz = cosf(haz);
+    r32 sz = sinf(haz);
 
     Quaternion q;
     q.w = cx * cy * cz + sx * sy * sz;
@@ -18,6 +21,8 @@ Quaternion quaternion_from_euler(r32 x, r32 y, r32 z)
     return q;
 }
 
+// @doc when multiplying multipple vertices by a quaternion, it's
+// cheaper to convert to matrix instead and do matrix multiplication
 Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q)
 {
     Vector3 qv = { q.x, q.y, q.z };
@@ -26,9 +31,7 @@ Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q)
                    vec_cross(qv, temp));
 }
 
-// @doc applies q1 first, then q2
-// @doc this chains rotations
-// @todo maybe a better name?
+// @doc applies q1 first, then q2, so not commutative
 Quaternion quaternion_chain(const Quaternion& q1, const Quaternion& q2)
 {
     Quaternion result;
@@ -87,3 +90,4 @@ Matrix4* quaternion_to_tmatrix(Quaternion q)
     quaternion_to_matrix(q, m);
     return m;
 }
+
