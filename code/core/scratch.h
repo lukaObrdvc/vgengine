@@ -7,12 +7,15 @@
 
 // @todo maybe don't use Scratch* ?
 
+// @todo do we zero out scratch when releasing??
+
 struct Scratch
 {
     u8* base;
     s32 size;
     s32 index;
 };
+
 
 
 template<typename T>

@@ -25,13 +25,6 @@ void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result)
     }
 }
 
-Matrix4* tmatrix_mul(Matrix4* m1, Matrix4* m2)
-{
-    Matrix4* result = temp_alloc(Matrix4);
-    matrix_mul(m1, m2, result);
-    return result;
-}
-
 void matrix_transpose(Matrix4* m)
 {
     swap(m->e[0][1], m->e[1][0]);
@@ -63,9 +56,9 @@ void matrix_compose(s32 count, ...)
 
     // you need count-1 matrices for results, but then the last
     // result you want to write into the first argument, so you only
-    // need count-2 tmp results
+    // need count-2 tmp results, and -1 more because first parameter is result
     Matrix4* result = va_arg(matrices, Matrix4*);
-    Matrix4* tmp_results = scratch_push<Matrix4>(scratch, count - 2);
+    Matrix4* tmp_results = scratch_push<Matrix4>(scratch, count - 3);
 
     Matrix4* first = va_arg(matrices, Matrix4*);
     Matrix4* second = va_arg(matrices, Matrix4*);
@@ -76,12 +69,14 @@ void matrix_compose(s32 count, ...)
         matrix_mul(first, second, &tmp_results[0]);
     
         // then you multiply the rest of them, there is count-3 left tmp_results
-        for (s32 i = 0; i < count - 3; i++)
+        // but -1 more because the last one we put into result
+        for (s32 i = 0; i < count - 4; i++)
         {
             matrix_mul(&tmp_results[i], va_arg(matrices, Matrix4*), &tmp_results[i+1]);
         }
-    
-        matrix_mul(&tmp_results[count-2], va_arg(matrices, Matrix4*), result);
+
+        Matrix4* next = va_arg(matrices, Matrix4*);
+        matrix_mul(&tmp_results[count-4], next, result);
     }
     else
     {
@@ -100,7 +95,7 @@ Matrix4* tmatrix_compose(s32 count, ...)
     Scratch* scratch = get_scratch();
 
     Matrix4* result = temp_alloc(Matrix4);
-    Matrix4* tmp_results = scratch_push<Matrix4>(scratch, count - 1);
+    Matrix4* tmp_results = scratch_push<Matrix4>(scratch, count - 2);
 
     Matrix4* first = va_arg(matrices, Matrix4*);
     Matrix4* second = va_arg(matrices, Matrix4*);
@@ -109,12 +104,12 @@ Matrix4* tmatrix_compose(s32 count, ...)
     {
         matrix_mul(first, second, &tmp_results[0]);
     
-        for (s32 i = 0; i < count - 2; i++)
+        for (s32 i = 0; i < count - 3; i++)
         {
             matrix_mul(&tmp_results[i], va_arg(matrices, Matrix4*), &tmp_results[i+1]);
         }
-    
-        matrix_mul(&tmp_results[count-1], va_arg(matrices, Matrix4*), result);
+
+        matrix_mul(&tmp_results[count-3], va_arg(matrices, Matrix4*), result);
     }
     else
     {

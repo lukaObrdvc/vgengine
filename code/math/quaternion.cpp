@@ -31,21 +31,6 @@ Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q)
                    vec_cross(qv, temp));
 }
 
-
-
-
-
-// Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q)
-// {
-    // Vector3 qv = { q.x, q.y, q.z };
-    // Vector3 t = vec_scale(vec_cross(qv, v), 2.0f);
-    // return vec_add(v, vec_add(vec_scale(t, q.w), vec_cross(qv, t)));
-// }
-
-
-
-
-
 // @todo variadic function for this?
 // @doc applies q1 first, then q2, so not commutative
 // @doc think of it like q2 is the previous rotation, and q1 is building

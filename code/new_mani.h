@@ -24,6 +24,9 @@ struct Engine_state
     r32 line_angle;
     r32 spin_angle;
     b32 reverse_winding;
+    Transform* cube_transform;
+    r32 cube_scaling_factor;
+    b32 cube_scale_up;
     // temporary-----------------------------
 };
 

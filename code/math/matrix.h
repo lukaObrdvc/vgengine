@@ -16,7 +16,6 @@ union Matrix4
 
 Vector3 matrix_mul_vector(Matrix4* m, Vector3 v);
 void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result);
-Matrix4* tmatrix_mul(Matrix4* m1, Matrix4* m2);
 void matrix_transpose(Matrix4* m);
 void matrix_compose(s32 count, ...);
 Matrix4* tmatrix_compose(s32 count, ...);
@@ -38,6 +37,13 @@ inline void matrix_make(Matrix4* m, Vector4 X, Vector4 Y, Vector4 Z, Vector4 W)
     m->Y = Y;
     m->Z = Z;
     m->W = W;
+}
+
+inline Matrix4* tmatrix_mul(Matrix4* m1, Matrix4* m2)
+{
+    Matrix4* result = temp_alloc(Matrix4);
+    matrix_mul(m1, m2, result);
+    return result;
 }
 
 inline void matrix_rot_x(Matrix4* m, r32 angle)

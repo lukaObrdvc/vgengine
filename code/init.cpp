@@ -58,6 +58,9 @@ void init_engine_state()
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
     engine_state->spin_angle = 0;
+    engine_state->cube_transform = ttransform_identity();
+    engine_state->cube_scaling_factor = 1.0f;
+    engine_state->cube_scale_up = true;
     
     engine_state->reverse_winding = false;
     

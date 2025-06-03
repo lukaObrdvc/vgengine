@@ -1,5 +1,138 @@
-#define CURRENTLY_TESTING final_giga_test
+#define CURRENTLY_TESTING model_matrix_test
 #define TEST_ONLY_ONCE ENGINE_STATE->tested_once = true
+
+
+
+void model_matrix_test()
+{
+    u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
+    u32 b_color = color_make(1, 1.0f, 1.0f, 1.0f);
+    u32 l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
+    u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
+    u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
+    u32 u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
+    
+    u32 colors[6] = {
+        f_color, b_color,
+        l_color, r_color,
+        d_color, u_color
+    };
+
+    r32 a = 10.0f; // half of cube dimension
+    
+    Vector3 s_vertices[8] = {
+        vec_make(-a, -a, -a) , vec_make(-a, a, -a) ,
+        vec_make(a, a, -a)   , vec_make(a, -a, -a) ,
+        vec_make(-a, -a, a)  , vec_make(-a, a, a)  ,
+        vec_make(a, a, a)    , vec_make(a, -a, a)
+    };
+    u16 s_indices[36] = {
+        3, 1, 0,   2, 1, 3,   4, 5, 7,   7, 5, 6,
+        0, 5, 4,   1, 5, 0,   7, 6, 3,   3, 6, 2,
+        7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2
+    };
+
+    Transform* cube_transform = ENGINE_STATE->cube_transform;
+    
+    
+    r32 orbit_angle = ENGINE_STATE->spin_angle;
+    Vector3 orbit = vec_make(0.0f, 0.0f, -180.0f);
+    Quaternion orbit_rot = quaternion_from_axis(vec_up(), orbit_angle);
+    orbit = quaternion_rot_vector(orbit, orbit_rot);
+    cube_transform->position = orbit;
+    
+    Quaternion spin_rot = quaternion_from_axis(vec_up(), -orbit_angle);
+    cube_transform->orientation = spin_rot;
+
+    r32 scaling_factor = ENGINE_STATE->cube_scaling_factor;
+    cube_transform->scale = vec_make(scaling_factor, scaling_factor, scaling_factor);
+    
+    
+    Matrix4* model_matrix = model_tmatrix_from_transform(cube_transform);
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        s_vertices[i] = matrix_mul_vector(model_matrix, s_vertices[i]);
+    }
+    
+    Camera* camera = &MAIN_CAMERA;
+    Matrix4* R = quaternion_to_tmatrix(quaternion_conjugate(camera->orientation));
+    Matrix4* T = tmatrix_translate(vec_negate(camera->position));
+    Matrix4* WtoC = tmatrix_mul(T, R);
+    
+    for (s32 i = 0; i < 8; i++)
+    {
+        s_vertices[i] = matrix_mul_vector(WtoC, s_vertices[i]);
+    }
+
+    Mesh cube;
+    cube.vertices = s_vertices;
+    cube.indices = s_indices;
+
+    s32 b = 0;
+    s32 j = -1;
+    u32 color = f_color;
+    for (s32 i = 0; i < ARR_COUNT(s_indices)/3; i++)
+    {
+        if (i % 2 == 0)
+        {
+            j++;
+            color = colors[j];
+        }
+        
+        u16 i0 = cube.indices[b];
+        u16 i1 = cube.indices[b+1];
+        u16 i2 = cube.indices[b+2];
+            
+        Vector3 A = cube.vertices[i0];
+        Vector3 B = cube.vertices[i1];
+        Vector3 C = cube.vertices[i2];
+
+        Triangle t = {A, B, C};
+        TriangleHom extraGeometry[4];
+        s32 count = TriangleWorldToRasterPROJ(&t, extraGeometry);
+
+        for (s32 k = 0; k < count; k++)
+        {
+            TriangleHom tHom = extraGeometry[k];
+            Triangle tri;
+            tri.A = vec_make(tHom.A.x, tHom.A.y, tHom.A.z);
+            tri.B = vec_make(tHom.B.x, tHom.B.y, tHom.B.z);
+            tri.C = vec_make(tHom.C.x, tHom.C.y, tHom.C.z);
+            
+            if (ENGINE_STATE->reverse_winding)
+            {
+                RasterizeTriangle(tri, color, false);
+            }
+            else
+            {
+                RasterizeTriangle(tri, color, false);
+            }
+        }
+        b += 3;
+    }
+
+    ENGINE_STATE->spin_angle += PI / kilobytes(1);
+
+    if (ENGINE_STATE->cube_scaling_factor >= 1.8f)
+    {
+        ENGINE_STATE->cube_scale_up = false;
+    }
+    if (ENGINE_STATE->cube_scaling_factor <= 0.2f)
+    {
+        ENGINE_STATE->cube_scale_up = true;
+    }
+
+    if (ENGINE_STATE->cube_scale_up)
+    {
+        ENGINE_STATE->cube_scaling_factor += 0.01f;
+    }
+    else
+    {
+        ENGINE_STATE->cube_scaling_factor -= 0.01f;
+    }
+            
+}
 
 void final_giga_test()
 {
@@ -29,7 +162,7 @@ void final_giga_test()
         0, 5, 4,   1, 5, 0,   7, 6, 3,   3, 6, 2,
         7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2
     };
-
+    
     Camera* camera = &MAIN_CAMERA;
     Matrix4* R = quaternion_to_tmatrix(quaternion_conjugate(camera->orientation));
     Matrix4* T = tmatrix_translate(vec_negate(camera->position));

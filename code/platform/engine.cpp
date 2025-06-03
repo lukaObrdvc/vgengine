@@ -231,6 +231,8 @@ s32 TriangleWorldToRasterPROJ(Triangle* tri, TriangleHom* out_triangles)
 
 
 
+
+
 // z layers for rect
 // draw rect outline (should be done with lines)
 // clamp rect to viewport..

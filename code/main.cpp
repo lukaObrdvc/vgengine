@@ -60,6 +60,7 @@
 
 #include "math/matrix.cpp"
 #include "math/quaternion.cpp"
+#include "math/transform.cpp"
 
 // #include "graphics/line.cpp"
 
