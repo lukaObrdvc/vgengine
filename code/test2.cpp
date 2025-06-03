@@ -1,4 +1,4 @@
-#define CURRENTLY_TESTING composite_rotations_test
+#define CURRENTLY_TESTING final_giga_test
 #define TEST_ONLY_ONCE ENGINE_STATE->tested_once = true
 
 void final_giga_test()
@@ -31,18 +31,13 @@ void final_giga_test()
     };
 
     Camera* camera = &MAIN_CAMERA;
-    Matrix4* camera_matrix = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    matrix_unit(camera_matrix);
-    matrix_translate(camera_matrix, vec_negate(camera->position));
-    Matrix4* tmp = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    Matrix4* tmp2 = arena_push<Matrix4>(&TEMPORARY_ARENA);
-    quaternion_to_matrix(camera->orientation, tmp2);
-    matrix_mul(camera_matrix, tmp, tmp2);
-    swap(camera_matrix, tmp);
+    Matrix4* R = quaternion_to_tmatrix(quaternion_conjugate(camera->orientation));
+    Matrix4* T = tmatrix_translate(vec_negate(camera->position));
+    Matrix4* WtoC = tmatrix_mul(T, R);
     
     for (s32 i = 0; i < 8; i++)
     {
-        s_vertices[i] = matrix_mul_vector(camera_matrix, s_vertices[i]);
+        s_vertices[i] = matrix_mul_vector(WtoC, s_vertices[i]);
     }
 
     Mesh cube;
@@ -59,7 +54,7 @@ void final_giga_test()
             j++;
             color = colors[j];
         }
-            
+        
         u16 i0 = cube.indices[b];
         u16 i1 = cube.indices[b+1];
         u16 i2 = cube.indices[b+2];
@@ -111,12 +106,12 @@ void composite_rotations_test()
     r32 spin_angle = ENGINE_STATE->spin_angle;
     r32 camera_angle = ENGINE_STATE->camera_angle;
 
-    Quaternion camera_rot_axis = quaternion_from_axis(vec_make(0.0f, 1.0f, 0.0f), camera_angle);
+    Quaternion camera_rot_axis = quaternion_from_axis(vec_up(), camera_angle);
 
     orbiting_point = quaternion_rot_vector(orbiting_point, camera_rot_axis);
     
     Matrix4* T = tmatrix_translate(orbiting_point);
-    camera_rot_axis.w *= -1; 
+    camera_rot_axis = quaternion_inverse_angle(camera_rot_axis);
     Matrix4* R = quaternion_to_tmatrix(camera_rot_axis);
     
     Matrix4* WtoC = tmatrix_mul(T, R);
@@ -126,12 +121,12 @@ void composite_rotations_test()
 #define ChangeAngle 1
     
 #if RotTriangles
-    Vector3 world_y = vec_make(0.0f, 1.0f, 0.0f);
-    Quaternion tilt_rot = quaternion_from_axis(vec_make(1.0f, 0.0f, 0.0f), PI / 8);
+    Vector3 world_y = vec_up();
+    Quaternion tilt_rot = quaternion_from_axis(vec_right(), PI / 8);
     Vector3 tilt_axis = quaternion_rot_vector(world_y, tilt_rot);
 
     Quaternion spin_rot1 = quaternion_from_axis(tilt_axis, spin_angle);
-    Quaternion spin_rot2 = quaternion_from_axis(tilt_axis, -spin_angle);
+    Quaternion spin_rot2 = quaternion_inverse_angle(spin_rot1);
     
 #if OrbitTriangles
     Quaternion orbit_rot = quaternion_from_axis(world_y, angle);

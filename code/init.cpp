@@ -46,12 +46,15 @@ void init_engine_state()
     engine_state->framebuffer.base += FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH;
     engine_state->zbuffer += FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - 1);
 
-    MAIN_CAMERA.position = vec_make(640.0f, 360.0f, 0.0f);
+    MAIN_CAMERA.position = vec_make(0.0f, 0.0f, 0.0f);
+    // MAIN_CAMERA.position = vec_make(640.0f, 360.0f, 0.0f);
     MAIN_CAMERA.orientation = quaternion_identity();
-    MAIN_CAMERA.z_near = 500; // 5
-    MAIN_CAMERA.z_far = -500; // 500
+    MAIN_CAMERA.z_near = 5; // 5     500
+    MAIN_CAMERA.z_far = 500; // 500  -500
     MAIN_CAMERA.fov = 120;
-                    
+
+    engine_state->normalization_counter = 1;
+    
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
     engine_state->spin_angle = 0;

@@ -7,54 +7,70 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
 {
     b32 result = true;
 
+    Engine_state* engine_state = ENGINE_STATE;
+
     // @todo fix moving faster diagonally if you care...
 
-    u64 prev_kflags = ENGINE_STATE->keyflags;
-    ENGINE_STATE->keyflags |= curr_keyflags_to_set;
-    ENGINE_STATE->keyflags &= ~curr_keyflags_to_unset;
-    u64 kflags = ENGINE_STATE->keyflags;
+    u64 prev_kflags = engine_state->keyflags;
+    engine_state->keyflags |= curr_keyflags_to_set;
+    engine_state->keyflags &= ~curr_keyflags_to_unset;
+    u64 kflags = engine_state->keyflags;
     u64 kflags_trans = kflags ^ prev_kflags;
     u64 kflags_trans_to_up = kflags_trans & prev_kflags;
     u64 kflags_trans_to_down = kflags_trans & (~prev_kflags);
     
-    u8 prev_mflags = ENGINE_STATE->mouseflags;
-    ENGINE_STATE->mouseflags |= curr_mouseflags_to_set;
-    ENGINE_STATE->mouseflags &= ~curr_mouseflags_to_unset;
-    u8 mflags = ENGINE_STATE->mouseflags;
+    u8 prev_mflags = engine_state->mouseflags;
+    engine_state->mouseflags |= curr_mouseflags_to_set;
+    engine_state->mouseflags &= ~curr_mouseflags_to_unset;
+    u8 mflags = engine_state->mouseflags;
     u8 mflags_trans = mflags ^ prev_mflags;
     u8 mflags_trans_to_up = mflags_trans & prev_mflags;
     u8 mflags_trans_to_down = mflags_trans & (~prev_mflags);
 
-    Camera camera = MAIN_CAMERA;
     curr_cursorY = to_yisup(curr_cursorY);
     Vector2 cursor_difference;
-    cursor_difference.x = curr_cursorX - FRAMEBUFFER_WIDTH/2;
+    cursor_difference.x = -(curr_cursorX - FRAMEBUFFER_WIDTH/2);
     cursor_difference.y = curr_cursorY - FRAMEBUFFER_HEIGHT/2;
-    // camera.roll += cursor_difference.y / kilobytes(1);
-    // camera.pitch -= cursor_difference.x / kilobytes(1);
-    ENGINE_STATE->cursor.x = curr_cursorX;
-    ENGINE_STATE->cursor.y = curr_cursorY;
+    engine_state->cursor.x = -curr_cursorX; // @todo is this goodio?
+    engine_state->cursor.y = curr_cursorY;
 
+    Camera* camera = &MAIN_CAMERA;
+
+    r32 x_angle = cursor_difference.y / kilobytes(2);
+    r32 y_angle = cursor_difference.x / kilobytes(2);
+
+    // rotating around world Y because we don't wanna move diagonally when moving mouse left/right, but always around world Y
+    // this is not the case when rotating around X, we wanna rotate around local X
+    Quaternion rot_around_y = quaternion_from_axis(vec_up(), y_angle);
+    Quaternion rot_around_x = quaternion_from_axis(quaternion_rot_vector(vec_right(), camera->orientation), x_angle);
+    
+    camera->orientation = quaternion_chain(quaternion_chain(camera->orientation, rot_around_x), rot_around_y);
+    
+    if (!engine_state->normalization_counter)
+    {
+        camera->orientation = quaternion_normalize(camera->orientation);
+    }
+    
     if (ExtractKey(kflags_trans_to_up, KEY_U))
     {
-        if (ENGINE_STATE->reverse_winding)
+        if (engine_state->reverse_winding)
         {
-            ENGINE_STATE->reverse_winding = false;
+            engine_state->reverse_winding = false;
         }
         else
         {
-            ENGINE_STATE->reverse_winding = true;
+            engine_state->reverse_winding = true;
         }
     }
     
     if (ExtractKey(kflags, KEY_D))
     {
-        ENGINE_STATE->camera_angle += PI/256;
+        engine_state->camera_angle += PI/256;
     }
 
     if (ExtractKey(kflags, KEY_A))
     {            
-        ENGINE_STATE->camera_angle -= PI/256;
+        engine_state->camera_angle -= PI/256;
     }
     
     Vector3 camera_movement = vec_zero3();
@@ -74,27 +90,18 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
     {
         camera_movement.x += 2.0f;
     }
-    if (ExtractKey(kflags, KEY_Q))
+    if (ExtractKey(kflags, KEY_Q)) // @todo y movement should be in world y, not based on camera orientation
     {
         camera_movement.y -= 2.0f;
     }
     if (ExtractKey(kflags, KEY_E))
     {
         camera_movement.y += 2.0f;
-    }    
-
-    // m4 rotationMatrix = M4Compose(2,
-    // M4RotX(camera.roll),
-    // M4RotY(camera.pitch)
-    // );
-    // camera_movement = M4Mul(camera_movement, rotationMatrix);
-    // camera.fpoint = add3(camera.fpoint, camera_movement);
-    
-    if (result)
-    {
-        MAIN_CAMERA = camera;
     }
-    
+
+    camera_movement = quaternion_rot_vector(camera_movement, camera->orientation);
+    camera->position = vec_add(camera->position, camera_movement);
+
     if (ExtractKey(mflags_trans_to_up, MOUSE_M1))
     {
         

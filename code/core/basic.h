@@ -20,7 +20,6 @@ typedef double r64;
 typedef s32 b32;
 typedef s64 b64;
 
-// @todo replace this with constexpr
 #define MIN_U    0
 #define MAX_U8   255
 #define MAX_U16  65535
@@ -49,7 +48,10 @@ typedef s64 b64;
 #define PI  3.14159265359f
 #define TAU 6.28318530718f // 2*PI
 
+#define EPSILON 0.0001f
 
+
+// @todo is this correct for non r32 types?
 template<typename T>
 T signof(T n)
 {
@@ -107,33 +109,27 @@ inline r32 Floor(r32 n)
 {
     return (r32)(s32)(n);
 }
-
 inline r32 Ceil(r32 n)
 {
     return (r32)(s32)(n+1);
 }
-
 inline r32 Round(r32 n)
 {
     return (r32)(s32)(n+0.5f);
 }
-
 inline r32 decimal(r32 n)
 {
     return n-(s32)n;
 }
 
-
 inline s32 floori(r32 n)
 {
     return (s32)(n);
 }
-
 inline s32 ceili(r32 n)
 {
     return (s32)(n+1);
 }
-
 inline s32 roundi(r32 n)
 {
     return (s32)(n+0.5);
@@ -144,7 +140,6 @@ inline u32 trunc(u64 n)
     ASSERT(n <= MAX_U32);
     return (u32)n;
 }
-
 inline s32 trunc(s64 n)
 {
     ASSERT(n >= MIN_S32 && n <= MAX_S32);
@@ -156,7 +151,6 @@ inline s32 to_signed(u32 n)
     ASSERT(n <= MAX_S32);
     return (s32)n;
 }
-
 inline u32 to_unsigned(s32 n)
 {
     ASSERT(n >= 0);
@@ -168,51 +162,49 @@ inline r32 radians(r32 angle)
 {
     return (angle*360)/TAU;
 }
-
-
 inline r32 degrees(r32 angle)
 {
     return (angle*TAU)/360;
 }
 
-
 inline u64 kilobytes(u64 n)
 {
     return n*1024;
 }
-
 inline u64 megabytes(u64 n)
 {
     return n*1024*1024;
 }
-
 inline u64 gigabytes(u64 n)
 {
     return n*1024*1024*1024;
 }
-
 inline u64 terabytes(u64 n)
 {
     return n*1024*1024*1024*1024;
 }
 
-inline u32 align_up(u32 n, u32 multipleOf)
+inline u32 align_up(u32 n, u32 multiple_of)
 {
-    return (n + multipleOf - 1) & ( ~(multipleOf - 1));
+    return (n + multiple_of - 1) & ( ~(multiple_of - 1));
 }
-inline u64 align_up(u64 n, u64 multipleOf)
+inline u64 align_up(u64 n, u64 multiple_of)
 {
-    return (n + multipleOf - 1) & ( ~(multipleOf - 1));
-}
-
-inline u32 align_down(u32 n, u32 multipleOf)
-{
-    return n & ~(multipleOf - 1);
-}
-inline u64 align_down(u64 n, u64 multipleOf)
-{
-    return n & ~(multipleOf - 1);
+    return (n + multiple_of - 1) & ( ~(multiple_of - 1));
 }
 
+inline u32 align_down(u32 n, u32 multiple_of)
+{
+    return n & ~(multiple_of - 1);
+}
+inline u64 align_down(u64 n, u64 multiple_of)
+{
+    return n & ~(multiple_of - 1);
+}
+
+inline b32 float_compare(r32 a, r32 b)
+{
+    return abs(a - b) < EPSILON;
+}
 
 #endif

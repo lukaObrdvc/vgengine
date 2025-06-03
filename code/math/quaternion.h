@@ -31,9 +31,22 @@ inline Quaternion quaternion_from_axis(Vector3 axis, r32 angle)
             cosf(half_angle)};
 }
 
+// @todo is it better to invert the unit vector instead??
+inline Quaternion quaternion_inverse_angle(Quaternion q)
+{
+    q.w = -q.w;
+    return q;
+}
+
 inline r32 quaternion_len(Quaternion q)
 {
     return sqrtf(sqr(q.x) + sqr(q.y) + sqr(q.z) + sqr(q.w));
+}
+
+// @doc requires normalized quaternion
+inline Quaternion quaternion_conjugate(Quaternion q)
+{
+    return { -q.x, -q.y, -q.z, q.w };
 }
 
 

@@ -1,9 +1,6 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-// @todo make certain functions like vec_add variadic? but it's also
-// like if you did operator overloading honestly..
-
 // @todo implement vec_negate for everything..
 
 // VECTORS FOR r32
@@ -72,6 +69,31 @@ inline Vector3 vec_zero3()
 inline Vector4 vec_zero4()
 {
     return {0, 0, 0, 0};
+}
+
+inline Vector3 vec_up()
+{
+    return {0, 1, 0};
+}
+inline Vector3 vec_down()
+{
+    return {0, -1, 0};
+}
+inline Vector3 vec_right()
+{
+    return {1, 0, 0};
+}
+inline Vector3 vec_left()
+{
+    return {-1, 0, 0};
+}
+inline Vector3 vec_forward()
+{
+    return {0, 0, -1};
+}
+inline Vector3 vec_backward()
+{
+    return {0, 0, 1};
 }
 
 inline r32 vec_len(Vector2 v)

@@ -60,7 +60,7 @@ Vector4 IntersectBottom(Vector4 a, Vector4 b)
 }
 Vector4 IntersectNear(Vector4 a, Vector4 b)
 {
-    r32 t = (a.z) / (a.z - b.z);
+    r32 t = (a.w + a.z) / ((a.w + a.z) - (b.w + b.z));
     return lerp(a, b, t);
 }
 Vector4 IntersectFar(Vector4 a, Vector4 b)

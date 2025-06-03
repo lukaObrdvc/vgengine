@@ -9,6 +9,7 @@ struct Engine_state
     Framebuffer framebuffer;
     r32* zbuffer;
     Camera main_camera;
+    u8 normalization_counter;
 
     // shize ------------------------------------
     // @TODO methinks VK combines mouse keys with keyboard keys.....
@@ -35,7 +36,6 @@ struct Engine_state
 // @todo maybe calculate these once, cache them in engine_state
 #define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * FRAMEBUFFER_BYTPP)
 #define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * FRAMEBUFFER_BYTPP)
-
 // @doc when we offset these like this, then we can - on y coordinate
 // which allows the rest of the code to use y is up, and then this
 // will map it to y is down

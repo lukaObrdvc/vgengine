@@ -203,6 +203,9 @@ s32 TriangleWorldToRasterPROJ(Triangle* tri, TriangleHom* out_triangles)
     Vector4 C_clip = vec_make(C_clip3.x, C_clip3.y, C_clip3.z, -tri->C.z);
 
     TriangleHom* tri_clip = arena_push<TriangleHom>(&TEMPORARY_ARENA);
+    tri_clip->A = A_clip;
+    tri_clip->B = B_clip;
+    tri_clip->C = C_clip;
     s32 count = ClipTriangle(tri_clip, out_triangles);
     for (s32 i = 0; i < count; i++)
     {
@@ -264,12 +267,13 @@ extern "C" void update_and_render()
     r32* zbuffer = engine_state->zbuffer;
     s32 bytpp = FRAMEBUFFER_BYTPP;
     s32 pitch = framebuffer_pitch(framebuffer.height, bytpp);
-    
+
     fill_background();
     
     test();
-
+    
     zbuffer_reset(zbuffer, framebuffer.width, framebuffer.height);
     temp_reset();
+    engine_state->normalization_counter++;
 }
 

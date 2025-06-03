@@ -251,7 +251,7 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     case WM_MOUSEMOVE:
     {
         curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
         curr_mouseflags_to_set |= MOUSE_MOVE;
     } break;
 
@@ -259,25 +259,25 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     case WM_LBUTTONUP:
     {
         curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
         curr_mouseflags_to_unset |= MOUSE_M1;
     } break;
     case WM_LBUTTONDOWN:
     {
         curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
         curr_mouseflags_to_set |= MOUSE_M1;
     } break;
     case WM_RBUTTONUP:
     {
         curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
         curr_mouseflags_to_unset |= MOUSE_M2;
     } break;
     case WM_RBUTTONDOWN:
     {
         curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = lParam & 0xFFFF0000 >> 16;
+        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
         curr_mouseflags_to_set |= MOUSE_M2;
     } break;
             
@@ -373,8 +373,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                WS_VISIBLE | WS_OVERLAPPEDWINDOW,
                                window_offset_x,
                                window_offset_y,
-                               1280 + 16,
-                               720 + 39,
+                               1280, // + 16,
+                               720, // + 39,
                                0,
                                0,
                                hInstance,
@@ -389,7 +389,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
 
     POINT center = { (LONG)FRAMEBUFFER_WIDTH/2, (LONG)FRAMEBUFFER_HEIGHT/2 };
-    // POINT center = { (LONG)1280/2, (LONG)720/2 };
     ClientToScreen(window, &center);
     SetCursorPos(center.x, center.y);
     
@@ -442,7 +441,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         if (camera_mode)
         {
             ShowCursor(false);
-            SetCursorPos(center.x, center.y);
+            if (GetForegroundWindow() == window)
+            {
+                SetCursorPos(center.x, center.y);
+            }
         }
         else
         {
