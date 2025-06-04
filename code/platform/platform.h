@@ -40,6 +40,7 @@ struct Globals
     b32 scratch_in_use[SCRATCH_POOL_SIZE];
     
 #if DEVELOPER
+    // @todo also make scratch_pool_most_used
     s32 scratch_highest_size;
 #endif
 };
