@@ -1,5 +1,30 @@
 // "W:\\Projects\\vgengine\\code\\"
 
+
+// @todo:
+// windows.cpp cleanup
+// - strings
+// - hash table
+// - bitfield
+// - colors
+// - array slice?
+// - sorting
+// - randomness
+
+// winapi stuffs:
+// - file handling
+// - fonts
+// - threads
+// - fullscreen
+// - cursors
+// - window priority
+// - resizing
+// - perf counters?
+// - recompilation/reloading?
+// - audio
+// - maketh sureth dll thingy worketh ?
+
+
 #include "project.h"
 
 #if !USE_DLL
@@ -10,21 +35,13 @@
 
 #endif
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdint.h>
-// @todo math intrinsics
-// for sqrt, sin, cos, (winapi?) signbit
-#include <math.h>
+#include <stdarg.h> // for variadic functions
+#include <stdio.h>  // for sprintf
+#include <stdint.h> // for integral types
+#include <math.h>   // for sqrt, sin, cos, tan  (anything else?)
 
-#if !USE_DLL
-#define dbg_print(str) OutputDebugString(str);
-#else
-#define dbg_print(str) ((void)0)
-#endif
 
 #include "core/basic.h"
-
 #include "core/arena.h"
 #include "core/scratch.h"
 
@@ -33,17 +50,17 @@
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/quaternion.h"
-#include "math/transform.h"
+#include "math/transform.h" // @cleanup
 
 #include "core/rect.h"
 
-#include "graphics/triangle.h"
-#include "graphics/camera.h"
-#include "graphics/clip.h"
-#include "graphics/framebuffer.h"
+#include "graphics/triangle.h" // @cleanup
+#include "graphics/camera.h" // @cleanup
+#include "graphics/clip.h" // @cleanup
+#include "graphics/framebuffer.h" // @cleanup
 // #include "graphics/line.h"
 // #include "graphics/pixel.h"
-#include "graphics/renderer.h"
+#include "graphics/renderer.h" // mesh, color_make
 
 
 #include "new_mani.h"
@@ -61,7 +78,7 @@
 
 #include "math/matrix.cpp"
 #include "math/quaternion.cpp"
-#include "math/transform.cpp"
+// #include "math/transform.cpp"
 
 // #include "graphics/line.cpp"
 
@@ -69,7 +86,7 @@
 #include "init.cpp"
 #include "input.cpp"
 
-#include "platform/engine.cpp"
+#include "platform/engine.cpp" // @cleanup and make update_and_render special file probably?
 #if !USE_DLL
 #include "platform.cpp"
 #endif

@@ -1,11 +1,6 @@
 #ifndef BASIC_H
 #define BASIC_H
 
-// @todo make rad, deg, kb, mb, gb..?
-
-
-#define global_variable
-
 typedef int8_t  s8;
 typedef int16_t s16;
 typedef int32_t s32;
@@ -35,7 +30,27 @@ typedef s64 b64;
 #define MAX_S16  131071
 #define MAX_S32  2147483647
 #define MAX_S64  9223372036854775807
-// @todo for r32, r64?
+
+#define MIN_R32 -3.4028235e+38f
+#define MIN_R64 -1.7976931348623157e+308
+#define MAX_R32  3.4028235e+38f
+#define MAX_R64  1.7976931348623157e+308
+
+#define EPSILON 0.0001f
+
+#define PI  3.14159265359f
+#define TAU 6.28318530718f    // 2pi
+#define RAD 57.2957795131f    // 360/2pi
+#define DEG 0.01745329252f    // 2pi/360
+
+#define KB 1024               // 1024
+#define MB 1048576            // 1024*1024
+#define GB (u64)1073741824    // 1024*1024*1024
+#define TB (u64)1099511627776 // 1024*1024*1024*1024
+
+
+#define global_variable
+
 
 #if DEVELOPER
 #define ASSERT(expr) if(!((b32)(expr))) {*((s32*)0) = 0;}
@@ -45,19 +60,6 @@ typedef s64 b64;
 
 #define ARRAY_COUNT(arr) (sizeof((arr))/sizeof((arr)[0]))
 
-
-#define PI  3.14159265359f
-#define TAU 6.28318530718f // 2*PI
-
-#define EPSILON 0.0001f
-
-
-// @todo is this correct for non r32 types?
-template<typename T>
-T signof(T n)
-{
-    return !signbit((r32)(n)) * 2 - 1;
-}
 
 template<typename T>
 T Min(T a, T b)
@@ -98,6 +100,13 @@ void swap(T& a, T& b)
     a = b;
     b = tmp;
 }
+
+template<typename T>
+T signof(T n)
+{
+    return (T(0) < n) - (n < T(0));
+}
+
 
 inline r32 lerp(r32 A, r32 B, r32 t)
 {
@@ -157,33 +166,6 @@ inline u32 to_unsigned(s32 n)
     return (u32)n;
 }
 
-// @todo replace 360/tau and tau/360 with precomputed values
-inline r32 radians(r32 angle)
-{
-    return (angle*360)/TAU;
-}
-inline r32 degrees(r32 angle)
-{
-    return (angle*TAU)/360;
-}
-
-inline u64 kilobytes(u64 n)
-{
-    return n*1024;
-}
-inline u64 megabytes(u64 n)
-{
-    return n*1024*1024;
-}
-inline u64 gigabytes(u64 n)
-{
-    return n*1024*1024*1024;
-}
-inline u64 terabytes(u64 n)
-{
-    return n*1024*1024*1024*1024;
-}
-
 inline u32 align_up(u32 n, u32 multiple_of)
 {
     return (n + multiple_of - 1) & ( ~(multiple_of - 1));
@@ -207,8 +189,7 @@ inline b32 float_compare(r32 a, r32 b)
     return abs(a - b) < EPSILON;
 }
 
-// @todo higher sizes?
-// @todo write in steps of u64 until you can't no more for speed?
+// @speed write in steps of u64/u32 until you can't no more for speed?
 // @doc pass bytesize
 inline void memzero(void* ptr, s32 size)
 {

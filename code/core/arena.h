@@ -18,24 +18,14 @@
 // scratch allocator is just an arena but using arena_reset
 
 
-
-
-// @todo use & ? instead of placing & everywhere frickin else
-
-#define MANAGING_ARENA globals->managing_arena
-#define PERMANENT_ARENA globals->permanent_arena
-#define TEMPORARY_ARENA globals->temporary_arena
-
-
-
-// @todo alignas?
-
 // if you wanna reuse space for temporary arena, you cache it's current
 // size in scope, and then you set it to that after a number of function
 // calls or end of scope
 
-// @todo array stuff
-// @pot free list version, which can reuse space
+#define MANAGING_ARENA  (&globals->managing_arena)
+#define PERMANENT_ARENA (&globals->permanent_arena)
+#define TEMPORARY_ARENA (&globals->temporary_arena)
+
 
 struct Arena
 {
@@ -69,7 +59,7 @@ inline void arena_set_size(Arena* arena, u64 size)
 }
 
 
-#define temp_alloc(type, ...) arena_push<type>(&TEMPORARY_ARENA, __VA_ARGS__)
+#define temp_alloc(type, ...) arena_push<type>(TEMPORARY_ARENA, __VA_ARGS__)
 
 
 #endif

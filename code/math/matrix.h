@@ -15,6 +15,7 @@ struct Transform;
 struct Camera;
 
 Vector3 matrix_mul_vector(Matrix4* m, Vector3 v);
+Vector4 matrix_mul_vector4(Matrix4* m, const Vector4& v);
 void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result);
 void matrix_transpose(Matrix4* m);
 void matrix_compose(s32 count, ...);
@@ -34,7 +35,7 @@ inline void matrix_unit(Matrix4* m)
     m->W = {0, 0, 0, 1};
 }
 
-inline void matrix_make(Matrix4* m, Vector4 X, Vector4 Y, Vector4 Z, Vector4 W)
+inline void matrix_make(Matrix4* m, const Vector4& X, const Vector4& Y, const Vector4& Z, const Vector4& W)
 {
     m->X = X;
     m->Y = Y;
@@ -99,7 +100,7 @@ inline Matrix4* tmatrix_unit()
     return m;
 }
 
-inline Matrix4* tmatrix_make(Vector4 X, Vector4 Y, Vector4 Z, Vector4 W)
+inline Matrix4* tmatrix_make(const Vector4& X, const Vector4& Y, const Vector4& Z, const Vector4& W)
 {
     Matrix4* m = temp_alloc(Matrix4);
     matrix_make(m, X, Y, Z, W);

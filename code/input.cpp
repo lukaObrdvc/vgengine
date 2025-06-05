@@ -11,6 +11,13 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
 
     // @todo fix moving faster diagonally if you care...
 
+    // @todo use bitfields instead
+
+    // @todo process_input should just set flags and cursor per frame
+    // according to what the platform passes, and then these flags
+    // should be globally available so you can "update" based on them
+    // whenever you want
+
     u64 prev_kflags = engine_state->keyflags;
     engine_state->keyflags |= curr_keyflags_to_set;
     engine_state->keyflags &= ~curr_keyflags_to_unset;
@@ -34,10 +41,10 @@ extern "C" b32 process_input(u64 curr_keyflags_to_set,
     engine_state->cursor.x = -curr_cursorX; // @todo is this goodio?
     engine_state->cursor.y = curr_cursorY;
 
-    Camera* camera = &MAIN_CAMERA;
+    Camera* camera = MAIN_CAMERA;
 
-    r32 x_angle = cursor_difference.y / kilobytes(2);
-    r32 y_angle = cursor_difference.x / kilobytes(2);
+    r32 x_angle = cursor_difference.y / (2 * KB);
+    r32 y_angle = cursor_difference.x / (2 * KB);
 
     // rotating around world Y because we don't wanna move diagonally when moving mouse left/right, but always around world Y
     // this is not the case when rotating around X, we wanna rotate around local X

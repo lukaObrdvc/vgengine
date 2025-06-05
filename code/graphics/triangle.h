@@ -13,6 +13,8 @@ union Triangle4
     Vector4 v[3];
 };
 
+// @todo probably make a function that changes winding?
+
 inline void triangle_4to3(Triangle4* t4, Triangle* t3)
 {
     t3->a = vec_4to3(t4->a);

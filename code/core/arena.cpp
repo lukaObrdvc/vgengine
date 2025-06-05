@@ -1,12 +1,12 @@
 void arena_make(Arena* arena, u64 capacity)
 {
-    Arena* managing_arena = &MANAGING_ARENA;
+    Arena* managing_arena = MANAGING_ARENA;
     
     arena->base = managing_arena->base + managing_arena->size;
     arena->size = 0;
 #if DEVELOPER
     arena->highest_size = 0;
-    arena->capacity = to_signed(capacity);
+    arena->capacity = capacity;
 #endif
 
     managing_arena->size += capacity;
@@ -30,11 +30,11 @@ void* arena_push_size(Arena* arena, const u64& size, const u64& alignment = 1)
 
 inline void temp_reset()
 {
-    arena_reset(&TEMPORARY_ARENA);
+    arena_reset(TEMPORARY_ARENA);
 }
 
 inline void temp_set_size(u64 size)
 {
-    arena_set_size(&TEMPORARY_ARENA, size);
+    arena_set_size(TEMPORARY_ARENA, size);
 }
 

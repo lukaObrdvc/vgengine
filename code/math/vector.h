@@ -1,7 +1,6 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-// @todo implement vec_negate for everything..
 
 // VECTORS FOR r32
 union Vector2
@@ -132,17 +131,17 @@ inline r32 vec_edist_squared(const Vector3& v1, const Vector3& v2)
     return sqr(v1.x - v2.x) + sqr(v1.y - v2.y) + sqr(v1.z - v2.z);
 }
 
-// @doc I think you never want to check for normalized status, just
-// normalize instead
+// @doc I think you never want to check for normalized status, just normalize instead
+// @speed do we avoid checkin len==0? maybe assert instead?
 inline Vector2 vec_normalize(Vector2 v)
 {
     r32 len = vec_len(v);
-    return {v.x / len, v.y / len};
+    return float_compare(len, 0.0f) ? Vector2{0, 0} : Vector2{v.x / len, v.y / len};
 }
 inline Vector3 vec_normalize(Vector3 v)
 {
     r32 len = vec_len(v);
-    return {v.x / len, v.y / len, v.z / len};
+    return float_compare(len, 0.0f) ? Vector3{0, 0, 0} : Vector3{v.x / len, v.y / len, v.z / len};
 }
 
 inline Vector2 vec_add(Vector2 v1, Vector2 v2)
@@ -390,6 +389,15 @@ inline Vector2i vec_scale(Vector2i v, s32 s)
 inline Vector3i vec_scale(Vector3i v, s32 s)
 {
     return {s * v.x, s * v.y, s * v.z};
+}
+
+inline Vector2i vec_negate(Vector2i v)
+{
+    return {-1 * v.x, -1 * v.y};
+}
+inline Vector3i vec_negate(Vector3i v)
+{
+    return {-1 * v.x, -1 * v.y, -1 * v.z};
 }
 
 inline Vector3i vec_2to3(Vector2i v, s32 z)

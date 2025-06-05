@@ -1,7 +1,6 @@
 #ifndef INIT_H
 #define INIT_H
 
-
 void init_memory();
 void init_engine_state();
 

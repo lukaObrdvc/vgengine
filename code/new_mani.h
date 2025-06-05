@@ -2,6 +2,11 @@
 #define NEW_MANI_H
 
 
+// @doc mainly for permanent information and convinience so you can
+// globally access some things, instead of passing them to million
+// scopes, and then make aliases for these things so you don't
+// type the same thing a million times, and god forbid have to
+// refactor all that
 struct Engine_state
 {
     b32 tested_once;
@@ -31,15 +36,14 @@ struct Engine_state
     // temporary-----------------------------
 };
 
-#define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA.base))
+#define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA->base))
 
 #define FRAMEBUFFER (ENGINE_STATE->framebuffer)
 #define FRAMEBUFFER_WIDTH (FRAMEBUFFER.width)
 #define FRAMEBUFFER_HEIGHT (FRAMEBUFFER.height)
-#define FRAMEBUFFER_BYTPP (PLATFORM_API.bytes_per_pixel)
 // @todo maybe calculate these once, cache them in engine_state
-#define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * FRAMEBUFFER_BYTPP)
-#define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * FRAMEBUFFER_BYTPP)
+#define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * BYTPP)
+#define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * BYTPP)
 // @doc when we offset these like this, then we can - on y coordinate
 // which allows the rest of the code to use y is up, and then this
 // will map it to y is down
@@ -59,10 +63,7 @@ struct Engine_state
 // @TODO do I make one for converting a wndrect (has to switch top and bottom)
 #define to_yisdown(y) (FRAMEBUFFER_HEIGHT - (y))
 #define to_yisup(y)   (FRAMEBUFFER_HEIGHT - (y))
-//#define wndrect_yisdown(y)
 
-
-// @TODO figure out default rotation direction cw or ccw and transforms...
 
 // @Note converting when highest bit is 1 will result into wrapping to
 // negative, but we don't care since we only use it in if statements ?

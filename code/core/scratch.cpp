@@ -4,6 +4,9 @@ inline Scratch* get_scratch()
     {
         if (!globals->scratch_in_use[i])
         {
+#if DEVELOPER
+            globals->scratch_highest_index = Max(i, globals->scratch_highest_index);
+#endif
             globals->scratch_in_use[i] = true;
             return &globals->scratch_pool[i];
         }

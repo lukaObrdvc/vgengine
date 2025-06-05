@@ -1,6 +1,6 @@
 void init_memory()
 {
-    Arena* managing_arena = &MANAGING_ARENA;
+    Arena* managing_arena = MANAGING_ARENA;
     // @todo this should be aligned by alignof(Globals)
     managing_arena->base = (u8*)globals;
     managing_arena->size = sizeof(Globals);
@@ -8,18 +8,19 @@ void init_memory()
     managing_arena->capacity = TOTAL_PROGRAM_MEMORY;
     ASSERT(managing_arena->size <= managing_arena->capacity);
     
-    arena_make(&PERMANENT_ARENA, megabytes(20));
-    arena_make(&TEMPORARY_ARENA, gigabytes(2) - 1); // max for s32?
-    arena_make(&SCRATCH_ARENA, SCRATCH_POOL_SIZE * SCRATCH_CAPACITY);
+    arena_make(PERMANENT_ARENA, 20 * MB);
+    arena_make(TEMPORARY_ARENA, 2 * GB);
+    arena_make(SCRATCH_ARENA, SCRATCH_POOL_SIZE * SCRATCH_CAPACITY);
     
-    Engine_state* engine_state = arena_push<Engine_state>(&PERMANENT_ARENA);
-    engine_state->framebuffer.base = arena_push<u8>(&PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * to_unsigned(FRAMEBUFFER_BYTPP));
-    engine_state->zbuffer = arena_push<r32>(&PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE);
+    Engine_state* engine_state = arena_push<Engine_state>(PERMANENT_ARENA);
+    // @todo push this once once per frame instead, that way you don't waste space as well
+    engine_state->framebuffer.base = arena_push<u8>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * to_unsigned(BYTPP));
+    engine_state->zbuffer = arena_push<r32>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE);
 
     for (int i = 0; i < SCRATCH_POOL_SIZE; i++)
     {
         Scratch scratch;
-        scratch.base = (u8*)arena_push_size(&SCRATCH_ARENA, SCRATCH_CAPACITY);
+        scratch.base = (u8*)arena_push_size(SCRATCH_ARENA, SCRATCH_CAPACITY);
         scratch.size = 0;
         scratch.index = i;
         
@@ -28,12 +29,14 @@ void init_memory()
     }
 #if DEVELOPER
     globals->scratch_highest_size = 0;
+    globals->scratch_highest_index = 0;
 #endif
 }
 
 void init_engine_state()
 {
     Engine_state* engine_state = ENGINE_STATE;
+    Camera* camera = MAIN_CAMERA;
     
     engine_state->tested_once = 0;
 
@@ -43,33 +46,31 @@ void init_engine_state()
     engine_state->framebuffer.width = 1280.0f;
     engine_state->framebuffer.height = 720.0f;
 
+    // @doc this guarantees Y is up when accessing these buffers
     engine_state->framebuffer.base += FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH;
     engine_state->zbuffer += FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - 1);
 
-    MAIN_CAMERA.position = vec_make(0.0f, 0.0f, 0.0f);
-    // MAIN_CAMERA.position = vec_make(640.0f, 360.0f, 0.0f);
-    MAIN_CAMERA.orientation = quaternion_identity();
-    MAIN_CAMERA.z_near = 5; // 5     500
-    MAIN_CAMERA.z_far = 500; // 500  -500
-    MAIN_CAMERA.fov = 120;
+    camera->position = vec_make(0.0f, 0.0f, 0.0f);
+    camera->orientation = quaternion_identity();
+    camera->z_near = 5; // @todo are these goodio?
+    camera->z_far = 500;
+    camera->fov = 120;
 
     engine_state->normalization_counter = 1;
     engine_state->aspect_ratio = FRAMEBUFFER_WIDTH / (r32)FRAMEBUFFER_HEIGHT;
-    
+
+    // @todo rename to better
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
     engine_state->spin_angle = 0;
-    // engine_state->cube_transform;
     engine_state->cube_scaling_factor = 1.0f;
     engine_state->cube_scale_up = true;
-    
-    engine_state->reverse_winding = false;
     
     engine_state->keyflags = 0;
     engine_state->mouseflags = 0;
                     
-    // @TODO you should probably have a default for everything but whatever
-    // @TODO is this a good way to set a keymap, just setting powers of two.............
+    // @todo you should probably have a default for everything but whatever
+    // @todo is this a good way to set a keymap, just setting powers of two.............
     engine_state->keymap[0x25] = 0;
     engine_state->keymap[0x26] = 1; 
     engine_state->keymap[0x27] = 2; 
@@ -90,12 +91,6 @@ void init_engine_state()
     engine_state->keymap[0x4F] = 15;
 
     zbuffer_reset();
-        
-
-    // ENGINE_STATE->brushes[BRUSH_SCANLINE2] = (((u32)255 << 24) |
-    // ((u32)0 << 16) |
-    // ((u32)0 << 8) |
-    // 255);
 }
 
 extern "C" void platform_init_engine()

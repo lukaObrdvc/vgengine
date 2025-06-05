@@ -1,4 +1,3 @@
-// @todo figure out if clocwise vs anti-clockwise?
 // @doc this requires radians
 Quaternion quaternion_from_euler(r32 x, r32 y, r32 z)
 {
@@ -21,7 +20,7 @@ Quaternion quaternion_from_euler(r32 x, r32 y, r32 z)
     return q;
 }
 
-// @doc when multiplying multipple vertices by a quaternion, it's
+// @doc when multiplying multiple vertices by a quaternion, it's
 // cheaper to convert to matrix instead and do matrix multiplication
 Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q)
 {
@@ -33,8 +32,7 @@ Vector3 quaternion_rot_vector(const Vector3& v, const Quaternion& q)
 
 // @todo variadic function for this?
 // @doc applies q1 first, then q2, so not commutative
-// @doc think of it like q2 is the previous rotation, and q1 is building
-// upon it
+// @doc think of it like q2 is the previous rotation, and q1 is building upon it
 Quaternion quaternion_chain(const Quaternion& q1, const Quaternion& q2)
 {
     Quaternion result;
@@ -48,7 +46,7 @@ Quaternion quaternion_chain(const Quaternion& q1, const Quaternion& q2)
 Quaternion quaternion_normalize(Quaternion q)
 {
     r32 len = quaternion_len(q);
-    if (len == 0.0f) return {0, 0, 0, 1}; // avoid divide-by-zero
+    if (float_compare(len, 0.0f)) return {0, 0, 0, 1};
     
     r32 inv_len = 1.0f / len;
     return {q.x * inv_len,

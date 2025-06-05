@@ -49,12 +49,10 @@ Rect triangle_bounding_box(Triangle* tri)
     return result;
 }
 
+// top-left rule?
+// figure out if we want to allow passing information about how to do culling
 void rasterize_triangle(Triangle* tri, u32 color, b32 inv)
 {
-    // perspective-correct interpolation
-    // top-left rule
-    // anti-aliasing
-
     Vector3 p0 = tri->a;
     Vector3 p1 = tri->b;
     Vector3 p2 = tri->c;
@@ -71,9 +69,6 @@ void rasterize_triangle(Triangle* tri, u32 color, b32 inv)
             r32 w1 = edge_function(p, p0, p2);
             r32 w2 = edge_function(p, p1, p0);
 
-            // b32 cond = (ENGINE_STATE->reverse_winding ?
-                        // w0 >= 0 && w1 >= 0 && w2 >= 0 :
-                        // w0 <= 0 && w1 <= 0 && w2 <= 0);
             b32 cond = (w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0);
             // if (w0 >= 0 && w1 >= 0 && w2 >= 0) // inside test original
             // if (w0 <= 0 && w1 <= 0 && w2 <= 0) // inside test
@@ -83,6 +78,7 @@ void rasterize_triangle(Triangle* tri, u32 color, b32 inv)
                 w1 /= area;
                 w2 /= area;
 
+                // perspective-correct interpolation
                 r32 z = 1/(w0/p0.z+w1/p1.z+w2/p2.z);
                 r32* zbuffer_point = zbuffer_access(i, j);
 
@@ -110,8 +106,8 @@ void triangle_clip_to_raster_space(Triangle4* t)
     t->b = vec_scale(t->b, 1/t->b.w);
     t->c = vec_scale(t->c, 1/t->c.w);
     
-    s32 width = FRAMEBUFFER_WIDTH - 1;
-    s32 height = FRAMEBUFFER_HEIGHT - 1;
+    s32 width = FRAMEBUFFER_WIDTH;
+    s32 height = FRAMEBUFFER_HEIGHT;
     
     t->a.x = (t->a.x + 1)/2 * width;
     t->a.y = (t->a.y + 1)/2 * height;
@@ -127,7 +123,7 @@ void triangle_clip_to_raster_space(Triangle4* t)
 // also for array sizes, there might be a better solution..?
 void render_mesh(Mesh mesh, Matrix4* mvp, u32* colors, s32 num_vertices, s32 num_indices)
 {
-    u64 temp_old_size = TEMPORARY_ARENA.size;
+    u64 temp_old_size = TEMPORARY_ARENA->size;
     
     // clipping of a triangle in the worst case results in 4 triangles needed to draw
     Triangle4* clipped_geometry = temp_alloc(Triangle4, 4);
@@ -169,7 +165,7 @@ void render_mesh(Mesh mesh, Matrix4* mvp, u32* colors, s32 num_vertices, s32 num
         c++;
     }
 
-    arena_set_size(&TEMPORARY_ARENA, temp_old_size);
+    temp_set_size(temp_old_size);
 }
 
 
@@ -212,7 +208,7 @@ extern "C" void update_and_render()
     
     Framebuffer framebuffer = engine_state->framebuffer;
     r32* zbuffer = engine_state->zbuffer;
-    s32 bytpp = FRAMEBUFFER_BYTPP;
+    s32 bytpp = BYTPP;
     s32 pitch = framebuffer_pitch(framebuffer.height, bytpp);
 
     fill_background();

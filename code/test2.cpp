@@ -60,7 +60,7 @@ void model_matrix_test(Matrix4* view, Matrix4* proj)
     render_mesh(cube_mesh, mvp, colors, 8, 36);
     
 
-    ENGINE_STATE->spin_angle += PI / kilobytes(1);
+    ENGINE_STATE->spin_angle += PI / KB;
 
     if (ENGINE_STATE->cube_scaling_factor >= 1.8f)
     {

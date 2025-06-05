@@ -1,8 +1,8 @@
-inline s32 framebuffer_pitch(s32 width = FRAMEBUFFER_WIDTH, s32 bytpp = FRAMEBUFFER_BYTPP)
+inline s32 framebuffer_pitch(s32 width = FRAMEBUFFER_WIDTH, s32 bytpp = BYTPP)
 {
     return width * bytpp;
 }
-inline s32 framebuffer_bytesize(s32 width = FRAMEBUFFER_WIDTH, s32 height = FRAMEBUFFER_HEIGHT, s32 bytpp = FRAMEBUFFER_BYTPP)
+inline s32 framebuffer_bytesize(s32 width = FRAMEBUFFER_WIDTH, s32 height = FRAMEBUFFER_HEIGHT, s32 bytpp = BYTPP)
 {
     return width * height * bytpp;
 }
@@ -12,7 +12,7 @@ inline s32 framebuffer_bytesize(s32 width = FRAMEBUFFER_WIDTH, s32 height = FRAM
 // @doc - is placed here, so that accessing into the frame buffer
 // goes from bottom to top, this way we can guarantee y is up for
 // the rest of the engine, and is mapped to y is down properly here
-inline u32* framebuffer_access(s32 x, s32 y, u8* buff = FRAMEBUFFER_BASE, s32 pitch = FRAMEBUFFER_PITCH, s32 bytpp = FRAMEBUFFER_BYTPP)
+inline u32* framebuffer_access(s32 x, s32 y, u8* buff = FRAMEBUFFER_BASE, s32 pitch = FRAMEBUFFER_PITCH, s32 bytpp = BYTPP)
 {
     return (u32*)(buff - y*pitch + x*bytpp);
 }

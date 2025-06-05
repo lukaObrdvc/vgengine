@@ -18,7 +18,6 @@ Vector4 matrix_mul_vector4(Matrix4* m, const Vector4& v)
     return result;
 }
 
-
 void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result)
 {
     for (s32 i=0; i < 4; i++)
@@ -147,7 +146,7 @@ void model_matrix_for_transform(Matrix4* m, Transform* t)
     release_scratch(scratch);
 }
 
-void view_matrix_for_camera(Matrix4* m, Camera* c = &MAIN_CAMERA)
+void view_matrix_for_camera(Matrix4* m, Camera* c = MAIN_CAMERA)
 {
     Scratch* scratch = get_scratch();
     Matrix4* R = scratch_push<Matrix4>(scratch);
@@ -161,11 +160,11 @@ void view_matrix_for_camera(Matrix4* m, Camera* c = &MAIN_CAMERA)
     release_scratch(scratch);
 }
 
-void perspective_matrix_for_camera(Matrix4* proj, Camera* c = &MAIN_CAMERA)
+void perspective_matrix_for_camera(Matrix4* proj, Camera* c = MAIN_CAMERA)
 {
     r32 n = c->z_near;
     r32 f = c->z_far;
-    r32 t = tan(radians(c->fov / 2)) * n;
+    r32 t = tanf(c->fov / 2 * RAD) * n;
     r32 r = t * ASPECT_RATIO;
     
     proj->X = {n/r, 0,   0,             0};
@@ -186,14 +185,14 @@ void mvp_matrix_for_transform(Matrix4* m, Transform* t, Matrix4* view, Matrix4* 
     release_scratch(scratch);
 }
 
-inline Matrix4* view_tmatrix_for_camera(Camera* c = &MAIN_CAMERA)
+inline Matrix4* view_tmatrix_for_camera(Camera* c = MAIN_CAMERA)
 {
     Matrix4* m = temp_alloc(Matrix4);
     view_matrix_for_camera(m, c);
     return m;
 }
 
-inline Matrix4* perspective_tmatrix_for_camera(Camera* camera = &MAIN_CAMERA)
+inline Matrix4* perspective_tmatrix_for_camera(Camera* camera = MAIN_CAMERA)
 {
     Matrix4* m = temp_alloc(Matrix4);
     perspective_matrix_for_camera(m, camera);

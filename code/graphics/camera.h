@@ -2,7 +2,7 @@
 #define CAMERA_H
 
 
-#define MAIN_CAMERA ENGINE_STATE->main_camera
+#define MAIN_CAMERA (&ENGINE_STATE->main_camera)
 #define Z_NEAR MAIN_CAMERA.z_near
 #define Z_FAR MAIN_CAMERA.z_far
 #define FOV MAIN_CAMERA.fov
