@@ -3,7 +3,7 @@
 
 
 
-void model_matrix_test()
+void model_matrix_test(Matrix4* view, Matrix4* proj)
 {
     u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
     u32 b_color = color_make(1, 1.0f, 1.0f, 1.0f);
@@ -11,11 +11,14 @@ void model_matrix_test()
     u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
     u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
     u32 u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
-    
-    u32 colors[6] = {
-        f_color, b_color,
-        l_color, r_color,
-        d_color, u_color
+
+    u32 colors[12] = {
+        f_color, f_color,
+        b_color, b_color,
+        l_color, l_color,
+        r_color, r_color,
+        d_color, d_color,
+        u_color, u_color
     };
 
     r32 a = 10.0f; // half of cube dimension
@@ -32,7 +35,12 @@ void model_matrix_test()
         7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2
     };
 
-    Transform* cube_transform = &ENGINE_STATE->cube_transform;
+    Mesh cube_mesh;
+    cube_mesh.vertices = s_vertices;
+    cube_mesh.indices = s_indices;
+
+    // Transform* cube_transform = &ENGINE_STATE->cube_transform;
+    Transform* cube_transform = temp_alloc(Transform);
     
     r32 orbit_angle = ENGINE_STATE->spin_angle;
     Vector3 orbit = vec_make(0.0f, 0.0f, -180.0f);
@@ -46,60 +54,11 @@ void model_matrix_test()
     r32 scaling_factor = ENGINE_STATE->cube_scaling_factor;
     cube_transform->scale = vec_make(scaling_factor, scaling_factor, scaling_factor);
 
-    
-    Matrix4* view = view_tmatrix_for_camera();
-    Matrix4* proj = perspective_tmatrix_for_camera();
     Matrix4* mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-
-    Vector4* homogeneous_vertices = temp_alloc(Vector4, ARRAY_COUNT(s_vertices)); // sizeof mesh
-
-    for (s32 i = 0; i < ARRAY_COUNT(s_vertices); i++)
-    {
-        // it doesn't matter what w is here, but you have to copy s_vertices
-        // into this buffer anyway
-        homogeneous_vertices[i] = vec_3to4(s_vertices[i], 1.0f);
-    }
     
-    for (s32 i = 0; i < ARRAY_COUNT(s_vertices); i++)
-    {
-        homogeneous_vertices[i] = matrix_mul_vector4(mvp, homogeneous_vertices[i]);
-    }
-
-    s32 b = 0;
-    s32 j = -1;
-    u32 color = f_color;
-    for (s32 i = 0; i < ARRAY_COUNT(s_indices)/3; i++)
-    {
-        if (i % 2 == 0)
-        {
-            j++;
-            color = colors[j];
-        }
-        
-        // @todo figure out what is z exactly in raster space??
-        
-        u16 i0 = s_indices[b];
-        u16 i1 = s_indices[b+1];
-        u16 i2 = s_indices[b+2];
-
-        // maybe you don't even need Triangle structs anymore?
-        Triangle4* t = temp_alloc(Triangle4);
-        t->a = homogeneous_vertices[i0];
-        t->b = homogeneous_vertices[i1];
-        t->c = homogeneous_vertices[i2];
-
-        // Triangle4 geometry[4];
-        Triangle4* geometry = temp_alloc(Triangle4, 4);
-        s32 count = clip_triangle(t, geometry);
-        for (s32 e = 0; e < count; e++)
-        {
-            Triangle4* tri = &geometry[e];
-            triangle_clip_to_raster_space(tri);
-            rasterize_triangle(ttriangle_4to3(tri), color, false);
-        }
-
-        b += 3;
-    }
+    
+    render_mesh(cube_mesh, mvp, colors, 8, 36);
+    
 
     ENGINE_STATE->spin_angle += PI / kilobytes(1);
 
@@ -493,6 +452,6 @@ void test(void)
 {
     if (!ENGINE_STATE->tested_once)
     {
-        _TEST;
+        // _TEST;
     }
 }

@@ -123,9 +123,59 @@ void triangle_clip_to_raster_space(Triangle4* t)
     t->c.y = (t->c.y + 1)/2 * height;
 }
 
+// we don't have shading yet so pass one solid color per triangle
+// also for array sizes, there might be a better solution..?
+void render_mesh(Mesh mesh, Matrix4* mvp, u32* colors, s32 num_vertices, s32 num_indices)
+{
+    u64 temp_old_size = TEMPORARY_ARENA.size;
+    
+    // clipping of a triangle in the worst case results in 4 triangles needed to draw
+    Triangle4* clipped_geometry = temp_alloc(Triangle4, 4);
+    Vector4* homogeneous_vertices = temp_alloc(Vector4, num_vertices);
+
+    for (s32 i = 0; i < num_vertices; i++)
+    {
+        homogeneous_vertices[i] = vec_3to4(mesh.vertices[i], 1.0f);
+    }
+    
+    for (s32 i = 0; i < num_vertices; i++)
+    {
+        homogeneous_vertices[i] = matrix_mul_vector4(mvp, homogeneous_vertices[i]);
+    }
+
+    s32 c = 0; // colors index; goes to num_triangles implicitly
+    for (s32 i = 0; i < num_indices; i += 3)
+    {
+        Triangle4 unclipped_triangle = {
+            homogeneous_vertices[mesh.indices[i]],
+            homogeneous_vertices[mesh.indices[i+1]],
+            homogeneous_vertices[mesh.indices[i+2]]
+        };
+
+        s32 count = clip_triangle(&unclipped_triangle, clipped_geometry);
+        
+        for (s32 j = 0; j < count; j++)
+        {
+            Triangle4* clipped_triangle = &clipped_geometry[j];
+            triangle_clip_to_raster_space(clipped_triangle);
+            
+            Triangle raster_triangle;
+            triangle_4to3(clipped_triangle, &raster_triangle);
+
+            u32 color = colors[c];
+            rasterize_triangle(&raster_triangle, color, false);
+        }
+        
+        c++;
+    }
+
+    arena_set_size(&TEMPORARY_ARENA, temp_old_size);
+}
 
 
 
+
+// @todo figure out what is z exactly in raster space??
 
 
 // z layers for rect
@@ -167,7 +217,10 @@ extern "C" void update_and_render()
 
     fill_background();
     
-    test();
+    Matrix4* view = view_tmatrix_for_camera();
+    Matrix4* proj = perspective_tmatrix_for_camera();
+    
+    model_matrix_test(view, proj);
     
     zbuffer_reset(zbuffer, framebuffer.width, framebuffer.height);
     temp_reset();

@@ -13,12 +13,17 @@ union Triangle4
     Vector4 v[3];
 };
 
+inline void triangle_4to3(Triangle4* t4, Triangle* t3)
+{
+    t3->a = vec_4to3(t4->a);
+    t3->b = vec_4to3(t4->b);
+    t3->c = vec_4to3(t4->c);
+}
+
 inline Triangle* ttriangle_4to3(Triangle4* t)
 {
     Triangle* tri = temp_alloc(Triangle);
-    tri->a = vec_4to3(t->a);
-    tri->b = vec_4to3(t->b);
-    tri->c = vec_4to3(t->c);
+    triangle_4to3(t, tri);
     return tri;
 }
 
