@@ -1,6 +1,3 @@
-// MATRIX FUNCTIONS FOR r32
-
-// @todo figure out how this works with homogeneous coordinates
 Vector3 matrix_mul_vector(Matrix4* m, Vector3 v)
 {
     Vector3 result;
@@ -9,6 +6,18 @@ Vector3 matrix_mul_vector(Matrix4* m, Vector3 v)
     result.z = v.x*m->e[0][2] + v.y*m->e[1][2] + v.z*m->e[2][2] + m->e[3][2];
     return result;
 }
+
+// @doc assume input w is always 1, so you don't have to explicitly multiply by 1
+Vector4 matrix_mul_vector4(Matrix4* m, const Vector4& v)
+{
+    Vector4 result;
+    result.x = v.x*m->e[0][0] + v.y*m->e[1][0] + v.z*m->e[2][0] + m->e[3][0];
+    result.y = v.x*m->e[0][1] + v.y*m->e[1][1] + v.z*m->e[2][1] + m->e[3][1];
+    result.z = v.x*m->e[0][2] + v.y*m->e[1][2] + v.z*m->e[2][2] + m->e[3][2];
+    result.w = v.x*m->e[0][3] + v.y*m->e[1][3] + v.z*m->e[2][3] + m->e[3][3];
+    return result;
+}
+
 
 void matrix_mul(Matrix4* m1, Matrix4* m2, Matrix4* result)
 {
@@ -119,4 +128,74 @@ Matrix4* tmatrix_compose(s32 count, ...)
     va_end(matrices);
 
     return result;
+}
+
+void model_matrix_for_transform(Matrix4* m, Transform* t)
+{
+    Scratch* scratch = get_scratch();
+    Matrix4* R = scratch_push<Matrix4>(scratch);
+    Matrix4* T = scratch_push<Matrix4>(scratch);
+    Matrix4* S = scratch_push<Matrix4>(scratch);
+
+    quaternion_to_matrix(t->orientation, R);
+    matrix_unit(T);
+    matrix_translate(T, t->position);
+    matrix_unit(S);
+    matrix_scale(S, t->scale);
+    
+    matrix_compose(4, m, S, R, T);
+    release_scratch(scratch);
+}
+
+void view_matrix_for_camera(Matrix4* m, Camera* c = &MAIN_CAMERA)
+{
+    Scratch* scratch = get_scratch();
+    Matrix4* R = scratch_push<Matrix4>(scratch);
+    Matrix4* T = scratch_push<Matrix4>(scratch);
+    
+    quaternion_to_matrix(quaternion_conjugate(c->orientation), R);
+    matrix_unit(T);
+    matrix_translate(T, vec_negate(c->position));
+    matrix_mul(T, R, m);
+    
+    release_scratch(scratch);
+}
+
+void perspective_matrix_for_camera(Matrix4* proj, Camera* c = &MAIN_CAMERA)
+{
+    r32 n = c->z_near;
+    r32 f = c->z_far;
+    r32 t = tan(radians(c->fov / 2)) * n;
+    r32 r = t * ASPECT_RATIO;
+    
+    proj->X = {n/r, 0,   0,             0};
+    proj->Y = {0,   n/t, 0,             0};
+    proj->Z = {0,   0,  -(f+n)/(f-n),  -1};
+    proj->W = {0,   0,  -(2*f*n)/(f-n), 0};
+}
+
+void mvp_matrix_for_transform(Matrix4* m, Transform* t, Matrix4* view, Matrix4* proj)
+{
+    Scratch* scratch = get_scratch();
+    Matrix4* model = scratch_push<Matrix4>(scratch);
+
+    model_matrix_for_transform(model, t);
+
+    matrix_compose(4, m, model, view, proj);
+    
+    release_scratch(scratch);
+}
+
+inline Matrix4* view_tmatrix_for_camera(Camera* c = &MAIN_CAMERA)
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    view_matrix_for_camera(m, c);
+    return m;
+}
+
+inline Matrix4* perspective_tmatrix_for_camera(Camera* camera = &MAIN_CAMERA)
+{
+    Matrix4* m = temp_alloc(Matrix4);
+    perspective_matrix_for_camera(m, camera);
+    return m;
 }

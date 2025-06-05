@@ -57,15 +57,6 @@ T* arena_push(Arena* arena, u64 count = 1)
     return (T*) arena_push_size(arena, sizeof(T)*count, alignof(T));
 }
 
-inline void zero_memory(void* ptr, u64 size)
-{
-    u8* byte_ptr = (u8*)ptr;
-    for (u64 i = 0; i < size; i++)
-    {
-        byte_ptr[i] = 0;
-    }
-}
-
 inline void arena_reset(Arena* arena)
 {
     arena->size = 0;

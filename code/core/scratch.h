@@ -16,6 +16,9 @@ struct Scratch
     s32 index;
 };
 
+inline Scratch* get_scratch();
+inline void release_scratch(Scratch* scratch);
+inline void* scratch_push_size(Scratch* scratch, s32 size, s32 alignment);
 
 
 template<typename T>

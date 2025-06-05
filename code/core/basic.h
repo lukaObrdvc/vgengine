@@ -1,6 +1,8 @@
 #ifndef BASIC_H
 #define BASIC_H
 
+// @todo make rad, deg, kb, mb, gb..?
+
 
 #define global_variable
 
@@ -41,9 +43,8 @@ typedef s64 b64;
 #define ASSERT(expr) ((void)0)
 #endif
 
-// THIS IS TEMPORARILY HERE ---------------------------
-#define ARR_COUNT(arr) (sizeof((arr))/sizeof((arr)[0]))
-// ---------------------------------------------------
+#define ARRAY_COUNT(arr) (sizeof((arr))/sizeof((arr)[0]))
+
 
 #define PI  3.14159265359f
 #define TAU 6.28318530718f // 2*PI
@@ -102,7 +103,6 @@ inline r32 lerp(r32 A, r32 B, r32 t)
 {
     return B * t + A * (1 - t);
 }
-
 
 // @doc rounding, flooring towards zero
 inline r32 Floor(r32 n)
@@ -206,5 +206,24 @@ inline b32 float_compare(r32 a, r32 b)
 {
     return abs(a - b) < EPSILON;
 }
+
+// @todo higher sizes?
+// @todo write in steps of u64 until you can't no more for speed?
+// @doc pass bytesize
+inline void memzero(void* ptr, s32 size)
+{
+    for (s32 i = 0; i < size; i++)
+    {
+        *((u8*)ptr + i) = 0;
+    }
+}
+inline void memcopy(void* ptr1, s32 size, void* ptr2)
+{
+    for (s32 i = 0; i < size; i++)
+    {
+        *((u8*)ptr2 + i) = *((u8*)ptr1 + i);
+    }
+}
+
 
 #endif

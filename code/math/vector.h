@@ -215,6 +215,10 @@ inline Vector3 vec_scale(Vector3 v, r32 s)
 {
     return {s * v.x, s * v.y, s * v.z};
 }
+inline Vector4 vec_scale(const Vector4& v, r32 s)
+{
+    return {s * v.x, s * v.y, s * v.z, s * v.w};
+}
 
 inline Vector2 vec_negate(Vector2 v)
 {
@@ -223,6 +227,49 @@ inline Vector2 vec_negate(Vector2 v)
 inline Vector3 vec_negate(Vector3 v)
 {
     return {-1 * v.x, -1 * v.y, -1 * v.z};
+}
+
+inline Vector3 vec_2to3(Vector2 v, r32 z)
+{
+    return {v.x, v.y, z};
+}
+inline Vector4 vec_3to4(Vector3 v, r32 w)
+{
+    return {v.x, v.y, v.z, w};
+}
+
+inline Vector2 vec_3to2(Vector3 v)
+{
+    return {v.x, v.y};
+}
+inline Vector3 vec_4to3(Vector4 v)
+{
+    return {v.x, v.y, v.z};
+}
+
+inline Vector2 vec_lerp(const Vector2& a, const Vector2& b, r32 t)
+{
+    Vector2 result;
+    result.x = lerp(a.x, b.x, t);
+    result.y = lerp(a.y, b.y, t);
+    return result;    
+}
+inline Vector3 vec_lerp(const Vector3& a, const Vector3& b, r32 t)
+{
+    Vector3 result;
+    result.x = lerp(a.x, b.x, t);
+    result.y = lerp(a.y, b.y, t);
+    result.z = lerp(a.z, b.z, t);
+    return result;    
+}
+inline Vector4 vec_lerp(const Vector4& a, const Vector4& b, r32 t)
+{
+    Vector4 result;
+    result.x = lerp(a.x, b.x, t);
+    result.y = lerp(a.y, b.y, t);
+    result.z = lerp(a.z, b.z, t);
+    result.w = lerp(a.w, b.w, t);
+    return result;    
 }
 
 
@@ -343,6 +390,24 @@ inline Vector2i vec_scale(Vector2i v, s32 s)
 inline Vector3i vec_scale(Vector3i v, s32 s)
 {
     return {s * v.x, s * v.y, s * v.z};
+}
+
+inline Vector3i vec_2to3(Vector2i v, s32 z)
+{
+    return {v.x, v.y, z};
+}
+inline Vector4i vec_3to4(Vector3i v, s32 w)
+{
+    return {v.x, v.y, v.z, w};
+}
+
+inline Vector2i vec_3to2(Vector3i v)
+{
+    return {v.x, v.y};
+}
+inline Vector3i vec_4to3(Vector4i v)
+{
+    return {v.x, v.y, v.z};
 }
 
 

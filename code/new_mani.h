@@ -9,6 +9,7 @@ struct Engine_state
     Framebuffer framebuffer;
     r32* zbuffer;
     Camera main_camera;
+    r32 aspect_ratio;
     u8 normalization_counter;
 
     // shize ------------------------------------
@@ -24,7 +25,7 @@ struct Engine_state
     r32 line_angle;
     r32 spin_angle;
     b32 reverse_winding;
-    Transform* cube_transform;
+    Transform cube_transform;
     r32 cube_scaling_factor;
     b32 cube_scale_up;
     // temporary-----------------------------
@@ -47,6 +48,7 @@ struct Engine_state
 // #define Z_BUFFER (((r32*)ENGINESTATE->zBuffer) + FRAME_BUFFER_WIDTH*(FRAME_BUFFER_HEIGHT -1))
 #define ZBUFFER (ENGINE_STATE->zbuffer)
 
+#define ASPECT_RATIO (ENGINE_STATE->aspect_ratio)
 
 
 // @Note the cursor will always be in the windows' coordsys

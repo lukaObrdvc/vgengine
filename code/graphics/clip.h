@@ -1,151 +1,296 @@
 #ifndef CLIP_H
 #define CLIP_H
 
-typedef Vector4 Vertex4;
+s32 triangulate_fan(Vector4* vertices, s32 count, Triangle4* out)
+{
+    for (s32 i = 1; i < count - 1; i++)
+    {
+        out[i-1].a = vertices[0];
+        out[i-1].b = vertices[i];
+        out[i-1].c = vertices[i + 1];
+    }
+    // triangle count is always this
+    return count - 2;
+}
 
-b32 InsideRight(Vector4 v)
+inline b32 inside_right(Vector4 v)
 {
     return v.x <= v.w;
 }
-b32 InsideLeft(Vector4 v)
+inline b32 inside_left(Vector4 v)
 {
     return v.x >= -v.w;
 }
-b32 InsideTop(Vector4 v)
+inline b32 inside_top(Vector4 v)
 {
     return v.y <= v.w;
 }
-b32 InsideBottom(Vector4 v)
+inline b32 inside_bot(Vector4 v)
 {
     return v.y >= -v.w;
 }
-b32 InsideNear(Vector4 v)
+inline b32 inside_near(Vector4 v)
 {
     return v.z >= -v.w;
 }
-b32 InsideFar(Vector4 v)
+inline b32 inside_far(Vector4 v)
 {
     return v.z <= v.w;
 }
 
-inline Vector4 lerp(Vector4 a, Vector4 b, r32 t)
-{
-    Vector4 result;
-    result.x = a.x + t * (b.x - a.x);
-    result.y = a.y + t * (b.y - a.y);
-    result.z = a.z + t * (b.z - a.z);
-    result.w = a.w + t * (b.w - a.w);
-    return result;
-}
-
-Vector4 IntersectRight(Vector4 a, Vector4 b)
+inline Vector4 intersect_right(const Vector4& a, const Vector4& b)
 {
     r32 t = (a.w - a.x) / ((a.w - a.x) - (b.w - b.x));
-    return lerp(a, b, t);
+    return vec_lerp(a, b, t);
 }
-Vector4 IntersectLeft(Vector4 a, Vector4 b)
+inline Vector4 intersect_left(const Vector4& a, const Vector4& b)
 {
     r32 t = (a.w + a.x) / ((a.w + a.x) - (b.w + b.x));
-    return lerp(a, b, t);
+    return vec_lerp(a, b, t);
 }
-Vector4 IntersectTop(Vector4 a, Vector4 b)
+inline Vector4 intersect_top(const Vector4& a, const Vector4& b)
 {
     r32 t = (a.w - a.y) / ((a.w - a.y) - (b.w - b.y));
-    return lerp(a, b, t);
+    return vec_lerp(a, b, t);
 }
-Vector4 IntersectBottom(Vector4 a, Vector4 b)
+inline Vector4 intersect_bot(const Vector4& a, const Vector4& b)
 {
     r32 t = (a.w + a.y) / ((a.w + a.y) - (b.w + b.y));
-    return lerp(a, b, t);
+    return vec_lerp(a, b, t);
 }
-Vector4 IntersectNear(Vector4 a, Vector4 b)
+inline Vector4 intersect_near(const Vector4& a, const Vector4& b)
 {
     r32 t = (a.w + a.z) / ((a.w + a.z) - (b.w + b.z));
-    return lerp(a, b, t);
+    return vec_lerp(a, b, t);
 }
-Vector4 IntersectFar(Vector4 a, Vector4 b)
+inline Vector4 intersect_far(const Vector4& a, const Vector4& b)
 {
     r32 t = (a.w - a.z) / ((a.w - a.z) - (b.w - b.z));
-    return lerp(a, b, t);
+    return vec_lerp(a, b, t);
 }
 
-
-s32 ClipAgainstPlane(Vertex4* in_vertices, s32 in_count, Vertex4* out_vertices,
-                     b32 (*Inside)(Vertex4), Vertex4 (*Intersect)(Vertex4, Vertex4))
+// Sutherland–Hodgman polygon clipping algorithm.
+// code is literally the same for every plane except for intersect
+// and inside functions which differ, everything else is copy-pasted
+s32 clip_triangle(Triangle4* in_tri, Triangle4* out_triangles)
 {
-    s32 out_count = 0;
-    Vertex4 prev = in_vertices[in_count-1];
+    Scratch* scratch = get_scratch();
 
-    for (s32 i = 0; i < in_count; i++)
+    Vector4* temp1 = scratch_push<Vector4>(scratch, 8);
+    Vector4* temp2 = scratch_push<Vector4>(scratch, 8);
+
+    temp1[0] = in_tri->a;
+    temp1[1] = in_tri->b;
+    temp1[2] = in_tri->c;
+    
+    s32 temp1_count = 3;
+    s32 temp2_count = 0;
+    
+    Vector4 prev = temp1[temp1_count-1];
+
+    // RIGHT PLANE
+    for (s32 i = 0; i < temp1_count; i++)
     {
-        Vertex4 curr = in_vertices[i];
+        Vector4 curr = temp1[i];
 
-        b32 prev_inside = Inside(prev);
-        b32 curr_inside = Inside(curr);
+        b32 prev_inside = inside_right(prev);
+        b32 curr_inside = inside_right(curr);
 
         if (curr_inside)
         {
             if (!prev_inside)
             {
-                out_vertices[out_count++] = Intersect(prev, curr);
+                temp2[temp2_count++] = intersect_right(prev, curr);
             }
-            out_vertices[out_count++] = curr;
+            temp2[temp2_count++] = curr;
         }
         else if (prev_inside)
         {
-            out_vertices[out_count++] = Intersect(prev, curr);
+            temp2[temp2_count++] = intersect_right(prev, curr);
         }
 
         prev = curr;
     }
-
-    return out_count;
-}
-
-s32 ClipTriangle(TriangleHom* in_tri, TriangleHom* out_triangles)
-{
-    Vector4 A = in_tri->A;
-    Vector4 B = in_tri->B;
-    Vector4 C = in_tri->C;
-    
-    Vertex4 input[8];
-    Vertex4 temp[8];
-    Vertex4 temp2[8];
-
-    input[0] = A;
-    input[1] = B;
-    input[2] = C;
-    s32 count = 3;
-
-    // Clip against each plane in order
-    count = ClipAgainstPlane(input, count, temp, InsideRight, IntersectRight);
-    if (count == 0) return 0;
-
-    count = ClipAgainstPlane(temp, count, temp2, InsideLeft, IntersectLeft);
-    if (count == 0) return 0;
-
-    count = ClipAgainstPlane(temp2, count, temp, InsideTop, IntersectTop);
-    if (count == 0) return 0;
-
-    count = ClipAgainstPlane(temp, count, temp2, InsideBottom, IntersectBottom);
-    if (count == 0) return 0;
-
-    count = ClipAgainstPlane(temp2, count, temp, InsideNear, IntersectNear);
-    if (count == 0) return 0;
-
-    count = ClipAgainstPlane(temp, count, temp2, InsideFar, IntersectFar);
-    if (count == 0) return 0;
-
-    // Now temp2 holds final polygon
-    // Triangulate fan (0,1,2), (0,2,3), (0,3,4), etc
-    for (s32 i = 1; i < count-1; i++)
+    if (temp2_count == 0)
     {
-        out_triangles[i-1].A = temp2[0];
-        out_triangles[i-1].B = temp2[i];
-        out_triangles[i-1].C = temp2[i+1];
+        release_scratch(scratch);
+        return 0;
     }
+    temp1_count = temp2_count;
+    temp2_count = 0;
+    swap(temp1, temp2);
+    prev = temp1[temp1_count - 1];
 
-    return count-2; // Number of triangles output
+    // LEFT PLANE
+    for (s32 i = 0; i < temp1_count; i++)
+    {
+        Vector4 curr = temp1[i];
+
+        b32 prev_inside = inside_left(prev);
+        b32 curr_inside = inside_left(curr);
+
+        if (curr_inside)
+        {
+            if (!prev_inside)
+            {
+                temp2[temp2_count++] = intersect_left(prev, curr);
+            }
+            temp2[temp2_count++] = curr;
+        }
+        else if (prev_inside)
+        {
+            temp2[temp2_count++] = intersect_left(prev, curr);
+        }
+
+        prev = curr;
+    }
+    if (temp2_count == 0)
+    {
+        release_scratch(scratch);
+        return 0;
+    }
+    temp1_count = temp2_count;
+    temp2_count = 0;
+    swap(temp1, temp2);
+    prev = temp1[temp1_count - 1];
+
+    // TOP PLANE
+    for (s32 i = 0; i < temp1_count; i++)
+    {
+        Vector4 curr = temp1[i];
+
+        b32 prev_inside = inside_top(prev);
+        b32 curr_inside = inside_top(curr);
+
+        if (curr_inside)
+        {
+            if (!prev_inside)
+            {
+                temp2[temp2_count++] = intersect_top(prev, curr);
+            }
+            temp2[temp2_count++] = curr;
+        }
+        else if (prev_inside)
+        {
+            temp2[temp2_count++] = intersect_top(prev, curr);
+        }
+
+        prev = curr;
+    }
+    if (temp2_count == 0)
+    {
+        release_scratch(scratch);
+        return 0;
+    }
+    temp1_count = temp2_count;
+    temp2_count = 0;
+    swap(temp1, temp2);
+    prev = temp1[temp1_count - 1];
+
+    // BOT PLANE
+    for (s32 i = 0; i < temp1_count; i++)
+    {
+        Vector4 curr = temp1[i];
+
+        b32 prev_inside = inside_bot(prev);
+        b32 curr_inside = inside_bot(curr);
+
+        if (curr_inside)
+        {
+            if (!prev_inside)
+            {
+                temp2[temp2_count++] = intersect_bot(prev, curr);
+            }
+            temp2[temp2_count++] = curr;
+        }
+        else if (prev_inside)
+        {
+            temp2[temp2_count++] = intersect_bot(prev, curr);
+        }
+
+        prev = curr;
+    }
+    if (temp2_count == 0)
+    {
+        release_scratch(scratch);
+        return 0;
+    }
+    temp1_count = temp2_count;
+    temp2_count = 0;
+    swap(temp1, temp2);
+    prev = temp1[temp1_count - 1];
+
+    // NEAR PLANE
+    for (s32 i = 0; i < temp1_count; i++)
+    {
+        Vector4 curr = temp1[i];
+
+        b32 prev_inside = inside_near(prev);
+        b32 curr_inside = inside_near(curr);
+
+        if (curr_inside)
+        {
+            if (!prev_inside)
+            {
+                temp2[temp2_count++] = intersect_near(prev, curr);
+            }
+            temp2[temp2_count++] = curr;
+        }
+        else if (prev_inside)
+        {
+            temp2[temp2_count++] = intersect_near(prev, curr);
+        }
+
+        prev = curr;
+    }
+    if (temp2_count == 0)
+    {
+        release_scratch(scratch);
+        return 0;
+    }
+    temp1_count = temp2_count;
+    temp2_count = 0;
+    swap(temp1, temp2);
+    prev = temp1[temp1_count - 1];
+
+
+    // FAR PLANE
+    for (s32 i = 0; i < temp1_count; i++)
+    {
+        Vector4 curr = temp1[i];
+
+        b32 prev_inside = inside_far(prev);
+        b32 curr_inside = inside_far(curr);
+
+        if (curr_inside)
+        {
+            if (!prev_inside)
+            {
+                temp2[temp2_count++] = intersect_far(prev, curr);
+            }
+            temp2[temp2_count++] = curr;
+        }
+        else if (prev_inside)
+        {
+            temp2[temp2_count++] = intersect_far(prev, curr);
+        }
+
+        prev = curr;
+    }
+    if (temp2_count == 0)
+    {
+        release_scratch(scratch);
+        return 0;
+    }
+    temp1_count = temp2_count;
+    temp2_count = 0;
+    swap(temp1, temp2);
+    prev = temp1[temp1_count - 1];
+
+    s32 triangles_count = triangulate_fan(temp1, temp1_count, out_triangles);
+
+    release_scratch(scratch);
+    return triangles_count;
 }
 
 

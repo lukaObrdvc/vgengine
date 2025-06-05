@@ -54,11 +54,12 @@ void init_engine_state()
     MAIN_CAMERA.fov = 120;
 
     engine_state->normalization_counter = 1;
+    engine_state->aspect_ratio = FRAMEBUFFER_WIDTH / (r32)FRAMEBUFFER_HEIGHT;
     
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
     engine_state->spin_angle = 0;
-    engine_state->cube_transform = ttransform_identity();
+    // engine_state->cube_transform;
     engine_state->cube_scaling_factor = 1.0f;
     engine_state->cube_scale_up = true;
     

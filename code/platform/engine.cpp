@@ -18,9 +18,6 @@
 /* } */
 
 
-#include "graphics/clip.h"
-
-
 // inline r32 slope2(v2 vec1, v2 vec2)
 // {
     // r32 result;
@@ -30,44 +27,49 @@
     // return result;
 // }
 
-inline r32 EdgeFunction(Vector3 c, Vector3 b, Vector3 a)
+inline r32 edge_function(const Vector3& c, const Vector3& b, const Vector3& a)
 {
     return (c.x-a.x)*(b.y-a.y)-(c.y-a.y)*(b.x-a.x);
 }
 
-inline Rect ObtainTriangleBBox(Triangle* tri)
+// @todo maybe don't pass Triangle* ?
+Rect triangle_bounding_box(Triangle* tri)
 {
     Rect result;
 
-    result.min_x = Min(Min(tri->A.x, tri->B.x), tri->C.x);
-    result.max_x = Max(Max(tri->A.x, tri->B.x), tri->C.x);
-    result.min_y = Min(Min(tri->A.y, tri->B.y), tri->C.y);
-    result.max_y = Max(Max(tri->A.y, tri->B.y), tri->C.y);
+    Vector3 A = tri->a;
+    Vector3 B = tri->b;
+    Vector3 C = tri->c;
+    
+    result.min_x = Min(Min(A.x, B.x), C.x);
+    result.min_y = Min(Min(A.y, B.y), C.y);
+    result.max_x = Max(Max(A.x, B.x), C.x);
+    result.max_y = Max(Max(A.y, B.y), C.y);
 
     return result;
 }
 
-void RasterizeTriangle(Triangle* tri, u32 color, b32 inv)
+void rasterize_triangle(Triangle* tri, u32 color, b32 inv)
 {
     // perspective-correct interpolation
     // top-left rule
     // anti-aliasing
 
-    Vector3 p0 = tri->A;
-    Vector3 p1 = tri->B;
-    Vector3 p2 = tri->C;
+    Vector3 p0 = tri->a;
+    Vector3 p1 = tri->b;
+    Vector3 p2 = tri->c;
     
-    Rect bbox = ObtainTriangleBBox(tri);
-    r32 area = EdgeFunction(p2, p1, p0);
+    Rect bbox = triangle_bounding_box(tri);
+    r32 area = edge_function(p2, p1, p0);
     
     for (s32 j = Floor(bbox.min_y); j <= Floor(bbox.max_y); j++)
     {
         for (s32 i = Floor(bbox.min_x); i <= Floor(bbox.max_x); i++)
         {
             Vector3 p = vec_make(i+0.5f, j+0.5f, 0.0f);
-            r32 w0 = EdgeFunction(p, p2, p1);
-            r32 w1 = EdgeFunction(p, p0, p2);
-            r32 w2 = EdgeFunction(p, p1, p0);
+            r32 w0 = edge_function(p, p2, p1);
+            r32 w1 = edge_function(p, p0, p2);
+            r32 w2 = edge_function(p, p1, p0);
 
             // b32 cond = (ENGINE_STATE->reverse_winding ?
                         // w0 >= 0 && w1 >= 0 && w2 >= 0 :
@@ -104,21 +106,21 @@ void RasterizeTriangle(Triangle* tri, u32 color, b32 inv)
 void triangle_clip_to_raster_space(Triangle4* t)
 {
     // perspective divide is done here
-    t->A = vec_scale(t->A, t->A.w);
-    t->B = vec_scale(t->B, t->B.w);
-    t->C = vec_scale(t->C, t->C.w);
+    t->a = vec_scale(t->a, 1/t->a.w);
+    t->b = vec_scale(t->b, 1/t->b.w);
+    t->c = vec_scale(t->c, 1/t->c.w);
     
     s32 width = FRAMEBUFFER_WIDTH - 1;
     s32 height = FRAMEBUFFER_HEIGHT - 1;
     
-    t->A.x = (t->A.x + 1)/2 * width;
-    t->A.y = (t->A.y + 1)/2 * height;
+    t->a.x = (t->a.x + 1)/2 * width;
+    t->a.y = (t->a.y + 1)/2 * height;
 
-    t->B.x = (t->B.x + 1)/2 * width;
-    t->B.y = (t->B.y + 1)/2 * height;
+    t->b.x = (t->b.x + 1)/2 * width;
+    t->b.y = (t->b.y + 1)/2 * height;
 
-    t->C.x = (t->C.x + 1)/2 * width;
-    t->C.y = (t->C.y + 1)/2 * height;
+    t->c.x = (t->c.x + 1)/2 * width;
+    t->c.y = (t->c.y + 1)/2 * height;
 }
 
 

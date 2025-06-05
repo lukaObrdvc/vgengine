@@ -37,8 +37,9 @@
 
 #include "core/rect.h"
 
+#include "graphics/triangle.h"
 #include "graphics/camera.h"
-// #include "graphics/clip.h"
+#include "graphics/clip.h"
 #include "graphics/framebuffer.h"
 // #include "graphics/line.h"
 // #include "graphics/pixel.h"
