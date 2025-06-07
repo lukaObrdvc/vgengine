@@ -39,14 +39,14 @@ typedef s64 b64;
 #define EPSILON 0.0001f
 
 #define PI  3.14159265359f
-#define TAU 6.28318530718f    // 2pi
-#define RAD 57.2957795131f    // 360/2pi
-#define DEG 0.01745329252f    // 2pi/360
+#define TAU 6.28318530718f      // 2pi
+#define RAD 57.2957795131f      // 360/2pi
+#define DEG 0.01745329252f      // 2pi/360
 
-#define KB 1024               // 1024
-#define MB 1048576            // 1024*1024
-#define GB (u64)1073741824    // 1024*1024*1024
-#define TB (u64)1099511627776 // 1024*1024*1024*1024
+#define KB 1024                 // 1024
+#define MB 1048576              // 1024*1024
+#define GB ((u64)1073741824)    // 1024*1024*1024
+#define TB ((u64)1099511627776) // 1024*1024*1024*1024
 
 
 #define global_variable
@@ -205,6 +205,10 @@ inline void memcopy(void* ptr1, s32 size, void* ptr2)
         *((u8*)ptr2 + i) = *((u8*)ptr1 + i);
     }
 }
+
+// @todo memcompare
+
+// @todo toggle_bool
 
 
 #endif

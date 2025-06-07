@@ -5,24 +5,34 @@
 // windows.cpp cleanup
 // - strings
 // - hash table
-// - bitfield
 // - colors
-// - array slice?
-// - sorting
+// - array slice? (don't do dynamic arrays and reallocing, they can just be arenas basically) (also don't do allocator field like in jai, just have your own and call them wherever you need whichever one...)
+//   (arrays should have capacity so you can calculate their size (unlike arenas))
+//   [static vs dynamic array explicit difference?]
 // - randomness
+// - reusable arena?
 
 // winapi stuffs:
 // - file handling
-// - fonts
+// - fonts               (KarminaBold)
 // - threads
+// - perf counters?
+// - recompilation/reloading?
+
 // - fullscreen
 // - cursors
 // - window priority
 // - resizing
-// - perf counters?
-// - recompilation/reloading?
+
 // - audio
 // - maketh sureth dll thingy worketh ?
+
+// also line and pixel?
+// recttransform? (ui only basically, just figure out what you need
+//   yourself and how best to approach it based on what you need...)
+
+
+// why dont I just start doing whatever I want in life, and stop being miserable????
 
 
 #include "project.h"
@@ -44,6 +54,8 @@
 #include "core/basic.h"
 #include "core/arena.h"
 #include "core/scratch.h"
+#include "core/flags.h"
+#include "core/bitfield.h"
 
 #include "platform/platform.h"
 
