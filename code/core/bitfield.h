@@ -17,11 +17,11 @@ struct Bit_array
 
 inline u32 dword_count_for_bit_count(u32 bit_count)
 {
-    return align_up(bit_count, 64);
+    return (bit_count + 63) / 64;
 }
 inline u32 dword_for_bit(u32 bit)
 {
-    return align_down(bit, 64);
+    return bit / 64;
 }
 inline u64 dword_mask_for_bit(u32 bit)
 {

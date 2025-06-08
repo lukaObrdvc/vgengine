@@ -1,6 +1,10 @@
 #ifndef BASIC_H
 #define BASIC_H
 
+
+// @todo put literal marks like ull at the end of these kinds of numbers
+
+
 typedef int8_t  s8;
 typedef int16_t s16;
 typedef int32_t s32;
@@ -17,17 +21,19 @@ typedef double r64;
 typedef s32 b32;
 typedef s64 b64;
 
+// @todo probably rename this to stuff like U8_MAX
+
 #define MIN_U    0
 #define MAX_U8   255
 #define MAX_U16  65535
 #define MAX_U32  4294967295
 #define MAX_U64  18446744073709551615 
 #define MIN_S8  -128
-#define MIN_S16 -131072
+#define MIN_S16 -32768
 #define MIN_S32 -2147483648
 #define MIN_S64 -9223372036854775808
 #define MAX_S8   127
-#define MAX_S16  131071
+#define MAX_S16  32767 // 131071
 #define MAX_S32  2147483647
 #define MAX_S64  9223372036854775807
 
@@ -107,6 +113,26 @@ T signof(T n)
     return (T(0) < n) - (n < T(0));
 }
 
+template<typename T>
+b32 pow_of_2(T n)
+{
+    return n & (n - 1);
+}
+
+template<typename T>
+T align_up(T n, T multiple_of)
+{
+    ASSERT(pow_of_2(multiple_of));
+    return (n + multiple_of - 1) & ( ~(multiple_of - 1));
+}
+
+template<typename T>
+T align_down(T n, T multiple_of)
+{
+    ASSERT(pow_of_2(multiple_of));
+    return n & ~(multiple_of - 1);
+}
+
 
 inline r32 lerp(r32 A, r32 B, r32 t)
 {
@@ -166,49 +192,33 @@ inline u32 to_unsigned(s32 n)
     return (u32)n;
 }
 
-inline u32 align_up(u32 n, u32 multiple_of)
-{
-    return (n + multiple_of - 1) & ( ~(multiple_of - 1));
-}
-inline u64 align_up(u64 n, u64 multiple_of)
-{
-    return (n + multiple_of - 1) & ( ~(multiple_of - 1));
-}
-
-inline u32 align_down(u32 n, u32 multiple_of)
-{
-    return n & ~(multiple_of - 1);
-}
-inline u64 align_down(u64 n, u64 multiple_of)
-{
-    return n & ~(multiple_of - 1);
-}
-
 inline b32 float_compare(r32 a, r32 b)
 {
     return abs(a - b) < EPSILON;
 }
 
-// @speed write in steps of u64/u32 until you can't no more for speed?
+// @speed write in steps of u64/u32/u16/u8
 // @doc pass bytesize
-inline void memzero(void* ptr, s32 size)
+inline void mem_zero(void* ptr, s32 size)
 {
     for (s32 i = 0; i < size; i++)
     {
         *((u8*)ptr + i) = 0;
     }
 }
-inline void memcopy(void* ptr1, s32 size, void* ptr2)
+inline void mem_copy(void* ptr1, s32 size, void* ptr2)
 {
     for (s32 i = 0; i < size; i++)
     {
         *((u8*)ptr2 + i) = *((u8*)ptr1 + i);
     }
 }
+// @todo mem_compare
 
-// @todo memcompare
-
-// @todo toggle_bool
+// inline b32 toggle_bool(b32 b)
+// {
+    // return 000000000000000000;
+// }
 
 
 #endif
