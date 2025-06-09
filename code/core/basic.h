@@ -64,7 +64,9 @@ typedef s64 b64;
 #define ASSERT(expr) ((void)0)
 #endif
 
-#define ARRAY_COUNT(arr) (sizeof((arr))/sizeof((arr)[0]))
+// only works when arr is defined globally, in scope, or in a struct,
+// not when passed to functions
+#define C_ARRAY_COUNT(arr) (sizeof((arr))/sizeof((arr)[0]))
 
 
 template<typename T>
@@ -114,24 +116,45 @@ T signof(T n)
 }
 
 template<typename T>
-b32 pow_of_2(T n)
+T pow2(T n)
+{
+    return 1 << n;
+}
+
+template<typename T>
+b32 is_pow2(T n)
 {
     return n & (n - 1);
+}
+
+template <typename T>
+T mul2(T n, T exponent)
+{
+    return n << exponent;
+}
+
+template <typename T>
+T div2(T n, T exponent)
+{
+    return n >> exponent;
 }
 
 template<typename T>
 T align_up(T n, T multiple_of)
 {
-    ASSERT(pow_of_2(multiple_of));
+    ASSERT(is_pow2(multiple_of));
     return (n + multiple_of - 1) & ( ~(multiple_of - 1));
 }
 
 template<typename T>
 T align_down(T n, T multiple_of)
 {
-    ASSERT(pow_of_2(multiple_of));
+    ASSERT(is_pow2(multiple_of));
     return n & ~(multiple_of - 1);
 }
+
+
+
 
 
 inline r32 lerp(r32 A, r32 B, r32 t)
@@ -199,26 +222,32 @@ inline b32 float_compare(r32 a, r32 b)
 
 // @speed write in steps of u64/u32/u16/u8
 // @doc pass bytesize
-inline void mem_zero(void* ptr, s32 size)
+inline void memset(void* base, u32 size, u8 value = 0)
 {
-    for (s32 i = 0; i < size; i++)
+    for (u32 i = 0; i < size; i++)
     {
-        *((u8*)ptr + i) = 0;
+        *((u8*)base + i) = value;
     }
 }
-inline void mem_copy(void* ptr1, s32 size, void* ptr2)
+inline void memcpy(void* dest, void* src, u32 size)
 {
-    for (s32 i = 0; i < size; i++)
+    for (u32 i = 0; i < size; i++)
     {
-        *((u8*)ptr2 + i) = *((u8*)ptr1 + i);
+        *((u8*)dest + i) = *((u8*)src + i);
     }
 }
-// @todo mem_compare
+inline b32 memcmp(void* base1, void* base2, u32 size)
+{
+    for (u32 i = 0; i < size; i++)
+    {
+        if (*((u8*)base1 + i) != *((u8*)base2 + i))
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
-// inline b32 toggle_bool(b32 b)
-// {
-    // return 000000000000000000;
-// }
-
+// @todo toggle_bool
 
 #endif

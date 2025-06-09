@@ -213,7 +213,7 @@ b32 hash_table_has_key(Hash_table<TKey, TValue>* table, TKey key)
 template<typename TKey, typename TValue>
 void hash_table_init(Hash_table<TKey, TValue>* table, TKey* keys, TValue* values, s32 capacity)
 {
-    ASSERT(pow_of_2(capacity));
+    ASSERT(is_pow2(capacity));
 
     s32 new_capacity = align_up(floori(capacity * (1 + HASH_TABLE_LOAD_FACTOR)), 2); 
     
