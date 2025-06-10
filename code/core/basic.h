@@ -250,4 +250,6 @@ inline b32 memcmp(void* base1, void* base2, u32 size)
 
 // @todo toggle_bool
 
+// @tod find first zero/one ??
+
 #endif

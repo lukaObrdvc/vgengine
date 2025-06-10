@@ -6,18 +6,29 @@
 // you just make masks per chunk in bit number and an offset by
 // which to shift it down... you do this when an use arises...
 
+// @todo probably not all of these should be inline.....
+
+// @todo we should probably have a count for how many bits there
+// are in the last dword because we have incomplete infromation
+// otherwise; and we can also assert based on this when indexing...
+
 
 // @doc this is mainly for flags of variable counts
 struct Bit_array
 {
     u64* base;
     u32 dword_count;
+    u8 bits_in_last_dword;
 };
 
 
 inline u32 dword_count_for_bit_count(u32 bit_count)
 {
     return (bit_count + 63) / 64;
+}
+inline u8 last_dword_bits(u32 bit_count)
+{
+    return (u8)((bit_count + 63) % 64);
 }
 inline u32 dword_for_bit(u32 bit)
 {
@@ -26,6 +37,13 @@ inline u32 dword_for_bit(u32 bit)
 inline u64 dword_mask_for_bit(u32 bit)
 {
     return 1 << (bit % 64);
+}
+
+inline Bit_array bit_array_make(u64* base, u32 bit_count)
+{
+    return {base,
+            dword_count_for_bit_count(bit_count),
+            last_dword_bits(bit_count)};
 }
 
 inline void bit_array_set(Bit_array barr, u32 bit)
@@ -67,7 +85,9 @@ inline void bit_array_unset(Bit_array barr1, Bit_array barr2)
 inline void bit_array_diff(const Bit_array& barr1, const Bit_array& barr2, Bit_array barr3)
 {
     ASSERT((barr1.dword_count == barr2.dword_count) &&
-           (barr1.dword_count == barr3.dword_count));
+           (barr1.dword_count == barr3.dword_count) &&
+           (barr1.bits_in_last_dword == barr2.bits_in_last_dword) &&
+           (barr1.bits_in_last_dword == barr3.bits_in_last_dword));
 
     for (u32 i = 0; i <= barr1.dword_count; i++)
     {
@@ -79,8 +99,10 @@ inline void bit_array_diff(const Bit_array& barr1, const Bit_array& barr2, Bit_a
 inline void bit_array_diff_in_1(const Bit_array& barr1, const Bit_array& barr2, Bit_array barr3)
 {
     ASSERT((barr1.dword_count == barr2.dword_count) &&
-           (barr1.dword_count == barr3.dword_count));
-
+           (barr1.dword_count == barr3.dword_count) &&
+           (barr1.bits_in_last_dword == barr2.bits_in_last_dword) &&
+           (barr1.bits_in_last_dword == barr3.bits_in_last_dword));
+    
     for (u32 i = 0; i <= barr1.dword_count; i++)
     {
         barr3.base[i] = (barr1.base[i] ^ barr2.base[i]) & barr2.base[i];
@@ -89,7 +111,9 @@ inline void bit_array_diff_in_1(const Bit_array& barr1, const Bit_array& barr2, 
 inline void bit_array_diff_in_0(const Bit_array& barr1, const Bit_array& barr2, Bit_array barr3)
 {
     ASSERT((barr1.dword_count == barr2.dword_count) &&
-           (barr1.dword_count == barr3.dword_count));
+           (barr1.dword_count == barr3.dword_count) &&
+           (barr1.bits_in_last_dword == barr2.bits_in_last_dword) &&
+           (barr1.bits_in_last_dword == barr3.bits_in_last_dword));
 
     for (u32 i = 0; i <= barr1.dword_count; i++)
     {
@@ -136,7 +160,11 @@ inline void bit_array_unset_all(Bit_array barr)
 
 inline b32 bit_array_equal(Bit_array barr1, Bit_array barr2)
 {
-    if (barr1.dword_count != barr2.dword_count) return false;
+    if ((barr1.dword_count != barr2.dword_count) ||
+        (barr1.bits_in_last_dword != barr2.bits_in_last_dword))
+    {
+        return false;
+    }
     
     for (u32 i = 0; barr1.dword_count; i++)
     {
@@ -148,5 +176,36 @@ inline b32 bit_array_equal(Bit_array barr1, Bit_array barr2)
     return true;
 }
 
+// @todo use intrinsics instead
+inline s32 bit_array_find_first_zero(Bit_array barr)
+{
+    u32 total_bits = 64 * barr.dword_count + barr.bits_in_last_dword;
+    
+    for (u32 i = 0; i < barr.dword_count; i++)
+    {
+        u64 dword = barr.base[i];
+
+        if (dword != MAX_U64)
+        {
+            for (u32 bit = 0; bit < 64; bit++)
+            {
+                u32 index = i * 64 + bit;
+                
+                if (index >= total_bits)
+                {
+                    // no zeroes found
+                    return -1;
+                }
+
+                if (((dword >> bit) & 1) == 0)
+                {
+                    return to_signed(index);
+                }
+            }
+        }
+    }
+    // no zeroes found
+    return -1;
+}
 
 #endif

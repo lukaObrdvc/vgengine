@@ -2,15 +2,12 @@
 
 
 // @todo:
-// windows.cpp cleanup
+
+// - windows.cpp cleanup
+
 // - strings
-// - hash table
 // - colors
-// - array slice? (don't do dynamic arrays and reallocing, they can just be arenas basically) (also don't do allocator field like in jai, just have your own and call them wherever you need whichever one...)
-//   (arrays should have capacity so you can calculate their size (unlike arenas))
-//   [static vs dynamic array explicit difference?]
 // - randomness
-// - reusable arena?
 
 // winapi stuffs:
 // - file handling
@@ -28,12 +25,9 @@
 // - maketh sureth dll thingy worketh ?
 
 // also line and pixel?
-// recttransform? (ui only basically, just figure out what you need
-//   yourself and how best to approach it based on what you need...)
 
 
-// why dont I just start doing whatever I want in life, and stop being miserable????
-
+// @todo refactor from base to data for all struct fields?
 
 #include "project.h"
 
@@ -58,6 +52,13 @@
 #include "core/bitfield.h"
 
 #include "platform/platform.h"
+
+#include "core/slice.h"
+#include "core/array.h"
+#include "core/pool.h"
+#include "core/string.h"
+#include "core/hash_table.h"
+
 
 #include "math/vector.h"
 #include "math/matrix.h"

@@ -18,6 +18,8 @@ void arena_make(Arena* arena, u64 capacity)
 
 void* arena_push_size(Arena* arena, const u64& size, const u64& alignment = 1)
 {
+    ASSERT(is_pow2(alignment));
+    
     u64 unaligned_base = (u64)(arena->base + arena->size);
     u64 aligned_base = align_up(unaligned_base, alignment);
     arena->size += size + (aligned_base - unaligned_base);
