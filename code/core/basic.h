@@ -154,9 +154,6 @@ T align_down(T n, T multiple_of)
 }
 
 
-
-
-
 inline r32 lerp(r32 A, r32 B, r32 t)
 {
     return B * t + A * (1 - t);
@@ -250,6 +247,8 @@ inline b32 memcmp(void* base1, void* base2, u32 size)
 
 // @todo toggle_bool
 
-// @tod find first zero/one ??
+// @todo find first zero/one ??
+
+// @todo fmod
 
 #endif
