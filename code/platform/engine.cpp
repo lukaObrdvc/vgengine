@@ -202,12 +202,13 @@ void fill_background()
     }
 }
 
-extern "C" Engine_frame_result update_and_render(Platform_input_pass input)
+extern "C" Engine_frame_result update_and_render()
 {
-    process_input(input);
+    // turns y coordinate from y is down to y is up (ll corner is origin)
+    INPUT->cursor_y = FRAMEBUFFER_HEIGHT - INPUT->cursor_y; // do I abstract this through a function call?
 
     Engine_frame_result result;
-    result.show_cursor = true;
+    result.show_cursor = false;
     
     Engine_state* engine_state = ENGINE_STATE;
     Vector2 cursor_difference;
@@ -279,6 +280,12 @@ extern "C" Engine_frame_result update_and_render(Platform_input_pass input)
     temp_reset();
     engine_state->normalization_counter++;
 
+    bit_array_unset_all(INPUT->keys_pressed);
+    bit_array_unset_all(INPUT->keys_released);
+    INPUT->mkeys_pressed = unset_all_flags();
+    INPUT->mkeys_released = unset_all_flags();
+    INPUT->moved_mouse = false;
+    
     return result;
 }
 

@@ -12,24 +12,25 @@ global_variable u8 keymap[256];
 
 void init_keymap()
 {
-    keymap[0x25] = 0;
-    keymap[0x26] = 1; 
-    keymap[0x27] = 2; 
-    keymap[0x28] = 3; 
+    // @todo init the rest to 0?
+    
+    keymap[0x25] = 1; // LEFT
+    keymap[0x26] = 2; // UP
+    keymap[0x27] = 3; // RIGHT
+    keymap[0x28] = 4; // DOWN
+    keymap[0x57] = 5; // W
+    keymap[0x53] = 6; // S
+    keymap[0x41] = 7; // A
+    keymap[0x44] = 8; // D
+    keymap[0x51] = 9; // Q
+    keymap[0x45] = 10; // E
+    keymap[0x49] = 11; // I
+    keymap[0x4B] = 12; // K
+    keymap[0x4A] = 13; // J
+    keymap[0x4C] = 14; // L
+    keymap[0x55] = 15; // U
+    keymap[0x4F] = 16; // O
 
-    keymap[0x57] = 4;   
-    keymap[0x53] = 5; 
-    keymap[0x41] = 6; 
-    keymap[0x44] = 7; 
-    keymap[0x51] = 8; 
-    keymap[0x45] = 9; 
-
-    keymap[0x49] = 10;   
-    keymap[0x4B] = 11;
-    keymap[0x4A] = 12;
-    keymap[0x4C] = 13;
-    keymap[0x55] = 14;
-    keymap[0x4F] = 15;
 }
 
 #if USE_DLL
@@ -106,21 +107,7 @@ void unload_game(HMODULE dll)
 #endif
 
 global_variable b32 running = true;
-
-// #define MAX_KEY_MESSAGES 16
-// global_variable u64 curr_keyflags_to_set = 0;
-// global_variable u64 curr_keyflags_to_unset = 0;
-// global_variable u8  curr_mouseflags_to_set = 0;
-// global_variable u8  curr_mouseflags_to_unset = 0;
-// global_variable r32 curr_cursorX = 640;
-// global_variable r32 curr_cursorY = 360;
-
-// you have to also update these properly at the end of the frame
-global_variable Bit_array changed_keys; // initialize this in init of WinMain
-global_variable u8 changed_mkeys = 0;
-global_variable b32 moved_mouse = false;
-global_variable r32 cursor_x = 0;
-global_variable r32 cursor_y = 0;
+global_variable Input* input; // @todo do better for monolithic build
 
 struct Window_rect_dims
 {
@@ -229,37 +216,84 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
         /* Window_rect_dims rect = get_Window_rect_dims(window); */
         /* realloc_window_bitmap_buffer(rect.width, rect.height); */
     } break;
-
+    
     case WM_KEYUP:
-    case WM_KEYDOWN:
-    // case WM_SYSKEYDOWN:
     // case WM_SYSKEYUP:
     {
-        bit_array_set(changed_keys, (KEYCODE)keymap[(u8)wParam]);
+        KEYCODE key = (KEYCODE)keymap[(u8)wParam];
+        if (bit_array_get(input->keys, key))
+        {
+            bit_array_set(input->keys_released, key);
+        }
+        bit_array_unset(input->keys, key);
+    } break;
+    case WM_KEYDOWN:
+    // case WM_SYSKEYDOWN:
+    {
+        KEYCODE key = (KEYCODE)keymap[(u8)wParam];
+        if (!bit_array_get(input->keys, key))
+        {
+            bit_array_set(input->keys_pressed, key);
+        }
+        bit_array_set(input->keys, key);
     } break;
     
     case WM_MOUSEMOVE:
     {
-        cursor_x = lParam & 0x0000FFFF;
-        cursor_y = (lParam & 0xFFFF0000) >> 16;
-        moved_mouse = true;
+        input->cursor_x = lParam & 0x0000FFFF;
+        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
+        input->moved_mouse = true;
     } break;
 
     // @todo figure out if I need to make a cursor for these two (4...)
     case WM_LBUTTONUP:
+    {
+        input->cursor_x = lParam & 0x0000FFFF;
+        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
+        
+        MKEYCODE mkey = MKEY_M1;
+        if (get_flags(input->mkeys, MKEY_M1))
+        {
+            input->mkeys_released = set_flags(input->mkeys_released, mkey);
+        }
+        input->mkeys = unset_flags(input->mkeys, mkey);
+    } break;
     case WM_LBUTTONDOWN:
     {
-        cursor_x = lParam & 0x0000FFFF;
-        cursor_y = (lParam & 0xFFFF0000) >> 16;
-        changed_mkeys = set_flags(changed_mkeys, MKEY_M1);
+        input->cursor_x = lParam & 0x0000FFFF;
+        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
+        
+        MKEYCODE mkey = MKEY_M1;
+        if (!get_flags(input->mkeys, mkey))
+        {
+            input->mkeys_pressed = set_flags(input->mkeys_pressed, mkey);
+        }
+        input->mkeys = set_flags(input->mkeys, mkey);
     } break;
     
     case WM_RBUTTONUP:
+    {
+        input->cursor_x = lParam & 0x0000FFFF;
+        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
+        
+        MKEYCODE mkey = MKEY_M2;
+        if (get_flags(input->mkeys, mkey))
+        {
+            input->mkeys_released = set_flags(input->mkeys_released, mkey);
+        }
+        input->mkeys = unset_flags(input->mkeys, mkey);
+    } break;
     case WM_RBUTTONDOWN:
     {
-        cursor_x = lParam & 0x0000FFFF;
-        cursor_y = (lParam & 0xFFFF0000) >> 16;
-        changed_mkeys = set_flags(changed_mkeys, MKEY_M2);
+        input->cursor_x = lParam & 0x0000FFFF;
+        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
+        
+        MKEYCODE mkey = MKEY_M2;
+        if (!get_flags(input->mkeys, mkey))
+        {
+            input->mkeys_pressed = set_flags(input->mkeys_pressed, mkey);
+        }
+        input->mkeys = set_flags(input->mkeys, mkey);
     } break;
     
     case WM_CLOSE:
@@ -332,7 +366,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     PLATFORM_API.write_file = write_file;
 #endif
 
-    PLATFORM_INIT_ENGINE();
+    Platform_init_out init;
+    PLATFORM_INIT_ENGINE(&init);
+    input = init.input_address;
+    
     
     int window_offset_x = 50;
     int window_offset_y = 50;
@@ -413,16 +450,13 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             DispatchMessage(&message);
         }
 
-        Platform_input_pass input;
-        input.changed_keys = changed_keys;
-        input.changed_mkeys = changed_mkeys;
-        input.moved_mouse = moved_mouse;
-        input.cursor_x = cursor_x; // can use get cursor pos instead of messages
-        input.cursor_y = cursor_y;
 
-        Engine_frame_result results = UPDATE_AND_RENDER(input);
+        // can use get cursor pos through function call
+        // instead of messages
 
-        if (results.show_cursor)
+        Engine_frame_result results = UPDATE_AND_RENDER();
+
+        if (!results.show_cursor)
         {
             ShowCursor(false);
             if (GetForegroundWindow() == window)
@@ -452,10 +486,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                        rect.width,
                                        rect.height);
         ReleaseDC(window, dc);
-
-        bit_array_unset_all(changed_keys);
-        changed_mkeys = unset_all_flags();
-        moved_mouse = false;
 
         // @TODO better caching and calculation and precision of these counters
         u64 end_cycle_count = __rdtsc();
