@@ -415,6 +415,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
     // b32 once = true;
     void* window_buffer_memory = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
+
+    Engine_frame_result results;
+    results.show_cursor = false;
     
     while (running)
     {
@@ -449,13 +452,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             TranslateMessage(&message);
             DispatchMessage(&message);
         }
-
+        
 
         // can use get cursor pos through function call
         // instead of messages
-
-        Engine_frame_result results = UPDATE_AND_RENDER();
-
+        
         if (!results.show_cursor)
         {
             ShowCursor(false);
@@ -468,6 +469,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         {
             ShowCursor(true);
         }
+
+        // Engine_frame_result results = UPDATE_AND_RENDER();
+        results = UPDATE_AND_RENDER();
+        
 
         window_buffer_info.bmiHeader.biWidth = FRAMEBUFFER_WIDTH;
         window_buffer_info.bmiHeader.biHeight = -FRAMEBUFFER_HEIGHT;
@@ -489,6 +494,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
 
         // @TODO better caching and calculation and precision of these counters
         u64 end_cycle_count = __rdtsc();
+
+        // MSG dummy;
+        // while (PeekMessage(&dummy, 0, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) { }
 
         u64 cycles_per_frame = end_cycle_count - begin_cycle_count;
             

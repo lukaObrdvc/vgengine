@@ -214,6 +214,8 @@ extern "C" Engine_frame_result update_and_render()
     Vector2 cursor_difference;
     cursor_difference.x = -(CURSOR_X - FRAMEBUFFER_WIDTH/2);
     cursor_difference.y = CURSOR_Y - FRAMEBUFFER_HEIGHT/2;
+    engine_state->cursor.x = -CURSOR_X; // @todo is this goodio?
+    engine_state->cursor.y = CURSOR_Y;
 
     Camera* camera = MAIN_CAMERA;
     r32 x_angle = cursor_difference.y / (2 * KB);
