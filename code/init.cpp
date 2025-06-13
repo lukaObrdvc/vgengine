@@ -56,6 +56,7 @@ void init_engine_state()
     camera->z_far = 500;
     camera->fov = 120;
 
+    engine_state->prng_seed = RANDOM_DEFAULT_SEED;
     engine_state->normalization_counter = 1;
     engine_state->aspect_ratio = FRAMEBUFFER_WIDTH / (r32)FRAMEBUFFER_HEIGHT;
 

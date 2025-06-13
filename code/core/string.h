@@ -1,6 +1,7 @@
 #ifndef STRING_H
 #define STRING_H
 
+// string builder stuff?
 
 struct String
 {
@@ -14,6 +15,8 @@ inline b32 string_compare(String a, String b)
 
     return memcmp(a.base, b.base, a.length);
 }
+
+
 
 
 #endif

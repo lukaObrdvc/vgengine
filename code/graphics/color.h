@@ -109,6 +109,7 @@ inline Color u32_to_color(u32 color)
     return result;
 }
 
+// @doc if you want alpha of tint color to be present, then premultiply it
 inline Color color_tint(Color c, Color tint)
 {
     c.r *= tint.r;

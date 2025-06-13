@@ -35,7 +35,7 @@ inline u8 diff_flags(u8 f1, u8 f2)
 {
     return f1 ^ f2; // same as toggle_flags but whatever this is more explicit
 }
-// @doc these two are not commutative
+// @doc these two are not commutative (f1=new f2=old)
 inline u8 diff_flags_in_1(u8 f1, u8 f2)
 {
     return (f1 ^ f2) & f2;

@@ -1,37 +1,68 @@
-// @todo do I use defines instead of enums at this point??
+#ifndef INPUT_H
+#define INPUT_H
 
-enum MOUSECODE
+#define NUM_KEYS 30
+#define NUM_MKEYS 3
+
+
+// @todo init bit arrays by max_keys
+// @todo [] operator for bit array
+struct Input
 {
-    MOUSE_NONE = 0,
-    MOUSE_MOVE = (1 << 0), // @fail MOUSE_MOVED is defined in windows...
-    MOUSE_M1   = (1 << 1),
-    MOUSE_M2   = (1 << 2),
-    MOUSE_M3   = (1 << 3)
+    Bit_array keys;
+    // these should be reset to 0 at the start of the frame
+    // and then the platform passes information about which keys
+    // changed and you just toggle that with keys, and then deduce
+    // keys_pressed and keys_released from previous keys and new
+    // keys and so on (by xor-ing)...
+    Bit_array keys_pressed; // changed from 0 to 1
+    Bit_array keys_released; // changed from 1 to 0
+    
+    u8 mkeys;
+    u8 mkeys_pressed;
+    u8 mkeys_released;
+    
+    b32 moved_mouse;
+    r32 cursor_x;
+    r32 cursor_y;
+};
+
+struct Platform_input_pass
+{
+    Bit_array changed_keys;
+    u8 changed_mkeys;
+    b32 moved_mouse;
+    r32 cursor_x;
+    r32 cursor_y;
 };
 
 enum KEYCODE
 {
-    KEY_NONE  = 0,
-    KEY_LEFT  = (1 << 0),
-    KEY_UP    = (1 << 1),
-    KEY_RIGHT = (1 << 2),
-    KEY_DOWN  = (1 << 3),
-    KEY_W     = (1 << 4),
-    KEY_S     = (1 << 5),
-    KEY_A     = (1 << 6),
-    KEY_D     = (1 << 7),
-    KEY_Q     = (1 << 8),
-    KEY_E     = (1 << 9),
-    KEY_I     = (1 << 10),
-    KEY_K     = (1 << 11),
-    KEY_J     = (1 << 12),
-    KEY_L     = (1 << 13),
-    KEY_U     = (1 << 14),
-    KEY_O     = (1 << 15)
+    KEY_NONE,
+    KEY_LEFT,
+    KEY_UP,
+    KEY_RIGHT,
+    KEY_DOWN,
+    KEY_W,
+    KEY_S,
+    KEY_A,
+    KEY_D,
+    KEY_Q,
+    KEY_E,
+    KEY_I,
+    KEY_K,
+    KEY_J,
+    KEY_L,
+    KEY_U,
+    KEY_O
 };
 
-// extern "C" b32 process_input(u64 keyflags_to_set,
-                             // u64 keyflags_to_unset,
-                             // u8  mouseflags_to_set,
-                             // u8  mouseflags_to_unset,
-                             // Vec2f  cursor);
+enum MKEYCODE
+{
+    MKEY_NONE,
+    MKEY_M1,
+    MKEY_M2,
+    MKEY_M3
+};
+
+#endif

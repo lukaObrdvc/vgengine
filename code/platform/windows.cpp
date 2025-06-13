@@ -107,13 +107,20 @@ void unload_game(HMODULE dll)
 
 global_variable b32 running = true;
 
-#define MAX_KEY_MESSAGES 16
-global_variable u64 curr_keyflags_to_set = 0;
-global_variable u64 curr_keyflags_to_unset = 0;
-global_variable u8  curr_mouseflags_to_set = 0;
-global_variable u8  curr_mouseflags_to_unset = 0;
-global_variable r32 curr_cursorX = 640;
-global_variable r32 curr_cursorY = 360;
+// #define MAX_KEY_MESSAGES 16
+// global_variable u64 curr_keyflags_to_set = 0;
+// global_variable u64 curr_keyflags_to_unset = 0;
+// global_variable u8  curr_mouseflags_to_set = 0;
+// global_variable u8  curr_mouseflags_to_unset = 0;
+// global_variable r32 curr_cursorX = 640;
+// global_variable r32 curr_cursorY = 360;
+
+// you have to also update these properly at the end of the frame
+global_variable Bit_array changed_keys; // initialize this in init of WinMain
+global_variable u8 changed_mkeys = 0;
+global_variable b32 moved_mouse = false;
+global_variable r32 cursor_x = 0;
+global_variable r32 cursor_y = 0;
 
 struct Window_rect_dims
 {
@@ -224,63 +231,37 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     } break;
 
     case WM_KEYUP:
-    {
-        curr_keyflags_to_unset |= (u64)(1 << keymap[(u8)wParam]);
-    } break;
     case WM_KEYDOWN:
-        /* case WM_SYSKEYDOWN: */
-        /* case WM_SYSKEYUP: */
+    // case WM_SYSKEYDOWN:
+    // case WM_SYSKEYUP:
     {
-        //@Note I need to know key code, is_down, was_down
-        // ... and potentially repeat_count and syskey ...
-                
-        u16 repeat_count = lParam & 0x0000FFFF;
-
-        // @TODO figure out how to map when having more than 64 flags for keys
-        curr_keyflags_to_set |= (u64)(1 << keymap[(u8)wParam]);
-                
-        // curr_frame_key.is_down = (message == WM_KEYDOWN);
-        // curr_frame_key.was_down = lParam & 0x40000000;
-
-        /* if ((message == WM_SYSKEYUP && wParam == VK_F4) || (wParam == VK_ESCAPE)) */
-        /*     { */
-        /*         running = false; */
-        /*     } */
+        bit_array_set(changed_keys, (KEYCODE)keymap[(u8)wParam]);
     } break;
-
+    
     case WM_MOUSEMOVE:
     {
-        curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
-        curr_mouseflags_to_set |= MOUSE_MOVE;
+        cursor_x = lParam & 0x0000FFFF;
+        cursor_y = (lParam & 0xFFFF0000) >> 16;
+        moved_mouse = true;
     } break;
 
-    // @TODO figure out if I need to make a cursor for these two (4...)
+    // @todo figure out if I need to make a cursor for these two (4...)
     case WM_LBUTTONUP:
-    {
-        curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
-        curr_mouseflags_to_unset |= MOUSE_M1;
-    } break;
     case WM_LBUTTONDOWN:
     {
-        curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
-        curr_mouseflags_to_set |= MOUSE_M1;
+        cursor_x = lParam & 0x0000FFFF;
+        cursor_y = (lParam & 0xFFFF0000) >> 16;
+        changed_mkeys = set_flags(changed_mkeys, MKEY_M1);
     } break;
+    
     case WM_RBUTTONUP:
-    {
-        curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
-        curr_mouseflags_to_unset |= MOUSE_M2;
-    } break;
     case WM_RBUTTONDOWN:
     {
-        curr_cursorX = lParam & 0x0000FFFF;
-        curr_cursorY = (lParam & 0xFFFF0000) >> 16;
-        curr_mouseflags_to_set |= MOUSE_M2;
+        cursor_x = lParam & 0x0000FFFF;
+        cursor_y = (lParam & 0xFFFF0000) >> 16;
+        changed_mkeys = set_flags(changed_mkeys, MKEY_M2);
     } break;
-            
+    
     case WM_CLOSE:
     {
         OutputDebugString("WM_CLOSE\n");
@@ -295,7 +276,8 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
         //PostQuitMessage(wParam);
     } break;
 
-    case WM_PAINT: {
+    case WM_PAINT:
+    {
         // @IMPORTANT you need this shit, or otherwise the window
         // will be blank, if you process the entire message queue,
         // if you don't then you can leave this blank....
@@ -378,8 +360,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                0,
                                0,
                                hInstance,
-                               0
-        );
+                               0);
     
     // default resolution is 1087x584, UL=(0,0)
     BITMAPINFO window_buffer_info = {0};
@@ -395,7 +376,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
 
-    b32 once = true;
+    // b32 once = true;
     void* window_buffer_memory = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
     
     while (running)
@@ -432,13 +413,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             DispatchMessage(&message);
         }
 
-        b32 camera_mode = PROCESS_INPUT(curr_keyflags_to_set,
-                                        curr_keyflags_to_unset,
-                                        curr_mouseflags_to_set,
-                                        curr_mouseflags_to_unset,
-                                        curr_cursorX,
-                                        curr_cursorY); // can use get cursor pos instead of messages
-        if (camera_mode)
+        Platform_input_pass input;
+        input.changed_keys = changed_keys;
+        input.changed_mkeys = changed_mkeys;
+        input.moved_mouse = moved_mouse;
+        input.cursor_x = cursor_x; // can use get cursor pos instead of messages
+        input.cursor_y = cursor_y;
+
+        Engine_frame_result results = UPDATE_AND_RENDER(input);
+
+        if (results.show_cursor)
         {
             ShowCursor(false);
             if (GetForegroundWindow() == window)
@@ -450,8 +434,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
         {
             ShowCursor(true);
         }
-        
-        UPDATE_AND_RENDER();
 
         window_buffer_info.bmiHeader.biWidth = FRAMEBUFFER_WIDTH;
         window_buffer_info.bmiHeader.biHeight = -FRAMEBUFFER_HEIGHT;
@@ -471,10 +453,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
                                        rect.height);
         ReleaseDC(window, dc);
 
-        curr_keyflags_to_set = 0;
-        curr_keyflags_to_unset = 0;
-        curr_mouseflags_to_set = 0;
-        curr_mouseflags_to_unset = MOUSE_MOVE;
+        bit_array_unset_all(changed_keys);
+        changed_mkeys = unset_all_flags();
+        moved_mouse = false;
 
         // @TODO better caching and calculation and precision of these counters
         u64 end_cycle_count = __rdtsc();

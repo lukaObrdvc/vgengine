@@ -7,15 +7,18 @@
 // scopes, and then make aliases for these things so you don't
 // type the same thing a million times, and god forbid have to
 // refactor all that
+
 struct Engine_state
 {
     b32 tested_once;
-    
+
+    Input input;
     Framebuffer framebuffer;
     r32* zbuffer;
     Camera main_camera;
     r32 aspect_ratio;
     u8 normalization_counter;
+    u32 prng_seed;
 
     // shize ------------------------------------
     // @TODO methinks VK combines mouse keys with keyboard keys.....
@@ -64,10 +67,5 @@ struct Engine_state
 #define to_yisdown(y) (FRAMEBUFFER_HEIGHT - (y))
 #define to_yisup(y)   (FRAMEBUFFER_HEIGHT - (y))
 
-
-// @Note converting when highest bit is 1 will result into wrapping to
-// negative, but we don't care since we only use it in if statements ?
-// @Note maybe make this an inline function instead?
-#define ExtractKey(keyflags, keycode) ((b64) ((keyflags) & (keycode)) )
 
 #endif

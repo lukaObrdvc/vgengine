@@ -3,29 +3,28 @@
 
 // @todo:
 
-// - windows.cpp cleanup
+// - windows.cpp cleanup [start this next probably :) ]
 
 // - strings
-// - colors
-// - randomness
-
-// winapi stuffs:
-// - file handling
-// - fonts               (KarminaBold)
-// - threads
-// - perf counters?
-// - recompilation/reloading?
 
 // - fullscreen
 // - cursors
 // - window priority
 // - resizing
 
+// winapi stuffs:
+// - read datetime
+// - file handling
+// - fonts               (KarminaBold)
+// - perf counters?
+
+// - threads
+// - recompilation/reloading?
+
 // - audio
 // - maketh sureth dll thingy worketh ?
 
 // also line and pixel?
-
 
 // @todo refactor from base to data for all struct fields?
 
@@ -59,7 +58,6 @@
 #include "core/string.h"
 #include "core/hash_table.h"
 
-
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/quaternion.h"
@@ -67,6 +65,7 @@
 
 #include "core/rect.h"
 
+#include "graphics/color.h"
 #include "graphics/triangle.h" // @cleanup
 #include "graphics/camera.h" // @cleanup
 #include "graphics/clip.h" // @cleanup
@@ -75,16 +74,22 @@
 // #include "graphics/pixel.h"
 #include "graphics/renderer.h" // mesh, color_make
 
-
+#include "input.h"
 #include "new_mani.h"
+#include "core/random.h" // move this later (needs prng_state from ENGINE_STATE)
+
+struct Engine_frame_result
+{
+    b32 show_cursor;
+};
 
 #if !USE_DLL
 #include "platform/engine.h"
 #endif
 
 #include "init.h"
-#include "input.h"
 
+#include "input.cpp"
 // .cpps here probably.....
 #include "core/arena.cpp"
 #include "core/scratch.cpp"
@@ -97,7 +102,6 @@
 
 #include "graphics/framebuffer.cpp"
 #include "init.cpp"
-#include "input.cpp"
 
 #include "platform/engine.cpp" // @cleanup and make update_and_render special file probably?
 #if !USE_DLL

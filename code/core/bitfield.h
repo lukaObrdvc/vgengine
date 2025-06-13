@@ -21,6 +21,9 @@ struct Bit_array
     u8 bits_in_last_dword;
 };
 
+// @todo maybe [] operator overloading for Bit_array ?, which replaces
+// bit_array_get, and bit_array_set, and bit_array_unset
+
 
 inline u32 dword_count_for_bit_count(u32 bit_count)
 {
@@ -63,9 +66,11 @@ inline b32 bit_array_get(Bit_array barr, u32 bit)
     return (barr.base[dword_for_bit(bit)] & dword_mask_for_bit(bit)); // != 0;
 }
 
+// @todo these are not commutative, barr1 will be updated
 inline void bit_array_set(Bit_array barr1, Bit_array barr2)
 {
     ASSERT(barr1.dword_count == barr2.dword_count);
+    ASSERT(barr1.bits_in_last_dword == barr2.bits_in_last_dword);
     
     for (u32 i = 0; i <= barr1.dword_count; i++)
     {
@@ -75,10 +80,21 @@ inline void bit_array_set(Bit_array barr1, Bit_array barr2)
 inline void bit_array_unset(Bit_array barr1, Bit_array barr2)
 {
     ASSERT(barr1.dword_count == barr2.dword_count);
+    ASSERT(barr1.bits_in_last_dword == barr2.bits_in_last_dword);
     
     for (u32 i = 0; i <= barr1.dword_count; i++)
     {
         barr1.base[i] &= ~ barr2.base[i];
+    }
+}
+inline void bit_array_toggle(Bit_array barr1, Bit_array barr2)
+{
+    ASSERT(barr1.dword_count == barr2.dword_count);
+    ASSERT(barr1.bits_in_last_dword == barr2.bits_in_last_dword);
+    
+    for (u32 i = 0; i <= barr1.dword_count; i++)
+    {
+        barr1.base[i] ^= barr2.base[i];
     }
 }
 
@@ -95,7 +111,7 @@ inline void bit_array_diff(const Bit_array& barr1, const Bit_array& barr2, Bit_a
     }
 }
 
-// @doc these two are not commutative
+// @doc these two are not commutative (barr1=new barr2=old)
 inline void bit_array_diff_in_1(const Bit_array& barr1, const Bit_array& barr2, Bit_array barr3)
 {
     ASSERT((barr1.dword_count == barr2.dword_count) &&
