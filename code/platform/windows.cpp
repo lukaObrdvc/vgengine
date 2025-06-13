@@ -413,7 +413,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
 
-    // b32 once = true;
     void* window_buffer_memory = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
 
     Engine_frame_result results;
@@ -470,7 +469,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,  LPSTR lpCmdLine,  int
             ShowCursor(true);
         }
 
-        // Engine_frame_result results = UPDATE_AND_RENDER();
         results = UPDATE_AND_RENDER();
         
 

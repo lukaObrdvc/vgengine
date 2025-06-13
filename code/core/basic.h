@@ -1,10 +1,6 @@
 #ifndef BASIC_H
 #define BASIC_H
 
-
-// @todo put literal marks like ull at the end of these kinds of numbers
-
-
 typedef int8_t  s8;
 typedef int16_t s16;
 typedef int32_t s32;
@@ -21,21 +17,19 @@ typedef double r64;
 typedef s32 b32;
 typedef s64 b64;
 
-// @todo probably rename this to stuff like U8_MAX
-
-#define MIN_U    0
-#define MAX_U8   255
-#define MAX_U16  65535
-#define MAX_U32  4294967295
-#define MAX_U64  18446744073709551615 
+#define MIN_U    0U
+#define MAX_U8   255U
+#define MAX_U16  65535U
+#define MAX_U32  4294967295U
+#define MAX_U64  18446744073709551615ULL
 #define MIN_S8  -128
 #define MIN_S16 -32768
 #define MIN_S32 -2147483648
-#define MIN_S64 -9223372036854775808
+#define MIN_S64 -9223372036854775808LL
 #define MAX_S8   127
-#define MAX_S16  32767 // 131071
+#define MAX_S16  32767
 #define MAX_S32  2147483647
-#define MAX_S64  9223372036854775807
+#define MAX_S64  9223372036854775807LL
 
 #define MIN_R32 -3.4028235e+38f
 #define MIN_R64 -1.7976931348623157e+308
@@ -45,14 +39,14 @@ typedef s64 b64;
 #define EPSILON 0.0001f
 
 #define PI  3.14159265359f
-#define TAU 6.28318530718f      // 2pi
-#define RAD 57.2957795131f      // 360/2pi
-#define DEG 0.01745329252f      // 2pi/360
+#define TAU 6.28318530718f  // 2pi
+#define RAD 57.2957795131f  // 360/2pi
+#define DEG 0.01745329252f  // 2pi/360
 
-#define KB 1024                 // 1024
-#define MB 1048576              // 1024*1024
-#define GB ((u64)1073741824)    // 1024*1024*1024
-#define TB ((u64)1099511627776) // 1024*1024*1024*1024
+#define KB 1024U            // 1024
+#define MB 1048576U         // 1024*1024
+#define GB 1073741824ULL    // 1024*1024*1024
+#define TB 1099511627776ULL // 1024*1024*1024*1024
 
 
 #define global_variable
@@ -124,7 +118,7 @@ T pow2(T n)
 template<typename T>
 b32 is_pow2(T n)
 {
-    return n & (n - 1);
+    return ~(n & (n - 1)); // ! instead of ! ?
 }
 
 template <typename T>
@@ -245,10 +239,16 @@ inline b32 memcmp(void* base1, void* base2, u32 size)
     return true;
 }
 
-// @todo toggle_bool
+inline b32 toggle_bool(b32 b)
+{
+    return !b;
+}
 
 // @todo find first zero/one ??
-
 // @todo fmod
+// @todo fast mod
+
+// @todo figure out how best to represent angles: degrees/radians/normalized??
+// @todo moduo(cardinal angle...)/normalize degree and rad..?
 
 #endif

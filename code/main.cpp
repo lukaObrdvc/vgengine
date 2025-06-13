@@ -26,8 +26,6 @@
 
 // also line and pixel?
 
-// @todo refactor from base to data for all struct fields?
-
 #include "project.h"
 
 #if !USE_DLL
@@ -47,8 +45,9 @@
 #include "core/basic.h"
 #include "core/arena.h"
 #include "core/scratch.h"
+#include "core/sort.h"
 #include "core/flags.h"
-#include "core/bitfield.h"
+#include "core/bit_array.h"
 
 #include "platform/platform.h"
 
@@ -56,54 +55,51 @@
 #include "core/array.h"
 #include "core/pool.h"
 #include "core/string.h"
-#include "core/hash_table.h"
+#include "core/hash_table.h" // @todo rehashing
 
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/quaternion.h"
-#include "math/transform.h" // @cleanup
+#include "math/transform.h"
 
 #include "core/rect.h"
 
 #include "graphics/color.h"
+#include "graphics/mesh.h"
 #include "graphics/triangle.h" // @cleanup
 #include "graphics/camera.h" // @cleanup
 #include "graphics/clip.h" // @cleanup
 #include "graphics/framebuffer.h" // @cleanup
 // #include "graphics/line.h"
 // #include "graphics/pixel.h"
-#include "graphics/renderer.h" // mesh, color_make
 
 #include "input.h"
-#include "new_mani.h"
+#include "engine_state.h"
 #include "core/random.h" // move this later (needs prng_state from ENGINE_STATE)
-
-struct Engine_frame_result
-{
-    b32 show_cursor;
-};
 
 #if !USE_DLL
 #include "platform/engine.h"
 #endif
+#include "update_and_render.h"
 
 #include "init.h"
 
+#include "core/sort.cpp"
 #include "input.cpp"
-// .cpps here probably.....
 #include "core/arena.cpp"
 #include "core/scratch.cpp"
 
 #include "math/matrix.cpp"
 #include "math/quaternion.cpp"
-// #include "math/transform.cpp"
 
 // #include "graphics/line.cpp"
 
 #include "graphics/framebuffer.cpp"
-#include "init.cpp"
+#include "init.cpp" // @cleanup
 
-#include "platform/engine.cpp" // @cleanup and make update_and_render special file probably?
+#include "platform/engine.cpp" // @cleanup
+#include "test2.cpp"
+#include "update_and_render.cpp"
 #if !USE_DLL
 #include "platform.cpp"
 #endif

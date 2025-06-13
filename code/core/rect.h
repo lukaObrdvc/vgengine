@@ -64,6 +64,13 @@ inline Rect rect_from_top_right(Vector2 top_right, r32 width, r32 height)
 // scaling?
 // clamping
 
+// z layers for rect
+// draw rect outline (should be done with lines)
+// clamp rect to viewport..
+// draw rect
+
+
+
 // FUNCTIONS FOR s32
 
 inline Recti rect_make(s32 min_x, s32 min_y, s32 max_x, s32 max_y)

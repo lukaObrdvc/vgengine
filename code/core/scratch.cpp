@@ -33,4 +33,3 @@ inline void* scratch_push_size(Scratch* scratch, s32 size, s32 alignment)
 #endif
     return (void*)aligned_base;
 }
-

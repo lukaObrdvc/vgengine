@@ -1,17 +1,9 @@
 #ifndef BIT_ARRAY_H
 #define BIT_ARRAY_H
 
-
 // for bit packing it's different, it has nothing to do with flags
 // you just make masks per chunk in bit number and an offset by
 // which to shift it down... you do this when an use arises...
-
-// @todo probably not all of these should be inline.....
-
-// @todo we should probably have a count for how many bits there
-// are in the last dword because we have incomplete infromation
-// otherwise; and we can also assert based on this when indexing...
-
 
 // @doc this is mainly for flags of variable counts
 struct Bit_array
@@ -21,17 +13,13 @@ struct Bit_array
     u8 bits_in_last_dword;
 };
 
-// @todo maybe [] operator overloading for Bit_array ?, which replaces
-// bit_array_get, and bit_array_set, and bit_array_unset
-
-
 inline u32 dword_count_for_bit_count(u32 bit_count)
 {
     return (bit_count + 63) / 64;
 }
 inline u8 last_dword_bits(u32 bit_count)
 {
-    return (u8)((bit_count + 63) % 64);
+    return (u8)(((bit_count - 1) % 64) + 1);
 }
 inline u32 dword_for_bit(u32 bit)
 {
@@ -139,7 +127,7 @@ inline void bit_array_diff_in_0(const Bit_array& barr1, const Bit_array& barr2, 
 
 inline b32 bit_array_is_all_set(Bit_array barr)
 {
-    for (u32 i = 0; barr.dword_count; i++)
+    for (u32 i = 0; i < barr.dword_count; i++)
     {
         if (barr.base[i] != MAX_U64)
         {
@@ -150,7 +138,7 @@ inline b32 bit_array_is_all_set(Bit_array barr)
 }
 inline b32 bit_array_is_all_unset(Bit_array barr)
 {
-    for (u32 i = 0; barr.dword_count; i++)
+    for (u32 i = 0; i < barr.dword_count; i++)
     {
         if (barr.base[i] != 0)
         {
@@ -161,14 +149,14 @@ inline b32 bit_array_is_all_unset(Bit_array barr)
 }
 inline void bit_array_set_all(Bit_array barr)
 {
-    for (u32 i = 0; barr.dword_count; i++)
+    for (u32 i = 0; i < barr.dword_count; i++)
     {
         barr.base[i] = MAX_U64;
     }
 }
 inline void bit_array_unset_all(Bit_array barr)
 {
-    for (u32 i = 0; barr.dword_count; i++)
+    for (u32 i = 0; i < barr.dword_count; i++)
     {
         barr.base[i] = 0;
     }
@@ -182,7 +170,7 @@ inline b32 bit_array_equal(Bit_array barr1, Bit_array barr2)
         return false;
     }
     
-    for (u32 i = 0; barr1.dword_count; i++)
+    for (u32 i = 0; i < barr1.dword_count; i++)
     {
         if (barr1.base[i] != barr2.base[i])
         {

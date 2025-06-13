@@ -15,10 +15,7 @@
 // @doc key values for empty and tombstone are reserved
 
 
-// @todo probably don't use Hash_table* now?
 // @todo rehash when tombstone_count reaches like capacity/2 or something, by compacting memory basically
-// @todo fast mod
-
 
 #define HASH_TABLE_LOAD_FACTOR 0.7f
 

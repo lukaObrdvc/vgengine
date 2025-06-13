@@ -419,6 +419,6 @@ inline Vector3i vec_4to3(Vector4i v)
 }
 
 
-// @todo perp, transpose, rotate?
+// @todo perp, transpose/translation?, rotate, slope?
 
 #endif

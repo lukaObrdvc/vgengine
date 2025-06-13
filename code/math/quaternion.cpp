@@ -91,4 +91,3 @@ Matrix4* quaternion_to_tmatrix(Quaternion q)
     quaternion_to_matrix(q, m);
     return m;
 }
-

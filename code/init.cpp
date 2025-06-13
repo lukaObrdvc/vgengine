@@ -16,7 +16,7 @@ void init_memory()
     // @todo push this once once per frame instead, that way you don't waste space as well
     engine_state->framebuffer.base = arena_push<u8>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * to_unsigned(BYTPP));
     engine_state->zbuffer = arena_push<r32>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE);
-
+    
     for (int i = 0; i < SCRATCH_POOL_SIZE; i++)
     {
         Scratch scratch;
@@ -37,12 +37,24 @@ void init_engine_state()
 {
     Engine_state* engine_state = ENGINE_STATE;
     Camera* camera = MAIN_CAMERA;
+
+    // @todo do I place these pushes elsewhere?
+    u64* keys_base = arena_push<u64>(PERMANENT_ARENA, dword_count_for_bit_count(NUM_KEYS));
+    u64* keys_pressed_base = arena_push<u64>(PERMANENT_ARENA, dword_count_for_bit_count(NUM_KEYS));
+    u64* keys_released_base = arena_push<u64>(PERMANENT_ARENA, dword_count_for_bit_count(NUM_KEYS));
+    INPUT->keys = bit_array_make(keys_base, NUM_KEYS);
+    INPUT->keys_pressed = bit_array_make(keys_pressed_base, NUM_KEYS);
+    INPUT->keys_released = bit_array_make(keys_released_base, NUM_KEYS);
+    
+    INPUT->mkeys = unset_all_flags();
+    INPUT->mkeys_pressed = unset_all_flags();
+    INPUT->mkeys_released = unset_all_flags();
+    INPUT->moved_mouse = false;
+    INPUT->cursor_x = 0;
+    INPUT->cursor_y = 0;
     
     engine_state->tested_once = 0;
 
-    engine_state->cursor.x = 640.0f;
-    engine_state->cursor.y = 360.0f;
-    
     engine_state->framebuffer.width = 1280.0f;
     engine_state->framebuffer.height = 720.0f;
 
@@ -67,37 +79,15 @@ void init_engine_state()
     engine_state->cube_scaling_factor = 1.0f;
     engine_state->cube_scale_up = true;
     
-    engine_state->keyflags = 0;
-    engine_state->mouseflags = 0;
-                    
-    // @todo you should probably have a default for everything but whatever
-    // @todo is this a good way to set a keymap, just setting powers of two.............
-    engine_state->keymap[0x25] = 0;
-    engine_state->keymap[0x26] = 1; 
-    engine_state->keymap[0x27] = 2; 
-    engine_state->keymap[0x28] = 3; 
-
-    engine_state->keymap[0x57] = 4;   
-    engine_state->keymap[0x53] = 5; 
-    engine_state->keymap[0x41] = 6; 
-    engine_state->keymap[0x44] = 7; 
-    engine_state->keymap[0x51] = 8; 
-    engine_state->keymap[0x45] = 9; 
-
-    engine_state->keymap[0x49] = 10;   
-    engine_state->keymap[0x4B] = 11;
-    engine_state->keymap[0x4A] = 12;
-    engine_state->keymap[0x4C] = 13;
-    engine_state->keymap[0x55] = 14;
-    engine_state->keymap[0x4F] = 15;
-
     zbuffer_reset();
 }
 
-extern "C" void platform_init_engine()
+extern "C" void platform_init_engine(Platform_init_out* out)
 {
     init_memory();
     init_engine_state();
+
+    out->input_address = INPUT;
 }
 
 #if USE_DLL

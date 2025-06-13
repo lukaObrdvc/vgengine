@@ -5,21 +5,20 @@
 
 void model_matrix_test(Matrix4* view, Matrix4* proj)
 {
-    u32 f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
-    u32 b_color = color_make(1, 1.0f, 1.0f, 1.0f);
-    u32 l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
-    u32 r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
-    u32 d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
-    u32 u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
-
-    u32 colors[12] = {
+    Color f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
+    Color b_color = color_make(1, 1.0f, 1.0f, 1.0f);
+    Color l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
+    Color r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
+    Color d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
+    Color u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
+    
+    Color colors[12] = {
         f_color, f_color,
         b_color, b_color,
         l_color, l_color,
         r_color, r_color,
         d_color, d_color,
-        u_color, u_color
-    };
+        u_color, u_color};
 
     r32 a = 10.0f; // half of cube dimension
     
@@ -38,8 +37,9 @@ void model_matrix_test(Matrix4* view, Matrix4* proj)
     Mesh cube_mesh;
     cube_mesh.vertices = s_vertices;
     cube_mesh.indices = s_indices;
+    cube_mesh.num_vertices = 8;
+    cube_mesh.num_indices = 36;
 
-    // Transform* cube_transform = &ENGINE_STATE->cube_transform;
     Transform* cube_transform = temp_alloc(Transform);
     
     r32 orbit_angle = ENGINE_STATE->spin_angle;
@@ -57,7 +57,7 @@ void model_matrix_test(Matrix4* view, Matrix4* proj)
     Matrix4* mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
     
     
-    render_mesh(cube_mesh, mvp, colors, 8, 36);
+    render_mesh(cube_mesh, mvp, colors);
     
 
     ENGINE_STATE->spin_angle += PI / KB;

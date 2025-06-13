@@ -8,7 +8,7 @@ struct Color
 };
 
 // @todo rename this to color_make, once you replace the old color_make that you currently have
-inline Color color_make_new(r32 r, r32 g, r32 b, r32 a = 1.0f)
+inline Color color_make(r32 r, r32 g, r32 b, r32 a = 1.0f)
 {
     return {r, g, b, a};
 }
@@ -25,7 +25,7 @@ inline Color color_premultiply(Color c)
 
 inline Color color_unpremultiply(Color c)
 {
-    if (c.a == 0.0f) return color_make_new(0.0f, 0.0f, 0.0f, 0.0f);
+    if (c.a == 0.0f) return color_make(0.0f, 0.0f, 0.0f, 0.0f);
     return {c.r / c.a, c.g / c.a, c.b / c.a, c.a};
 }
 
@@ -43,7 +43,7 @@ inline Color color_lerp(const Color& c1, const Color& c2, r32 t)
 inline Color color_blend(const Color& src, const Color& dest)
 {
     r32 resulting_alpha = src.a + dest.a * (1.0f - src.a);
-    if (resulting_alpha == 0.0f) return color_make_new(0.0f, 0.0f, 0.0f, 0.0f);
+    if (resulting_alpha == 0.0f) return color_make(0.0f, 0.0f, 0.0f, 0.0f);
 
     Color result;
     result.r = (src.r * src.a + dest.r * dest.a * (1.0f - src.a)) / resulting_alpha;
@@ -134,9 +134,7 @@ inline Color color_brightness(const Color& c, r32 factor)
 }
 
 // @todo color theory stuff: hsv/hsb, luminance, grayscale, rgb<->hsv/b conversion
-
 // @todo gamma correction?
-
 // @todo make a pallete of a bunch of colors with color_white, color_black...
 
 #endif

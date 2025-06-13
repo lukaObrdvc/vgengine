@@ -1,22 +1,14 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#define NUM_KEYS 30
-#define NUM_MKEYS 3
+#define NUM_KEYS 50 // actually 17
+#define NUM_MKEYS 6 // actually 4
 
-
-// @todo init bit arrays by max_keys
-// @todo [] operator for bit array
 struct Input
 {
     Bit_array keys;
-    // these should be reset to 0 at the start of the frame
-    // and then the platform passes information about which keys
-    // changed and you just toggle that with keys, and then deduce
-    // keys_pressed and keys_released from previous keys and new
-    // keys and so on (by xor-ing)...
-    Bit_array keys_pressed; // changed from 0 to 1
-    Bit_array keys_released; // changed from 1 to 0
+    Bit_array keys_pressed;
+    Bit_array keys_released;
     
     u8 mkeys;
     u8 mkeys_pressed;
@@ -27,34 +19,25 @@ struct Input
     r32 cursor_y;
 };
 
-struct Platform_input_pass
-{
-    Bit_array changed_keys;
-    u8 changed_mkeys;
-    b32 moved_mouse;
-    r32 cursor_x;
-    r32 cursor_y;
-};
-
 enum KEYCODE
 {
-    KEY_NONE,
-    KEY_LEFT,
-    KEY_UP,
-    KEY_RIGHT,
-    KEY_DOWN,
-    KEY_W,
-    KEY_S,
-    KEY_A,
-    KEY_D,
-    KEY_Q,
-    KEY_E,
-    KEY_I,
-    KEY_K,
-    KEY_J,
-    KEY_L,
-    KEY_U,
-    KEY_O
+    KEY_NONE,  // 0
+    KEY_LEFT,  // 1
+    KEY_UP,    // 2
+    KEY_RIGHT, // 3
+    KEY_DOWN,  // 4
+    KEY_W,     // 5
+    KEY_S,     // 6
+    KEY_A,     // 7
+    KEY_D,     // 8
+    KEY_Q,     // 9
+    KEY_E,     // 10
+    KEY_I,     // 11
+    KEY_K,     // 12
+    KEY_J,     // 13
+    KEY_L,     // 14
+    KEY_U,     // 15
+    KEY_O      // 16
 };
 
 enum MKEYCODE

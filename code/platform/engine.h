@@ -40,12 +40,9 @@ global_variable Engine_api engine_api = {
 
 #else
 
-extern "C" Engine_frame_result update_and_render();
-extern "C" void platform_init_engine(Platform_init_out*);
-
 #define UPDATE_AND_RENDER() update_and_render()
 #define PLATFORM_INIT_ENGINE(pass) platform_init_engine((pass))
-#define PLATFORM_INIT_MEMORY_BASE(memory_base) globals = (memory_base)  // this should probably expand to something that just directly sets up the memory_base for the entire monolithic build
+#define PLATFORM_INIT_MEMORY_BASE(memory_base) globals = (memory_base)
 
 #endif
 

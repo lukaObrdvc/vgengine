@@ -2,20 +2,6 @@
 #define ENGINE_STATE_H
 
 
-#define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA->base))
-
-#define FRAMEBUFFER (ENGINE_STATE->framebuffer)
-#define FRAMEBUFFER_WIDTH (FRAMEBUFFER.width)
-#define FRAMEBUFFER_HEIGHT (FRAMEBUFFER.height)
-#define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * BYTPP) // @todo maybe calculate these once, cache them in engine_state
-#define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * BYTPP) // @todo same?
-#define FRAMEBUFFER_BASE (FRAMEBUFFER.base)
-
-#define ZBUFFER (ENGINE_STATE->zbuffer)
-
-#define ASPECT_RATIO (ENGINE_STATE->aspect_ratio)
-
-
 // @doc mainly for permanent information and convinience so you can
 // globally access some things, instead of passing them to million
 // scopes, and then make aliases for these things so you don't
@@ -44,5 +30,18 @@ struct Engine_state
     
     b32 tested_once;
 };
+
+#define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA->base))
+
+#define FRAMEBUFFER (ENGINE_STATE->framebuffer)
+#define FRAMEBUFFER_WIDTH (FRAMEBUFFER.width)
+#define FRAMEBUFFER_HEIGHT (FRAMEBUFFER.height)
+#define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * BYTPP) // @todo maybe calculate these once, cache them in engine_state
+#define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * BYTPP) // @todo same?
+#define FRAMEBUFFER_BASE (FRAMEBUFFER.base)
+
+#define ZBUFFER (ENGINE_STATE->zbuffer)
+
+#define ASPECT_RATIO (ENGINE_STATE->aspect_ratio)
 
 #endif
