@@ -309,9 +309,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     Platform_init_result init;
     PLATFORM_INIT_ENGINE(&init);
     input = init.input_address;
-    
-    s32 window_offset_x = 50;
-    s32 window_offset_y = 50;
 
     WNDCLASS window_struct = {0};
     window_struct.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
@@ -324,10 +321,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     HWND window = CreateWindow(window_struct.lpszClassName,
                                "VGENGINE",
                                WS_VISIBLE | WS_OVERLAPPEDWINDOW,
-                               window_offset_x,
-                               window_offset_y,
-                               1280, // + 16,
-                               720, // + 39,
+                               init.window_offs_x,
+                               init.window_offs_y,
+                               init.window_width,
+                               init.window_height,
                                0,
                                0,
                                hInstance,
@@ -337,21 +334,19 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     BITMAPINFO window_buffer_info = {0};
     window_buffer_info.bmiHeader.biSize = sizeof(window_buffer_info.bmiHeader);
     window_buffer_info.bmiHeader.biPlanes = 1;
-    window_buffer_info.bmiHeader.biBitCount = 4 * 8; // BYTPP is 4
+    window_buffer_info.bmiHeader.biBitCount = 4 * 8; // BYTPP is 4 @todo actually use the macro
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
-
-    POINT center = { (LONG)FRAMEBUFFER_WIDTH/2, (LONG)FRAMEBUFFER_HEIGHT/2 };
-    ClientToScreen(window, &center);
-    SetCursorPos(center.x, center.y);
 
     // @cleanup counters
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
 
-    void* window_buffer_memory = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
-
-    Engine_frame_result results;
-    results.show_cursor = false;
+    Engine_frame_result result;
+    // these 2 are kinda hardcoded to initialize like this only one frame
+    result.show_cursor = false;
+    result.recenter_cursor = true;
+    result.window_buffer_width = init.window_width;
+    result.window_buffer_height = init.window_height;
 
     Platform_frame_pass pass;
     pass.running = true;
@@ -396,39 +391,33 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
         // can use get cursor pos through function call
         // instead of messages
-        
-        if (!results.show_cursor)
-        {
-            ShowCursor(false);
-            if (GetForegroundWindow() == window)
-            {
-                SetCursorPos(center.x, center.y);
-            }
-        }
-        else
-        {
-            ShowCursor(true);
-        }
 
+        ShowCursor(result.show_cursor);
+        if (result.recenter_cursor && (GetForegroundWindow() == window))
+        {
+            POINT center = {(LONG)result.window_buffer_width / 2,
+                            (LONG)result.window_buffer_height / 2};
+            ClientToScreen(window, &center);
+            SetCursorPos(center.x, center.y);
+        }
         
-        UPDATE_AND_RENDER(&pass, &results);
+        UPDATE_AND_RENDER(&pass, &result);
 
-        
-        window_buffer_info.bmiHeader.biWidth = FRAMEBUFFER_WIDTH;
-        window_buffer_info.bmiHeader.biHeight = -FRAMEBUFFER_HEIGHT;
+        window_buffer_info.bmiHeader.biWidth = result.window_buffer_width;
+        window_buffer_info.bmiHeader.biHeight = -result.window_buffer_height;
 
         // @todo figure out if I need to have two different types of
         // resizing, one that resizes the buffer, and the other
         // that resizes the window rect, and then if not the same
         // it will stretch
         // @todo resize window rect??? (AjdustWindowRect)
-        
+
         RECT window_rect;
         GetClientRect(window, &window_rect);
         s32 window_rect_width = window_rect.right - window_rect.left;
         s32 window_rect_height = window_rect.bottom - window_rect.top;
         
-        // this is what actually draws
+        // this is what actually draws to the window
         HDC dc = GetDC(window);
         StretchDIBits(dc,
                       0, 0,
@@ -437,14 +426,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                       0, 0,
                       window_rect_width,
                       window_rect_height,
-                      window_buffer_memory,
+                      result.window_buffer_base,
                       &window_buffer_info,
                       DIB_RGB_COLORS,
                       SRCCOPY);
         ReleaseDC(window, dc);
 
 
-        
+
+        // @todo this should only happen in debug mode
 
         // @todo better caching and calculation and precision of these counters
         u64 end_cycle_count = __rdtsc();
