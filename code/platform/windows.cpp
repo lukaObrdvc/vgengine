@@ -9,8 +9,6 @@
 
 #if USE_DLL
 
-global_variable b32 valid_dll = false;
-
 HMODULE load_dll()
 {
     CopyFile(ACTUAL_DLL, COPIED_DLL, FALSE);
@@ -18,32 +16,18 @@ HMODULE load_dll()
     
     if (dll)
     {
-        valid_dll = true;
         engine_api.platform_init_engine = (Platform_init_engine) GetProcAddress(dll, "platform_init_engine");
         engine_api.platform_memory_base = (Platform_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
         engine_api.update_and_render = (Update_and_render) GetProcAddress(dll, "update_and_render");
+        
+        if (!engine_api.platform_init_engine) engine_api.platform_init_engine = platform_init_engine_stub;
+        if (!engine_api.platform_init_memory_base) engine_api.platform_init_memory_base = platform_init_memory_base_stub;
+        if (!engine_api.update_and_render) engine_api.update_and_render = update_and_render_stub;
     }
     else
     {
-        valid_dll = false;
         engine_api.platform_init_engine = platform_init_engine_stub;
         engine_api.platform_init_memory_base = platform_init_memory_base_stub;
-        engine_api.update_and_render = update_and_render_stub;
-    }
-
-    if (!engine_api.platform_init_engine)
-    {
-        valid_dll = false;
-        engine_api.platform_init_engine = platform_init_engine_stub;
-    }
-    if (!engine_api.platform_init_memory_base)
-    {
-        valid_dll = false;
-        engine_api.platform_init_memory_base = platform_init_memory_base_stub;
-    }
-    if (!engine_api.update_and_render)
-    {
-        valid_dll = false;
         engine_api.update_and_render = update_and_render_stub;
     }
 
@@ -54,7 +38,6 @@ void unload_dll(HMODULE dll)
 {
     FreeLibrary(dll);
     //DeleteFile(COPIED_DLL);
-    valid_dll = false;
     engine_api.platform_init_engine = platform_init_engine_stub;
     engine_api.platform_init_memory_base = platform_init_memory_base_stub;
     engine_api.update_and_render = update_and_render_stub;
@@ -74,15 +57,15 @@ void init_keymap()
 {
     // @todo init the rest to 0?
     
-    keymap[0x25] = 1; // LEFT
-    keymap[0x26] = 2; // UP
-    keymap[0x27] = 3; // RIGHT
-    keymap[0x28] = 4; // DOWN
-    keymap[0x57] = 5; // W
-    keymap[0x53] = 6; // S
-    keymap[0x41] = 7; // A
-    keymap[0x44] = 8; // D
-    keymap[0x51] = 9; // Q
+    keymap[0x25] = 1;  // LEFT
+    keymap[0x26] = 2;  // UP
+    keymap[0x27] = 3;  // RIGHT
+    keymap[0x28] = 4;  // DOWN
+    keymap[0x57] = 5;  // W
+    keymap[0x53] = 6;  // S
+    keymap[0x41] = 7;  // A
+    keymap[0x44] = 8;  // D
+    keymap[0x51] = 9;  // Q
     keymap[0x45] = 10; // E
     keymap[0x49] = 11; // I
     keymap[0x4B] = 12; // K
@@ -151,6 +134,8 @@ b32 write_file(u8* filename, void* buffer, u32 buffer_size)
     return true;
 }
 
+
+
 LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
@@ -164,7 +149,7 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     
     case WM_SIZE:
     {
-        // ..?
+        // games don't do this ... :)
     } break;
     
     case WM_KEYUP:
@@ -190,17 +175,13 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     
     case WM_MOUSEMOVE:
     {
-        input->cursor_x = lParam & 0x0000FFFF;
-        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
+        // input->cursor_x = lParam & 0x0000FFFF;
+        // input->cursor_y = (lParam & 0xFFFF0000) >> 16;
         input->moved_mouse = true;
     } break;
 
-    // @todo figure out if I need to make a cursor for these 4
     case WM_LBUTTONUP:
     {
-        input->cursor_x = lParam & 0x0000FFFF;
-        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
-        
         MKEYCODE mkey = MKEY_M1;
         if (get_flags(input->mkeys, MKEY_M1))
         {
@@ -210,9 +191,6 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     } break;
     case WM_LBUTTONDOWN:
     {
-        input->cursor_x = lParam & 0x0000FFFF;
-        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
-        
         MKEYCODE mkey = MKEY_M1;
         if (!get_flags(input->mkeys, mkey))
         {
@@ -223,9 +201,6 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     
     case WM_RBUTTONUP:
     {
-        input->cursor_x = lParam & 0x0000FFFF;
-        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
-        
         MKEYCODE mkey = MKEY_M2;
         if (get_flags(input->mkeys, mkey))
         {
@@ -235,9 +210,6 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
     } break;
     case WM_RBUTTONDOWN:
     {
-        input->cursor_x = lParam & 0x0000FFFF;
-        input->cursor_y = (lParam & 0xFFFF0000) >> 16;
-        
         MKEYCODE mkey = MKEY_M2;
         if (!get_flags(input->mkeys, mkey))
         {
@@ -276,6 +248,7 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     // @todo failure points??
+    // window priority?
     
     timeBeginPeriod(1);
     init_keymap();
@@ -306,6 +279,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     PLATFORM_API.write_file = write_file;
 #endif
 
+    // @todo do I also pass platform_api here so I initialize there instead?
     Platform_init_result init;
     PLATFORM_INIT_ENGINE(&init);
     input = init.input_address;
@@ -320,7 +294,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     HWND window = CreateWindow(window_struct.lpszClassName,
                                "VGENGINE",
-                               WS_VISIBLE | WS_OVERLAPPEDWINDOW,
+                               // in this it will disable resizing of window by dragging it's border
+                               WS_VISIBLE | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+                               // WS_VISIBLE | WS_OVERLAPPEDWINDOW,
                                init.window_offs_x,
                                init.window_offs_y,
                                init.window_width,
@@ -336,17 +312,21 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     window_buffer_info.bmiHeader.biPlanes = 1;
     window_buffer_info.bmiHeader.biBitCount = 4 * 8; // BYTPP is 4 @todo actually use the macro
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
-
+    window_buffer_info.bmiHeader.biWidth = init.window_width;
+    window_buffer_info.bmiHeader.biHeight = -init.window_height;
+    
     // @cleanup counters
     LARGE_INTEGER counter_frequency;
     QueryPerformanceFrequency(&counter_frequency);
 
     Engine_frame_result result;
-    // these 2 are kinda hardcoded to initialize like this only one frame
+    // some of these are kind of hardcoded initalized for the first frame
     result.show_cursor = false;
-    result.recenter_cursor = true;
+    result.resize = false;
     result.window_buffer_width = init.window_width;
     result.window_buffer_height = init.window_height;
+    result.cursor_x = 0;
+    result.cursor_y = 0;
 
     Platform_frame_pass pass;
     pass.running = true;
@@ -387,30 +367,60 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             TranslateMessage(&message);
             DispatchMessage(&message);
         }
-        
 
-        // can use get cursor pos through function call
-        // instead of messages
+        // screen space is relative to the top-left corner of entire
+        // screen, whereas client space is relative to the top-left
+        // corner of the window
+
+        // GetCursorPos and SetCursorPos require screen space, and
+        // calculating the cursor position with window message is done
+        // in client space
+
+        POINT cursor;
+        GetCursorPos(&cursor);
+        ScreenToClient(window, &cursor);
+        input->cursor_x = (r32) cursor.x;
+        input->cursor_y = (r32) cursor.y;
 
         ShowCursor(result.show_cursor);
-        if (result.recenter_cursor && (GetForegroundWindow() == window))
+        if (GetForegroundWindow() == window) // if window is in focus then set cursor
         {
-            POINT center = {(LONG)result.window_buffer_width / 2,
-                            (LONG)result.window_buffer_height / 2};
-            ClientToScreen(window, &center);
-            SetCursorPos(center.x, center.y);
+            POINT new_cursor = {(LONG)result.cursor_x, (LONG)result.cursor_y};
+            ClientToScreen(window, &new_cursor);
+            SetCursorPos(new_cursor.x, new_cursor.y);
         }
         
         UPDATE_AND_RENDER(&pass, &result);
 
-        window_buffer_info.bmiHeader.biWidth = result.window_buffer_width;
-        window_buffer_info.bmiHeader.biHeight = -result.window_buffer_height;
+        // GetWindowRect
+        // GetWindowLong
+        // SetWindowLong
+        // ChangeDisplaySettings
+        // MonitorFromWindow
+        // GetMonitorInfo
+        
+        // SetWindowPos
 
-        // @todo figure out if I need to have two different types of
-        // resizing, one that resizes the buffer, and the other
-        // that resizes the window rect, and then if not the same
-        // it will stretch
-        // @todo resize window rect??? (AjdustWindowRect)
+        // @todo also handle window offset?
+
+        if (result.resize)
+        {
+            window_buffer_info.bmiHeader.biWidth = result.window_buffer_width;
+            window_buffer_info.bmiHeader.biHeight = -result.window_buffer_height;
+
+            // only makes a new rect that is desired
+            RECT new_rect = {0, 0, result.window_buffer_width, result.window_buffer_height};
+            AdjustWindowRect(&new_rect, WS_OVERLAPPEDWINDOW, FALSE);
+            
+            s32 window_width  = new_rect.right - new_rect.left;
+            s32 window_height = new_rect.bottom - new_rect.top;
+            
+            // actually sets the new rect for the window
+            SetWindowPos(window, 0,
+                         0, 0,
+                         window_width, window_height,
+                         SWP_NOZORDER | SWP_NOMOVE); // retains current window offset
+        }
 
         RECT window_rect;
         GetClientRect(window, &window_rect);
