@@ -24,8 +24,6 @@ struct Platform_api
 #endif
     u64 total_program_memory;
     u64 allocation_step; // @cleanup don't need this anymore
-    // this is kind of redundant since the rest of the engine assumes 4 bpp
-    s32 bytes_per_pixel;
 };
 
 struct Globals
@@ -52,7 +50,6 @@ global_variable Globals* globals;
 #define PLATFORM_API globals->platform_api
 #define TOTAL_PROGRAM_MEMORY PLATFORM_API.total_program_memory
 #define ALLOCATION_STEP PLATFORM_API.allocation_step
-#define BYTPP PLATFORM_API.bytes_per_pixel
 
 
 #if USE_DLL
