@@ -56,6 +56,10 @@ global_variable Input* input;
 void init_keymap()
 {
     // @todo init the rest to 0?
+    // @todo actually why are you hard coding
+    // these values just put the VK code here instead
+    // @todo there might be more than 256 values for VK codes
+    // because it's hexadecimal, check again
     
     keymap[0x25] = 1;  // LEFT
     keymap[0x26] = 2;  // UP
@@ -139,17 +143,14 @@ b32 write_file(u8* filename, void* buffer, u32 buffer_size)
 LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT result = 0;
+
+    // game don't do WM_SIZE :) ...
     
     switch(message)
     {
     case WM_ACTIVATEAPP:
     {
         OutputDebugString("WM_ACTIVATEAPP\n");
-    } break;
-    
-    case WM_SIZE:
-    {
-        // games don't do this ... :)
     } break;
     
     case WM_KEYUP:
@@ -323,8 +324,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     // some of these are kind of hardcoded initalized for the first frame
     result.show_cursor = false;
     result.resize = false;
-    result.window_buffer_width = init.window_width;
-    result.window_buffer_height = init.window_height;
+    result.window_width = init.window_width;
+    result.window_height = init.window_height;
     result.cursor_x = 0;
     result.cursor_y = 0;
 
@@ -343,6 +344,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         if (dll_filetime_curr.dwLowDateTime > dll_filetime_prev.dwLowDateTime)
         {
             unload_dll(dll);
+
             dll = load_dll();
             dll_filetime_prev = dll_filetime_curr;
                     
@@ -392,24 +394,94 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         
         UPDATE_AND_RENDER(&pass, &result);
 
-        // GetWindowRect
-        // GetWindowLong
-        // SetWindowLong
-        // ChangeDisplaySettings
-        // MonitorFromWindow
-        // GetMonitorInfo
-        
-        // SetWindowPos
-
         // @todo also handle window offset?
 
+         if (result.change_display)
+        {
+            if (result.fullscreen)
+            {
+                if (result.exclusive_fullscreen)
+                {
+                    LONG window_style = GetWindowLong(window, GWL_STYLE);
+
+                    SetWindowLong(window, GWL_STYLE, window_style & (~WS_OVERLAPPEDWINDOW));
+
+                    DEVMODE dm = {0};
+                    dm.dmSize = sizeof(DEVMODE);
+                    dm.dmPelsWidth = result.window_width;
+                    dm.dmPelsHeight = result.window_height;
+                    dm.dmBitsPerPel = 8 * 4; // BYTPP
+                    dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
+                    ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+
+                    HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
+                    MONITORINFO monitor_info = {0};
+                    monitor_info.cbSize = sizeof(MONITORINFO);
+                    GetMonitorInfo(monitor, &monitor_info);
+                    RECT monitor_rect = monitor_info.rcMonitor;
+                    
+                    SetWindowPos(window,
+                                 HWND_TOP,
+                                 monitor_rect.left,
+                                 monitor_rect.top,
+                                 monitor_rect.right - monitor_rect.left,
+                                 monitor_rect.bottom - monitor_rect.top,
+                                 SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOZORDER);
+                }
+                else // borderless fullscreen
+                {
+                    LONG window_style = GetWindowLong(window, GWL_STYLE);
+
+                    SetWindowLong(window, GWL_STYLE, window_style & (~WS_OVERLAPPEDWINDOW));
+
+                    ChangeDisplaySettings(NULL, 0);
+                    
+                    HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
+                    MONITORINFO monitor_info = {0};
+                    monitor_info.cbSize = sizeof(MONITORINFO);
+                    GetMonitorInfo(monitor, &monitor_info);
+                    RECT monitor_rect = monitor_info.rcMonitor;
+                    
+                    SetWindowPos(window,
+                                 HWND_TOP,
+                                 monitor_rect.left,
+                                 monitor_rect.top,
+                                 monitor_rect.right - monitor_rect.left,
+                                 monitor_rect.bottom - monitor_rect.top,
+                                 SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOZORDER);
+                }
+            }
+            else // windowed
+            {
+                SetWindowLong(window,
+                              GWL_STYLE,
+                              WS_VISIBLE | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+                
+                ChangeDisplaySettings(NULL, 0);
+                
+                ShowWindow(window, SW_RESTORE);
+
+                SetWindowPos(window,
+                             NULL,
+                             result.window_offs_x,
+                             result.window_offs_y,
+                             result.window_width,
+                             result.window_height,
+                             SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            }
+        }
+         
+        // @todo probably figure out how to put this into the windowed/fullscreen code somehow...
         if (result.resize)
         {
+            // make sure to always resize the buffer, but only
+            // set window rect if windowed display mode...
+            
             window_buffer_info.bmiHeader.biWidth = result.window_buffer_width;
             window_buffer_info.bmiHeader.biHeight = -result.window_buffer_height;
 
             // only makes a new rect that is desired
-            RECT new_rect = {0, 0, result.window_buffer_width, result.window_buffer_height};
+            RECT new_rect = {0, 0, result.window_width, result.window_height};
             AdjustWindowRect(&new_rect, WS_OVERLAPPEDWINDOW, FALSE);
             
             s32 window_width  = new_rect.right - new_rect.left;
@@ -421,7 +493,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                          window_width, window_height,
                          SWP_NOZORDER | SWP_NOMOVE); // retains current window offset
         }
-
+        
         RECT window_rect;
         GetClientRect(window, &window_rect);
         s32 window_rect_width = window_rect.right - window_rect.left;
@@ -431,11 +503,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         HDC dc = GetDC(window);
         StretchDIBits(dc,
                       0, 0,
-                      window_buffer_info.bmiHeader.biWidth,
-                      -window_buffer_info.bmiHeader.biHeight,
-                      0, 0,
                       window_rect_width,
                       window_rect_height,
+                      0, 0,
+                      window_buffer_info.bmiHeader.biWidth,
+                      -window_buffer_info.bmiHeader.biHeight,
                       result.window_buffer_base,
                       &window_buffer_info,
                       DIB_RGB_COLORS,
@@ -482,7 +554,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
         //Sleep(200);
     }
-
+    
     return 0;
 }
  
