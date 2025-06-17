@@ -138,7 +138,105 @@ b32 write_file(u8* filename, void* buffer, u32 buffer_size)
     return true;
 }
 
+#if 1
+void make_font_atlas()
+{
+    // @todo obviously we want to use .png eventually, but we need 3rd party software for that or
+    // we need to use some very garbage windows api (WIC)
+    
+    // this function should be called once and then removed from the program, the only purpose of it
+    // is to create a .bmp texture file with font glyphs once so we can load it into RAM at runtime later;
+    // so this really should be a separate program but oh well...
 
+    // .bmp can only record rgb, not a, so what you do is you set background transparent so it will
+    // stay black (0, 0, 0), then set the color of text to white (255, 255, 255), so the inside of
+    // a glyph will be white and on edges it will be gray because of anti-aliasing; then when you
+    // are reading the file in order to load it into RAM, you create a 4th slot for alpha, you treat
+    // all rgb=black as transparent (so alpha=0), you then convert to grayscale (or just use any of
+    // the r/g/b since they will all be the same) and set that as the alpha, and then you set the
+    // rgb to be white, then you can tint this to change the color of text basically, and you
+    // can alpha blend text onto anything this way (I mean you don't need to test whether it's black
+    // when you convert to grayscale and set that as the alpha, if it's black then alpha=0 automatically anyway)
+    
+    // this also means BITMAPINFO can have 24 bits per pixel because we're not using the alpha, but it's questionable
+    // how compatible 24 bits per pixel is with winapi...
+    
+    // glyph count is 95, because ASCII printable characters are from 32 to 126 which is 95 total
+    
+    // when you start using gpu to do texture filtering, in order for it to sample correctly you should
+    // add 1-4 pixels of padding around glyphs
+
+    // we will do monospaced so to get height you use GetTextMetrics, to get width you need to find the max width
+    // of each glyph with GetCharABCWidths by looping over all glyphs and calling this (possible with GetTextExtentPoint32A also.....)
+
+    // if font is not monospaced we can center the glyph horizontally, by finding it's actualy width with GetCharABCWidths,
+    // this way it ought to look a bit better
+    
+    // to load a font you use CreateFont, to create an actual bitmap you use CreateDIBSection (which needs a BITMAPINFO), to
+    // draw a glyph into the bitmap you use TextOut/ExtTextOut, to set color of background or text you use stuff like
+    // SetBkMode, SetBkColor, SetTextColor
+    
+    // you need to write BITMAPFILEHEADER first (14 B), BITMAPINFOHEADER (40 B) first into the .bmp, then the actual bitmap
+    // from CreateDIBSection; when reading .bmp you take this into account
+
+    // since we do a monospaced font, we don't need to write any other metadata, we just assume that the glyph position corresponding to
+    // a char is dependant on the ASCII code of that char and that is how you can find the glyph for a char; the width, height, padding
+    // and other stuff like that you remember elsewhere ???
+    
+
+    HDC dc = CreateCompatibleDC(0);
+    
+    HFONT font = CreateFont(-32,
+                            0,
+                            0,
+                            0,
+                            FW_NORMAL,
+                            FALSE,
+                            FALSE,
+                            FALSE,
+                            ANSI_CHARSET,
+                            OUT_DEFAULT_PRECIS,
+                            CLIP_DEFAULT_PRECIS,
+                            ANTIALIASED_QUALITY,
+                            DEFAULT_PITCH,
+                            "Consolas");
+    
+    SelectObject(dc, font);
+
+    BITMAPINFO bitmap_info = {0};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = ???ATLAS_WIDTH;
+    bmi.bmiHeader.biHeight = -???ATLAS_HEIGHT;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 8 * 4; // BYTPP
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    void* bitmap_data = 0;
+    HBITMAP bitmap_handle = CreateDIBSection(dc, &bitmap_info, DIB_RGB_COLORS, &bitmap_data, 0, 0);
+    SelectObject(dc, bitmap_handle);
+
+    PatBlt(hdc, 0, 0, ATLAS_WIDTH, ATLAS_HEIGHT, BLACKNESS); // inits bitmap to black
+    SetBkMode(dc, TRANSPARENT);
+    SetBkColor(dc, RGB(0, 0, 0));
+    SetTextColor(dc, RGB(255, 255, 255));
+
+    FILE* info_file = fopen("font_info.txt", "w");
+
+    char c = (char)ch;
+    SIZE size;
+    GetTextExtentPoint32A(dc, &c, 1, &size);
+    GLYPH_PADDING;
+    
+    int x = 0, y = 0, row_max_height = 0;
+
+    TextOutA(dc, x, y, &c, 1);
+
+    ABC abc;
+    GetCharABCWidthsA(dc, ch, ch, &abc);
+
+    BITMAPFILEHEADER bitmap_file_header = {0};
+}
+#endif
 
 LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -249,10 +347,16 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM wParam, LPAR
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     // @todo failure points??
+    // @todo multimonitor support
+    
     // window priority?
     
     timeBeginPeriod(1);
     init_keymap();
+
+#if 1
+    make_font_atlas();
+#endif
 
 #if USE_DLL
     HMODULE dll = load_dll();
@@ -395,8 +499,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         UPDATE_AND_RENDER(&pass, &result);
 
         // @todo also handle window offset?
+        // @todo how to allow use to drag window around?
+        // @todo cursor/input thingy missaligned....?
 
-         if (result.change_display)
+        if (result.change_display)
         {
             if (result.fullscreen)
             {
