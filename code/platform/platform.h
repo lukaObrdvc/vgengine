@@ -6,21 +6,52 @@
 
 #if USE_DLL
 
-typedef b32 (*Read_file) (u8*, void*, u32*);
-typedef b32 (*Write_file) (u8*, void*, u32);
+typedef b32 (*Get_file_size) (const u8*, u32*);
+typedef b32 (*Read_entire_file) (const u8*, void*, u32);
+typedef void (*Write_entire_file) (const u8*, void*, u32);
+typedef b32 (*Write_entire_existing_file) (const u8*, void*, u32);
+typedef b32 (*Copy_file) (const u8*, const u8*);
+typedef b32 (*Copy_and_maybe_overwrite_file) (const u8*, const u8*);
+typedef b32 (*Move_file) (const u8*, const u8*);
+typedef b32 (*Move_and_maybe_overwrite_file) (const u8*, const u8*);
+typedef b32 (*Delete_file) (const u8*);
+typedef b32 (*Create_directory) (const u8*);
+typedef b32 (*Delete_directory) (const u8*);
+typedef b32 (*Directory_exists) (const u8*);
 
 #else
 
-b32 read_file(u8* path, void* buff, u32* buff_size);
-b32 write_file(u8* path, void* buff, u32 buff_size);
+b32 get_file_size(const u8* filename, u32* size);
+b32 read_entire_file(const u8* filename, void* buffer, u32 buffer_size);
+void write_entire_file(const u8* filename, void* buffer, u32 buffer_size);
+b32 write_entire_existing_file(const u8* filename, void* buffer, u32 buffer_size);
+b32 copy_file(const u8* src, const u8* dest);
+b32 copy_and_maybe_overwrite_file(const u8* src, const u8* dest);
+b32 move_file(const u8* src, const u8* dest);
+b32 move_and_maybe_overwrite_file(const u8* src, const u8* dest);
+b32 delete_file(const u8* filename);
+b32 create_directory(const u8* dirname);
+b32 delete_directory(const u8* dirname);
+b32 directory_exists(const u8* dirname);
+
 
 #endif
 
 struct Platform_api
 {
 #if USE_DLL
-    Read_file read_file;
-    Write_file write_file;
+    Get_file_size get_file_size;
+    Read_entire_file read_entire_file;
+    Write_entire_file write_entire_file;
+    Write_entire_existing_file write_entire_existing_file;
+    Copy_file copy_file;
+    Copy_and_maybe_overwrite_file copy_and_maybe_overwrite_file;
+    Move_file move_file;
+    Move_and_maybe_overwrite_file move_and_maybe_overwrite_file;
+    Delete_file delete_file;
+    Create_directory create_directory;
+    Delete_directory delete_directory;
+    Directory_exists directory_exists;
 #endif
     u64 total_program_memory;
     u64 allocation_step; // @cleanup don't need this anymore
@@ -54,13 +85,33 @@ global_variable Globals* globals;
 
 #if USE_DLL
 
-#define READ_FILE(path, buff, buff_size) PLATFORM_API.read_file((path), (buff), (buff_size))
-#define WRITE_FILE(path, buff, buff_size) PLATFORM_API.write_file((path), (buff), (buff_size))
+#define GET_FILE_SIZE(filename, size) PLATFORM_API.get_file_size((filename), (size))
+#define READ_ENTIRE_FILE(path, buff, buff_size) PLATFORM_API.read_entire_file((path), (buff), (buff_size))
+#define WRITE_ENTIRE_FILE(path, buff, buff_size) PLATFORM_API.write_entire_file((path), (buff), (buff_size))
+#define WRITE_ENTIRE_EXISTING_FILE(path, buff, buff_size) PLATFORM_API.write_entire_existing_file((path), (buff), (buff_size))
+#define COPY_FILE(src, dest) PLATFORM_API.copy_file((src), (dest))
+#define COPY_AND_MAYBE_OVERWRITE_FILE(src, dest) PLATFORM_API.copy_and_maybe_overwrite_file((src), (dest))
+#define MOVE_FILE(src, dest) PLATFORM_API.move_file((src), (dest))
+#define MOVE_AND_MAYBE_OVERWRITE_FILE(src, dest) PLATFORM_API.move_and_maybe_overwrite_file((src), (dest))
+#define DELETE_FILE(filename) PLATFORM_API.delete_file((filename))
+#define CREATE_DIRECTORY(dirname) PLATFORM_API.create_directory((dirname))
+#define DELETE_DIRECTORY(dirname) PLATFORM_API.delete_directory((dirname))
+#define DIRECTORY_EXISTS(dirname) PLATFORM_API.directory_exists((dirname))
 
 #else
 
-#define READ_FILE(path, buff, buff_size) read_file((path), (buff), (buff_size))
-#define WRITE_FILE(path, buff, buff_size) write_file((path), (buff), (buff_size))
+#define GET_FILE_SIZE(filename, size) get_file_size((filename), (size))
+#define READ_ENTIRE_FILE(path, buff, buff_size) read_entire_file((path), (buff), (buff_size))
+#define WRITE_ENTIRE_FILE(path, buff, buff_size) write_entire_file((path), (buff), (buff_size))
+#define WRITE_ENTIRE_EXISTING_FILE(path, buff, buff_size) write_entire_existing_file((path), (buff), (buff_size))
+#define COPY_FILE(src, dest) copy_file((src), (dest))
+#define COPY_AND_MAYBE_OVERWRITE_FILE(src, dest) copy_and_maybe_overwrite_file((src), (dest))
+#define MOVE_FILE(src, dest) move_file((src), (dest))
+#define MOVE_AND_MAYBE_OVERWRITE_FILE(src, dest) move_and_maybe_overwrite_file((src), (dest))
+#define DELETE_FILE(filename) delete_file((filename))
+#define CREATE_DIRECTORY(dirname) create_directory((dirname))
+#define DELETE_DIRECTORY(dirname) delete_directory((dirname))
+#define DIRECTORY_EXISTS(dirname) directory_exists((dirname))
 
 #endif
 

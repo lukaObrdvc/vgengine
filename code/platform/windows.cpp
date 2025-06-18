@@ -80,66 +80,216 @@ void init_keymap()
 
 }
 
-// PROVIDES
+// @todo maybe we should never assert with these functions, but it's
+// easy to remove that then, and for those that have void return type
+// just change to b32 (only write_file has this; for everything else
+// you mostly would just have to remove ASSERT(false) stuff everywhere)
 
-HANDLE dbg_open_file(u8* filename)
+b32 open_existing_file_for_reading(const u8* filename, HANDLE* handle)
 {
-    return CreateFile((LPCSTR)filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_ALWAYS,
-                      FILE_ATTRIBUTE_NORMAL, 0);
-}
-
-// @todo returning with error code ??
-b32 read_file(u8* filename, void* buffer, u32* buffer_size)
-{
-    HANDLE filehandle = dbg_open_file(filename);
-    if (filehandle == INVALID_HANDLE_VALUE)
+    HANDLE h = CreateFile((LPCSTR)filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (h == INVALID_HANDLE_VALUE)
     {
-        CloseHandle(filehandle);
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND) return false;
+        
+        ASSERT(false);
         return false;
     }
-
-    *buffer_size = (u32) GetFileSize(filehandle, 0);
-    if (*buffer_size == INVALID_FILE_SIZE)
-    {
-        CloseHandle(filehandle);
-        return false;
-    }
-
-    u32 bytes_read;
-    ReadFile(filehandle, buffer, *buffer_size, (LPDWORD)&bytes_read, 0);
-    if (bytes_read != *buffer_size)
-    {
-        CloseHandle(filehandle);
-        return false;
-    }
-
-    CloseHandle(filehandle);
+    *handle = h;
     return true;
 }
 
-b32 write_file(u8* filename, void* buffer, u32 buffer_size)
+b32 open_existing_file_for_writing(const u8* filename, HANDLE* handle)
 {
-    HANDLE filehandle = dbg_open_file(filename);
-    if (filehandle == INVALID_HANDLE_VALUE)
+    HANDLE h = CreateFile((LPCSTR)filename, GENERIC_WRITE, FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (h == INVALID_HANDLE_VALUE)
     {
-        CloseHandle(filehandle);
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND) return false;
+        
+        ASSERT(false);
         return false;
     }
+    *handle = h;
+    return true;
+}
+
+void create_or_open_file_for_writing(const u8* filename, HANDLE* handle)
+{
+    HANDLE h = CreateFile((LPCSTR)filename, GENERIC_WRITE, FILE_SHARE_WRITE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+    // this will basically happen with errors that I don't want to process at all
+    ASSERT(h != INVALID_HANDLE_VALUE);
+    *handle = h;
+}
+
+b32 get_file_size(const u8* filename, u32* size)
+{
+    HANDLE h;
+    if (!open_existing_file_for_reading(filename, &h)) return false;
+
+    DWORD file_size = GetFileSize(h, 0);
+    if (file_size == INVALID_FILE_SIZE && GetLastError() != NO_ERROR)
+    {
+        CloseHandle(h);
+        return false;
+    }
+
+    CloseHandle(h);
+    *size = file_size;
+    return true;
+}
+
+b32 read_entire_file(const u8* filename, void* buffer, u32 buffer_size)
+{
+    HANDLE h;
+    if (!open_existing_file_for_reading(filename, &h)) return false;
+
+    DWORD bytes_read;
+    if (!ReadFile(h, buffer, buffer_size, &bytes_read, 0) || bytes_read != buffer_size)
+    {
+        CloseHandle(h);
+        ASSERT(false);
+        return false;
+    }
+
+    CloseHandle(h);
+    return true;
+}
+
+void write_entire_file(const u8* filename, void* buffer, u32 buffer_size)
+{
+    HANDLE h;
+    create_or_open_file_for_writing(filename, &h);
+    
+    u32 bytes_written;
+    if ((!WriteFile(h, buffer, buffer_size, (LPDWORD)&bytes_written, 0)) || (bytes_written != buffer_size))
+    {
+        CloseHandle(h);
+        ASSERT(false);
+    }
+
+    CloseHandle(h);
+}
+
+b32 write_entire_existing_file(const u8* filename, void* buffer, u32 buffer_size)
+{
+    HANDLE h;
+    if (!open_existing_file_for_writing(filename, &h)) return false;
 
     u32 bytes_written;
-    WriteFile(filehandle, buffer, buffer_size, (LPDWORD)&bytes_written, 0);
-    if (bytes_written != buffer_size)
+    if ((!WriteFile(h, buffer, buffer_size, (LPDWORD)&bytes_written, 0)) || (bytes_written != buffer_size))
     {
-        CloseHandle(filehandle);
-        return false;
+        CloseHandle(h);
+        ASSERT(false);
     }
 
-    CloseHandle(filehandle);
+    CloseHandle(h);
     return true;
 }
 
-#if 1
-void make_font_atlas()
+b32 copy_file(const u8* src, const u8* dest)
+{
+    if (!CopyFile((LPCSTR)src, (LPCSTR)dest, true))
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) return false;
+
+        ASSERT(false);
+        return false;        
+    }
+    return true;
+}
+
+b32 copy_and_maybe_overwrite_file(const u8* src, const u8* dest)
+{
+    if (!CopyFile((LPCSTR)src, (LPCSTR)dest, false))
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) return false;
+
+        ASSERT(false);
+        return false;
+    }
+    return true;
+}
+
+b32 move_file(const u8* src, const u8* dest)
+{
+    if (!MoveFileEx((LPCSTR)src, (LPCSTR)dest, MOVEFILE_COPY_ALLOWED))
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) return false;
+
+        ASSERT(false);
+        return false;
+    }
+    return true;
+}
+
+b32 move_and_maybe_overwrite_file(const u8* src, const u8* dest)
+{
+    if (!MoveFileEx((LPCSTR)src, (LPCSTR)dest, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED))
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) return false;
+
+        ASSERT(false);
+        return false;
+    }
+    return true;
+}
+
+b32 delete_file(const u8* filename)
+{
+    if (!DeleteFile((LPCSTR)filename))
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) return false;
+
+        ASSERT(false);
+        return false;
+    }
+    return true;
+}
+
+b32 create_directory(const u8* dirname)
+{
+    if (!CreateDirectory((LPCSTR)dirname, 0))
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_ALREADY_EXISTS) return false;
+        
+        ASSERT(false);
+        return false;
+    }
+    return true;
+}
+
+// @doc only deletes empty directories
+b32 delete_directory(const u8* dirname)
+{
+    if (!RemoveDirectory((LPCSTR)dirname))
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_DIR_NOT_EMPTY) return false;
+
+        ASSERT(false);
+        return false;
+    }
+    return true;
+}
+
+b32 directory_exists(const u8* dirname)
+{
+    DWORD att = GetFileAttributes((LPCSTR)dirname);
+    if (att == INVALID_FILE_ATTRIBUTES) return false;
+    return (att & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+
+#if MAKE_FONT_BMP
+void make_font_bmp()
 {
     // @todo obviously we want to use .png eventually, but we need 3rd party software for that or
     // we need to use some very garbage windows api (WIC)
@@ -182,59 +332,129 @@ void make_font_atlas()
     // since we do a monospaced font, we don't need to write any other metadata, we just assume that the glyph position corresponding to
     // a char is dependant on the ASCII code of that char and that is how you can find the glyph for a char; the width, height, padding
     // and other stuff like that you remember elsewhere ???
+
+    // render s32o bitmap at higher resolution like 64x64 or 128x128, and then scale down to lower resolution, but how to map this??
+    // in CreateFont the first parameter specifies the height, you don't ensure width except by using a monospaced font and measuring max
+    // width
     
+
+    s32 first_ascii =  32;
+    s32 last_ascii = 126;
+    s32 num_glyphs = last_ascii - first_ascii;
+    s32 glyph_padding = 4;
+    s32 font_height = 64;
 
     HDC dc = CreateCompatibleDC(0);
-    
-    HFONT font = CreateFont(-32,
-                            0,
-                            0,
-                            0,
-                            FW_NORMAL,
-                            FALSE,
-                            FALSE,
-                            FALSE,
-                            ANSI_CHARSET,
-                            OUT_DEFAULT_PRECIS,
-                            CLIP_DEFAULT_PRECIS,
-                            ANTIALIASED_QUALITY,
-                            DEFAULT_PITCH,
-                            "Consolas");
-    
+
+    HFONT font = CreateFont(-font_height, 0, 0, 0,
+                            FW_NORMAL, FALSE, FALSE, FALSE,
+                            ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                            CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
+                            DEFAULT_PITCH, FONT_NAME);
     SelectObject(dc, font);
 
-    BITMAPINFO bitmap_info = {0};
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = ???ATLAS_WIDTH;
-    bmi.bmiHeader.biHeight = -???ATLAS_HEIGHT;
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 8 * 4; // BYTPP
-    bmi.bmiHeader.biCompression = BI_RGB;
+    // Get max width from all characters
+    s32 glyph_width = 0;
+    for (s32 c = first_ascii; c <= last_ascii; c++)
+    {
+        ABC abc;
+        GetCharABCWidths(dc, c, c, &abc);
+        s32 width = abc.abcA + abc.abcB + abc.abcC;
+        glyph_width = Max(width, glyph_width);
+    }
 
-    void* bitmap_data = 0;
-    HBITMAP bitmap_handle = CreateDIBSection(dc, &bitmap_info, DIB_RGB_COLORS, &bitmap_data, 0, 0);
-    SelectObject(dc, bitmap_handle);
+    TEXTMETRIC tm;
+    GetTextMetrics(dc, &tm);
+    s32 glyph_height = tm.tmHeight;
 
-    PatBlt(hdc, 0, 0, ATLAS_WIDTH, ATLAS_HEIGHT, BLACKNESS); // inits bitmap to black
+    s32 padded_w = glyph_width + glyph_padding * 2;
+    s32 padded_h = glyph_height + glyph_padding * 2;
+
+    // atlas(bmp data part) is a square in terms of glyph count in width and height
+    s32 row_count = ceili(sqrtf((r32)num_glyphs));
+    s32 atlas_width = row_count * padded_w;
+    s32 atlas_height = row_count * padded_h;
+
+    BITMAPINFO bmp = {0};
+    bmp.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmp.bmiHeader.biWidth = atlas_width;
+    bmp.bmiHeader.biHeight = -atlas_height;
+    bmp.bmiHeader.biPlanes = 1;
+    bmp.bmiHeader.biBitCount = 8 * 4; // BYTPP (I guess, you could use 24 instead but doesn't matter)
+    bmp.bmiHeader.biCompression = BI_RGB;
+
+    void* bmp_data = 0;
+    HBITMAP bmp_handle = CreateDIBSection(dc, &bmp, DIB_RGB_COLORS, &bmp_data, 0, 0);
+    SelectObject(dc, bmp_handle);
+
+    // initializes bmp to black(0,0,0) everywhere
+    PatBlt(dc, 0, 0, atlas_width, atlas_height, BLACKNESS);
     SetBkMode(dc, TRANSPARENT);
-    SetBkColor(dc, RGB(0, 0, 0));
     SetTextColor(dc, RGB(255, 255, 255));
 
-    FILE* info_file = fopen("font_info.txt", "w");
+    // drawing into bmp
+    for (s32 i = 0; i < num_glyphs; ++i)
+    {
+        s32 row = i / row_count;
+        s32 col = i % row_count;
+        s32 x = col * padded_w + glyph_padding;
+        s32 y = row * padded_h + glyph_padding;
 
-    char c = (char)ch;
-    SIZE size;
-    GetTextExtentPoint32A(dc, &c, 1, &size);
-    GLYPH_PADDING;
+        u8 c = (u8)(first_ascii + i);
+        SIZE size;
+        GetTextExtentPoint32A(dc, (LPCSTR)&c, 1, &size); // use GetCharABCWidths instead??
+        // this centers glyphs horizontally
+        s32 offset_x = (glyph_width - size.cx) / 2;
+
+        TextOutA(dc, x + offset_x, y, (LPCSTR)&c, 1);
+    }
+
+    // writing bmp file
+    // @doc overwrites file if it already exists
+    // @todo maybe do without all the preprocessor stuff if you can append strings??
+    // @todo use provides one instead??
+#define FONT_ATLAS_FILE_NAME FONTS_PATH FONT_NAME ".bmp"
+    HANDLE bmp_file = CreateFileA(FONT_ATLAS_FILE_NAME, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+#undef FONT_ATLAS_FILE_NAME
+
+    if (bmp_file != INVALID_HANDLE_VALUE)
+    {
+        s32 bmp_size = atlas_width * atlas_height * 4;
+
+        BITMAPFILEHEADER bmp_header = {0};
+        bmp_header.bfType = 0x4D42; // 'BM'         <- something better??
+        bmp_header.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+        bmp_header.bfSize = bmp_header.bfOffBits + bmp_size;
+
+        DWORD written;
+        WriteFile(bmp_file, &bmp_header, sizeof(BITMAPFILEHEADER), &written, 0);
+        WriteFile(bmp_file, &bmp.bmiHeader, sizeof(BITMAPINFOHEADER), &written, 0);
+        WriteFile(bmp_file, bmp_data, bmp_size, &written, 0);
+
+        CloseHandle(bmp_file);
+    }
+
+    DeleteObject(bmp_handle);
+    DeleteDC(dc);
+
+    // I'm actually also writing the font metadata file so it has information about glyph padding, width and height,
+    // what is implicit is ascii from first to last in that sequence, and that it's monospaced
+#define FONT_DATA_FILE_NAME FONTS_PATH FONT_NAME ".font"
+    HANDLE font_data_file = CreateFileA(FONT_DATA_FILE_NAME, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+#undef FONT_DATA_FILE_NAME
     
-    int x = 0, y = 0, row_max_height = 0;
+    if (font_data_file != INVALID_HANDLE_VALUE)
+    {
+        u8 font_data[5];
+        font_data[0] = (u8)glyph_padding;
+        *(u16*)(font_data + 1) = (u16)glyph_width;
+        *(u16*)(font_data + 3) = (u16)glyph_height;
 
-    TextOutA(dc, x, y, &c, 1);
+        DWORD written;
+        WriteFile(font_data_file, font_data, sizeof(font_data), &written, 0);
+        CloseHandle(font_data_file);
+    }
 
-    ABC abc;
-    GetCharABCWidthsA(dc, ch, ch, &abc);
-
-    BITMAPFILEHEADER bitmap_file_header = {0};
 }
 #endif
 
@@ -354,8 +574,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     timeBeginPeriod(1);
     init_keymap();
 
-#if 1
-    make_font_atlas();
+#if MAKE_FONT_BMP
+    make_font_bmp();
 #endif
 
 #if USE_DLL
