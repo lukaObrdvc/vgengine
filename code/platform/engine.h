@@ -4,7 +4,7 @@
 
 #if USE_DLL
 
-void platform_init_engine_stub(Platform_init_result*)
+void platform_init_engine_stub(Platform_init_result* p)
 {
     return;
 }
@@ -12,12 +12,12 @@ void platform_init_memory_base_stub(Globals* memory_base)
 {
     return;
 }
-void update_and_render_stub(Platform_frame_pass*, Engine_frame_result*)
+void update_and_render_stub(Platform_frame_pass* p1, Engine_frame_result* p2)
 {
     return;
 }
 
-typedef void (*Platform_init_engine) (Platform_init_out*);
+typedef void (*Platform_init_engine) (Platform_init_result*);
 typedef void (*Platform_init_memory_base) (Globals*);
 typedef void (*Update_and_render) (Platform_frame_pass*, Engine_frame_result*);
 

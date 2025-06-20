@@ -10,10 +10,8 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
 
     // platform stretches framebuffer onto window
 
-    // @todo okay, fullscreen/windowed stuff works, except for
-    // input/camera thing it seems because of the cursor centering
-    // or something so figure that out....
-    
+    // @todo cache framebuffer stuff instead (and other things like input ??)
+
     Engine_state* engine_state = ENGINE_STATE;
     FRAMEBUFFER_WIDTH = 860;
     FRAMEBUFFER_HEIGHT = 420;
@@ -23,8 +21,11 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     // @doc this guarantees Y is up when accessing these buffers
     FRAMEBUFFER_BASE += FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH;
     ZBUFFER += FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - 1);
-    
 
+    
+   // @todo engine should pass information about whether to set
+   // the cursor? Or just set it to what the engine says every time?
+    
     result->cap_frame_rate = true;
     result->target_frame_rate = 60;
     result->show_cursor = false;
@@ -44,7 +45,7 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     result->exclusive_fullscreen = false;
     // @todo how do I get into the normal mode with cursor?
     
-    zbuffer_reset();
+    zbuffer_reset(); // this is here why exactly? something to do with initialization or ordering or something..?
     
     // turns y coordinate from y is down to y is up (ll corner is origin)
     INPUT->cursor_y = FRAMEBUFFER_HEIGHT - INPUT->cursor_y; // do I abstract this through a function call?

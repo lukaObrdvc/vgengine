@@ -7,7 +7,7 @@
 #define RANDOM_DEFAULT_SEED 0xA5A5A5A5
 #define PRNG_SEED (&ENGINE_STATE->prng_seed)
 
-u32 prng_xorshift32()
+inline u32 prng_xorshift32()
 {
     u32* result = PRNG_SEED;
     ASSERT(*result != 0);
@@ -18,26 +18,26 @@ u32 prng_xorshift32()
     return *result;
 }
 
-void random_set_seed(u32 seed)
+inline void random_set_seed(u32 seed)
 {
     *PRNG_SEED = seed;
 }
 
 // @doc [0, 1] (can never exactly return 1 but effectively inclusive)
-r32 random_range01()
+inline r32 random_range01()
 {
     return (prng_xorshift32() >> 8) * (1.0f / 16777216.0f);
 }
 
 // @doc [min, max]
-s32 random_range(s32 min, s32 max)
+inline s32 random_range(s32 min, s32 max)
 {
     ASSERT(max >= min);
     return min + (s32)(prng_xorshift32() % (max - min + 1));
 }
 
 // @doc [min, max] (can never exactly return max but effectively inclusive)
-r32 random_range(r32 min, r32 max)
+inline r32 random_range(r32 min, r32 max)
 {
     ASSERT(max >= min);
     return min + random_range01() * (max - min);

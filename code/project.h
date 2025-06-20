@@ -1,23 +1,6 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
-// @todo wrap around USE_WINDOWS, and then place proper stuff in .bat .sh
-#define PLATFORM_WINDOWS 1
-
-// @todo should probably not use these tho?
-
-#if BUILD_DEVELOPER
-#define DEVELOPER 1
-#else
-#define DEVELOPER 0
-#endif
-
-#if BUILD_USE_DLL
-#define USE_DLL 1
-#else
-#define USE_DLL 0
-#endif
-
 #define PROJECT_PATH              "W:\\Projects\\vgengine\\"
 #define DATA_PATH    PROJECT_PATH "data\\"
 #define CODE_PATH    PROJECT_PATH "code\\"

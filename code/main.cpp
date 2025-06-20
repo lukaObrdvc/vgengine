@@ -27,16 +27,9 @@
 // - (GetSystemTime, WORD=u16)
 
 
-// @todo reorder a bunch of these includes basically, and also
-// make sure you can compile with USE_DLL; also delete some files
-// and reorder file structures? also project.h and build.bat...
-
-
-#include "project.h"
-
 #if !USE_DLL
 
-#if PLATFORM_WINDOWS
+#if WINDOWS
 #include <Windows.h>
 #endif
 
@@ -46,6 +39,8 @@
 #include <stdio.h>  // for sprintf
 #include <stdint.h> // for integral types
 #include <math.h>   // for sqrt, sin, cos, tan  (anything else?)
+
+#include "project.h"
 
 #include "core/basic.h"
 #include "core/arena.h"
@@ -72,12 +67,13 @@
 #include "graphics/color.h"
 #include "graphics/mesh.h"
 #include "graphics/camera.h"
-#include "graphics/framebuffer.h" // @todo probably better to not make a framebuffer struct
-// #include "graphics/line.h"
+#include "graphics/framebuffer.h"
+
+// #include "graphics/line.h" // @todo refactor this to work now
 
 #include "input.h"
 #include "engine_state.h"
-#include "core/random.h" // move this later (needs prng_state from ENGINE_STATE)
+#include "core/random.h"
 
 #include "graphics/software_renderer.h"
 #if !USE_DLL
@@ -101,7 +97,7 @@
 #include "init.cpp"
 
 #include "graphics/software_renderer.cpp"
-#include "test2.cpp"
+#include "tests/test2.cpp"
 #include "update_and_render.cpp"
 #if !USE_DLL
 #include "platform.cpp"

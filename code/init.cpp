@@ -4,8 +4,10 @@ void init_memory()
     // @todo this should be aligned by alignof(Globals)
     managing_arena->base = (u8*)globals;
     managing_arena->size = sizeof(Globals);
+#if DEVELOPER
     managing_arena->highest_size = sizeof(Globals);
     managing_arena->capacity = TOTAL_PROGRAM_MEMORY;
+#endif
     ASSERT(managing_arena->size <= managing_arena->capacity);
     
     arena_make(PERMANENT_ARENA, 20 * MB);

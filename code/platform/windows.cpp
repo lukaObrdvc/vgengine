@@ -15,7 +15,7 @@ HMODULE load_dll()
     if (dll)
     {
         engine_api.platform_init_engine = (Platform_init_engine) GetProcAddress(dll, "platform_init_engine");
-        engine_api.platform_memory_base = (Platform_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
+        engine_api.platform_init_memory_base = (Platform_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
         engine_api.update_and_render = (Update_and_render) GetProcAddress(dll, "update_and_render");
         
         if (!engine_api.platform_init_engine) engine_api.platform_init_engine = platform_init_engine_stub;
@@ -599,6 +599,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     void* base_ptr = VirtualAlloc(0, total_program_memory, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     
     PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
+#if USE_DLL // because the platform has it's own globals variable
+    globals = (Globals*) base_ptr;
+#endif
     
     PLATFORM_API.total_program_memory = total_program_memory;
     PLATFORM_API.allocation_step = allocation_step;
