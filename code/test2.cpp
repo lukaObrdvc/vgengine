@@ -60,25 +60,25 @@ void model_matrix_test(Matrix4* view, Matrix4* proj)
     render_mesh(cube_mesh, mvp, colors);
     
 
-    ENGINE_STATE->spin_angle += PI / KB;
+    // ENGINE_STATE->spin_angle += PI / KB;
 
-    if (ENGINE_STATE->cube_scaling_factor >= 1.8f)
-    {
-        ENGINE_STATE->cube_scale_up = false;
-    }
-    if (ENGINE_STATE->cube_scaling_factor <= 0.2f)
-    {
-        ENGINE_STATE->cube_scale_up = true;
-    }
+    // if (ENGINE_STATE->cube_scaling_factor >= 1.8f)
+    // {
+    //     ENGINE_STATE->cube_scale_up = false;
+    // }
+    // if (ENGINE_STATE->cube_scaling_factor <= 0.2f)
+    // {
+    //     ENGINE_STATE->cube_scale_up = true;
+    // }
 
-    if (ENGINE_STATE->cube_scale_up)
-    {
-        ENGINE_STATE->cube_scaling_factor += 0.01f;
-    }
-    else
-    {
-        ENGINE_STATE->cube_scaling_factor -= 0.01f;
-    }
+    // if (ENGINE_STATE->cube_scale_up)
+    // {
+    //     ENGINE_STATE->cube_scaling_factor += 0.01f;
+    // }
+    // else
+    // {
+    //     ENGINE_STATE->cube_scaling_factor -= 0.01f;
+    // }
 }
 
 // void final_giga_test()

@@ -2,8 +2,6 @@
 #include <Windows.h>
 #endif
 #include <Memoryapi.h>
-#include <DSound.h>
-
 #include <intrin.h>
 #include <malloc.h> // @todo do I need this?
 
@@ -45,39 +43,30 @@ void unload_dll(HMODULE dll)
 #endif
 
 
-
-// @todo do better for monolithic build
 global_variable u8 keymap[256];
 global_variable Input* input;
 
-
-
-
+// because we're not sure how other platform works we use
+// this to map between VK codes and engine's KEYCODE enum
+// @todo init the rest to 0?
 void init_keymap()
 {
-    // @todo init the rest to 0?
-    // @todo actually why are you hard coding
-    // these values just put the VK code here instead
-    // @todo there might be more than 256 values for VK codes
-    // because it's hexadecimal, check again
-    
-    keymap[0x25] = 1;  // LEFT
-    keymap[0x26] = 2;  // UP
-    keymap[0x27] = 3;  // RIGHT
-    keymap[0x28] = 4;  // DOWN
-    keymap[0x57] = 5;  // W
-    keymap[0x53] = 6;  // S
-    keymap[0x41] = 7;  // A
-    keymap[0x44] = 8;  // D
-    keymap[0x51] = 9;  // Q
-    keymap[0x45] = 10; // E
-    keymap[0x49] = 11; // I
-    keymap[0x4B] = 12; // K
-    keymap[0x4A] = 13; // J
-    keymap[0x4C] = 14; // L
-    keymap[0x55] = 15; // U
-    keymap[0x4F] = 16; // O
-
+    keymap[VK_LEFT] = 1;
+    keymap[VK_UP] = 2;
+    keymap[VK_RIGHT] = 3;
+    keymap[VK_DOWN] = 4;
+    keymap['W'] = 5;
+    keymap['S'] = 6;
+    keymap['A'] = 7;
+    keymap['D'] = 8;
+    keymap['Q'] = 9;
+    keymap['E'] = 10;
+    keymap['I'] = 11;
+    keymap['K'] = 12;
+    keymap['J'] = 13;
+    keymap['L'] = 14;
+    keymap['U'] = 15;
+    keymap['O'] = 16;
 }
 
 // @todo maybe we should never assert with these functions, but it's
@@ -85,7 +74,9 @@ void init_keymap()
 // just change to b32 (only write_file has this; for everything else
 // you mostly would just have to remove ASSERT(false) stuff everywhere)
 
-b32 open_existing_file_for_reading(const u8* filename, HANDLE* handle)
+// @todo maybe don't inline these??
+
+inline b32 open_existing_file_for_reading(const u8* filename, HANDLE* handle)
 {
     HANDLE h = CreateFile((LPCSTR)filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     if (h == INVALID_HANDLE_VALUE)
@@ -100,7 +91,7 @@ b32 open_existing_file_for_reading(const u8* filename, HANDLE* handle)
     return true;
 }
 
-b32 open_existing_file_for_writing(const u8* filename, HANDLE* handle)
+inline b32 open_existing_file_for_writing(const u8* filename, HANDLE* handle)
 {
     HANDLE h = CreateFile((LPCSTR)filename, GENERIC_WRITE, FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     if (h == INVALID_HANDLE_VALUE)
@@ -115,7 +106,7 @@ b32 open_existing_file_for_writing(const u8* filename, HANDLE* handle)
     return true;
 }
 
-void create_or_open_file_for_writing(const u8* filename, HANDLE* handle)
+inline void create_or_open_file_for_writing(const u8* filename, HANDLE* handle)
 {
     HANDLE h = CreateFile((LPCSTR)filename, GENERIC_WRITE, FILE_SHARE_WRITE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
     // this will basically happen with errors that I don't want to process at all
@@ -123,7 +114,7 @@ void create_or_open_file_for_writing(const u8* filename, HANDLE* handle)
     *handle = h;
 }
 
-b32 get_file_size(const u8* filename, u32* size)
+inline b32 get_file_size(const u8* filename, u32* size)
 {
     HANDLE h;
     if (!open_existing_file_for_reading(filename, &h)) return false;
@@ -140,7 +131,7 @@ b32 get_file_size(const u8* filename, u32* size)
     return true;
 }
 
-b32 read_entire_file(const u8* filename, void* buffer, u32 buffer_size)
+inline b32 read_entire_file(const u8* filename, void* buffer, u32 buffer_size)
 {
     HANDLE h;
     if (!open_existing_file_for_reading(filename, &h)) return false;
@@ -157,7 +148,7 @@ b32 read_entire_file(const u8* filename, void* buffer, u32 buffer_size)
     return true;
 }
 
-void write_entire_file(const u8* filename, void* buffer, u32 buffer_size)
+inline void write_entire_file(const u8* filename, void* buffer, u32 buffer_size)
 {
     HANDLE h;
     create_or_open_file_for_writing(filename, &h);
@@ -172,7 +163,7 @@ void write_entire_file(const u8* filename, void* buffer, u32 buffer_size)
     CloseHandle(h);
 }
 
-b32 write_entire_existing_file(const u8* filename, void* buffer, u32 buffer_size)
+inline b32 write_entire_existing_file(const u8* filename, void* buffer, u32 buffer_size)
 {
     HANDLE h;
     if (!open_existing_file_for_writing(filename, &h)) return false;
@@ -188,7 +179,7 @@ b32 write_entire_existing_file(const u8* filename, void* buffer, u32 buffer_size
     return true;
 }
 
-b32 copy_file(const u8* src, const u8* dest)
+inline b32 copy_file(const u8* src, const u8* dest)
 {
     if (!CopyFile((LPCSTR)src, (LPCSTR)dest, true))
     {
@@ -201,7 +192,7 @@ b32 copy_file(const u8* src, const u8* dest)
     return true;
 }
 
-b32 copy_and_maybe_overwrite_file(const u8* src, const u8* dest)
+inline b32 copy_and_maybe_overwrite_file(const u8* src, const u8* dest)
 {
     if (!CopyFile((LPCSTR)src, (LPCSTR)dest, false))
     {
@@ -214,7 +205,7 @@ b32 copy_and_maybe_overwrite_file(const u8* src, const u8* dest)
     return true;
 }
 
-b32 move_file(const u8* src, const u8* dest)
+inline b32 move_file(const u8* src, const u8* dest)
 {
     if (!MoveFileEx((LPCSTR)src, (LPCSTR)dest, MOVEFILE_COPY_ALLOWED))
     {
@@ -227,7 +218,7 @@ b32 move_file(const u8* src, const u8* dest)
     return true;
 }
 
-b32 move_and_maybe_overwrite_file(const u8* src, const u8* dest)
+inline b32 move_and_maybe_overwrite_file(const u8* src, const u8* dest)
 {
     if (!MoveFileEx((LPCSTR)src, (LPCSTR)dest, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED))
     {
@@ -240,7 +231,7 @@ b32 move_and_maybe_overwrite_file(const u8* src, const u8* dest)
     return true;
 }
 
-b32 delete_file(const u8* filename)
+inline b32 delete_file(const u8* filename)
 {
     if (!DeleteFile((LPCSTR)filename))
     {
@@ -253,7 +244,7 @@ b32 delete_file(const u8* filename)
     return true;
 }
 
-b32 create_directory(const u8* dirname)
+inline b32 create_directory(const u8* dirname)
 {
     if (!CreateDirectory((LPCSTR)dirname, 0))
     {
@@ -267,7 +258,7 @@ b32 create_directory(const u8* dirname)
 }
 
 // @doc only deletes empty directories
-b32 delete_directory(const u8* dirname)
+inline b32 delete_directory(const u8* dirname)
 {
     if (!RemoveDirectory((LPCSTR)dirname))
     {
@@ -280,11 +271,23 @@ b32 delete_directory(const u8* dirname)
     return true;
 }
 
-b32 directory_exists(const u8* dirname)
+inline b32 directory_exists(const u8* dirname)
 {
     DWORD att = GetFileAttributes((LPCSTR)dirname);
     if (att == INVALID_FILE_ATTRIBUTES) return false;
     return (att & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+inline r64 read_time_counter()
+{
+    LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
+    
+    LARGE_INTEGER count;
+    QueryPerformanceCounter(&count);
+
+    // in milliseconds (ms)
+    return count.QuadPart * 1000 / (r64) freq.QuadPart;
 }
 
 
@@ -600,8 +603,18 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     PLATFORM_API.total_program_memory = total_program_memory;
     PLATFORM_API.allocation_step = allocation_step;
 #if USE_DLL
-    PLATFORM_API.read_file = read_file;
-    PLATFORM_API.write_file = write_file;
+    PLATFORM_API.get_file_size = get_file_size;
+    PLATFORM_API.read_entire_file = read_entire_file;
+    PLATFORM_API.write_entire_file = write_entire_file;
+    PLATFORM_API.copy_file = copy_file;
+    PLATFORM_API.copy_and_maybe_overwrite_file = copy_and_maybe_overwrite_file;
+    PLATFORM_API.move_file = move_file;
+    PLATFORM_API.move_and_maybe_overwrite_file = move_and_maybe_overwrite_file;
+    PLATFORM_API.delete_file = delete_file;
+    PLATFORM_API.create_directory = create_directory;
+    PLATFORM_API.delete_directory = delete_directory;
+    PLATFORM_API.directory_exists = directory_exists;
+    PLATFORM_API.read_time_counter = read_time_counter;
 #endif
 
     // @todo do I also pass platform_api here so I initialize there instead?
@@ -639,10 +652,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     window_buffer_info.bmiHeader.biCompression = BI_RGB;
     window_buffer_info.bmiHeader.biWidth = init.window_width;
     window_buffer_info.bmiHeader.biHeight = -init.window_height;
-    
-    // @cleanup counters
-    LARGE_INTEGER counter_frequency;
-    QueryPerformanceFrequency(&counter_frequency);
 
     Engine_frame_result result;
     // some of these are kind of hardcoded initalized for the first frame
@@ -676,10 +685,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 #endif         
         u64 begin_cycle_count = __rdtsc();
-
-        LARGE_INTEGER begin_time_count;
-        QueryPerformanceCounter(&begin_time_count);
-
+        u64 begin_time_count = read_time_counter();
         
         MSG message;
         while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
@@ -846,16 +852,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
         // @todo better caching and calculation and precision of these counters
         u64 end_cycle_count = __rdtsc();
-
+        u64 end_time_count = read_time_counter();
+        
         u64 cycles_per_frame = end_cycle_count - begin_cycle_count;
-            
-        LARGE_INTEGER end_time_count;
-        QueryPerformanceCounter(&end_time_count);
+        r64 ms_per_frame = end_time_count - begin_time_count;
 
-        r64 ms_per_frame = ((end_time_count.QuadPart - begin_time_count.QuadPart) * 1000.0) / counter_frequency.QuadPart;
-
-        LARGE_INTEGER begin_sleep_time_count;
-        QueryPerformanceCounter(&begin_sleep_time_count);
+        u64 begin_sleep_time_count = read_time_counter();
 
         // capping frame rate to 60 fps
         // @todo this doesn't wait precisely for 60 fps, a little more, a little less, how to improve this and does it matter??
@@ -868,11 +870,10 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                 Sleep(ms_to_sleep);
             }
         }
-            
-        LARGE_INTEGER end_sleep_time_count;
-        QueryPerformanceCounter(&end_sleep_time_count);
 
-        r64 slept_ms = ((end_sleep_time_count.QuadPart - begin_sleep_time_count.QuadPart) * 1000.0) / counter_frequency.QuadPart;
+        u64 end_sleep_time_count = read_time_counter();
+
+        r64 slept_ms = end_sleep_time_count - begin_sleep_time_count;
         
         ms_per_frame += slept_ms;
             
@@ -882,8 +883,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         sprintf(debug_str,"%f fps : %f ms : %I64d cycles\n", fps, ms_per_frame, cycles_per_frame );
 
         OutputDebugStringA(debug_str);
-
-        //Sleep(200);
     }
     
     return 0;

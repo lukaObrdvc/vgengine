@@ -18,21 +18,23 @@ typedef b32 (*Delete_file) (const u8*);
 typedef b32 (*Create_directory) (const u8*);
 typedef b32 (*Delete_directory) (const u8*);
 typedef b32 (*Directory_exists) (const u8*);
+typedef r64 (*Read_time_counter) ();
 
 #else
 
-b32 get_file_size(const u8* filename, u32* size);
-b32 read_entire_file(const u8* filename, void* buffer, u32 buffer_size);
-void write_entire_file(const u8* filename, void* buffer, u32 buffer_size);
-b32 write_entire_existing_file(const u8* filename, void* buffer, u32 buffer_size);
-b32 copy_file(const u8* src, const u8* dest);
-b32 copy_and_maybe_overwrite_file(const u8* src, const u8* dest);
-b32 move_file(const u8* src, const u8* dest);
-b32 move_and_maybe_overwrite_file(const u8* src, const u8* dest);
-b32 delete_file(const u8* filename);
-b32 create_directory(const u8* dirname);
-b32 delete_directory(const u8* dirname);
-b32 directory_exists(const u8* dirname);
+inline b32 get_file_size(const u8* filename, u32* size);
+inline b32 read_entire_file(const u8* filename, void* buffer, u32 buffer_size);
+inline void write_entire_file(const u8* filename, void* buffer, u32 buffer_size);
+inline b32 write_entire_existing_file(const u8* filename, void* buffer, u32 buffer_size);
+inline b32 copy_file(const u8* src, const u8* dest);
+inline b32 copy_and_maybe_overwrite_file(const u8* src, const u8* dest);
+inline b32 move_file(const u8* src, const u8* dest);
+inline b32 move_and_maybe_overwrite_file(const u8* src, const u8* dest);
+inline b32 delete_file(const u8* filename);
+inline b32 create_directory(const u8* dirname);
+inline b32 delete_directory(const u8* dirname);
+inline b32 directory_exists(const u8* dirname);
+inline r64 read_time_counter();
 
 
 #endif
@@ -52,6 +54,7 @@ struct Platform_api
     Create_directory create_directory;
     Delete_directory delete_directory;
     Directory_exists directory_exists;
+    Read_time_counter read_time_counter;
 #endif
     u64 total_program_memory;
     u64 allocation_step; // @cleanup don't need this anymore
@@ -97,6 +100,7 @@ global_variable Globals* globals;
 #define CREATE_DIRECTORY(dirname) PLATFORM_API.create_directory((dirname))
 #define DELETE_DIRECTORY(dirname) PLATFORM_API.delete_directory((dirname))
 #define DIRECTORY_EXISTS(dirname) PLATFORM_API.directory_exists((dirname))
+#define READ_TIME_COUNTER() PLATFORM_API.read_time_counter()
 
 #else
 
@@ -112,6 +116,7 @@ global_variable Globals* globals;
 #define CREATE_DIRECTORY(dirname) create_directory((dirname))
 #define DELETE_DIRECTORY(dirname) delete_directory((dirname))
 #define DIRECTORY_EXISTS(dirname) directory_exists((dirname))
+#define READ_TIME_COUNTER() read_time_counter()
 
 #endif
 

@@ -11,12 +11,6 @@ void init_memory()
     arena_make(PERMANENT_ARENA, 20 * MB);
     arena_make(TEMPORARY_ARENA, 2 * GB);
     arena_make(SCRATCH_ARENA, SCRATCH_POOL_SIZE * SCRATCH_CAPACITY);
-
-    // @todo do I also place this in init_engine_state?
-    Engine_state* engine_state = arena_push<Engine_state>(PERMANENT_ARENA);
-    // @todo push this once once per frame instead, that way you don't waste space as well
-    // engine_state->framebuffer.base = arena_push<u8>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * to_unsigned(BYTPP));
-    // engine_state->zbuffer = arena_push<r32>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE);
     
     for (int i = 0; i < SCRATCH_POOL_SIZE; i++)
     {
@@ -36,7 +30,7 @@ void init_memory()
 
 void init_engine_state()
 {
-    Engine_state* engine_state = ENGINE_STATE;
+    Engine_state* engine_state = arena_push<Engine_state>(PERMANENT_ARENA); // this used to be in init_memory ...
     Camera* camera = MAIN_CAMERA;
     Input* input = INPUT;
     Arena* permanent_arena = PERMANENT_ARENA;
@@ -59,8 +53,8 @@ void init_engine_state()
     
     engine_state->tested_once = 0;
 
-    engine_state->framebuffer.width = 1280;
-    engine_state->framebuffer.height = 720;
+    engine_state->framebuffer_width = 1280;
+    engine_state->framebuffer_height = 720;
 
     camera->position = vec_make(0.0f, 0.0f, 0.0f);
     camera->orientation = quaternion_identity();

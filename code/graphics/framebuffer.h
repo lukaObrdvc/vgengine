@@ -8,13 +8,6 @@
 #define BYTPP 4
 
 
-struct Framebuffer
-{
-    u8* base;
-    s32 width;
-    s32 height;
-};
-
 inline s32 framebuffer_pitch(s32 height);
 inline s32 framebuffer_bytesize(s32 width, s32 height);
 inline u32* framebuffer_access(s32 x, s32 y, u8* buff, s32 pitch);

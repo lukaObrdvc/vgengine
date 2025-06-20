@@ -8,6 +8,8 @@ struct Platform_init_result
     s32 window_height;
     s32 window_offs_x;
     s32 window_offs_y;
+    // maybe put initial window and framebuffer dims, and display mode
+    // and other things like that ....
 };
 
 void init_memory();

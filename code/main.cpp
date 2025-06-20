@@ -1,26 +1,36 @@
 // "W:\\Projects\\vgengine\\code\\"
 
+// roadmap:
+// - font loader
+// - profiling system
+// - logging system
+// - UI stuff
+// - threading
+// - SIMD
+// - shading
+// - texturing
+// - mesh loader
+// - texture loader
+// - scene loader
+// - audio
+// - console?
+// - serialization?
+// - simple editor?
+// - introspection?
+// - 3d animation?
+// - anti-aliasing?
 
-// @todo:
 
-// - strings
-
-// - fullscreen cleanup
-
-// - (GetSystemTime, WORD=u16)
-// - perf counters?
-
+// need from WinAPI:
 // - threads
 // - recompilation/reloading?
+// - (GetSystemTime, WORD=u16)
 
 
-// keymap
+// @todo reorder a bunch of these includes basically, and also
+// make sure you can compile with USE_DLL; also delete some files
+// and reorder file structures? also project.h and build.bat...
 
-// make sure dll thing works, and cleanup everything related to it
-// refactor line stuff to work
-
-// do the todo below...
-// finish the rest of the small cleanup stuff...
 
 #include "project.h"
 
@@ -37,12 +47,6 @@
 #include <stdint.h> // for integral types
 #include <math.h>   // for sqrt, sin, cos, tan  (anything else?)
 
-// @todo reorder a bunch of these includes basically, and also
-// make sure you can compile with USE_DLL; also delete some files
-// and reorder file structures? also project.h and build.bat...
-
-// @todo refactor line stuff
-
 #include "core/basic.h"
 #include "core/arena.h"
 #include "core/scratch.h"
@@ -55,7 +59,7 @@
 #include "core/slice.h"
 #include "core/array.h"
 #include "core/pool.h"
-#include "core/string.h"
+#include "core/string.h" // @todo implement a bunch of functionality for this
 #include "core/hash_table.h" // @todo rehashing
 
 #include "math/vector.h"
@@ -91,10 +95,10 @@
 #include "math/matrix.cpp"
 #include "math/quaternion.cpp"
 
-// #include "graphics/line.cpp"
+// #include "graphics/line.cpp" // @todo refactor this to work now
 
 #include "graphics/framebuffer.cpp"
-#include "init.cpp" // @cleanup
+#include "init.cpp"
 
 #include "graphics/software_renderer.cpp"
 #include "test2.cpp"

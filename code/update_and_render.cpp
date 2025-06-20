@@ -15,8 +15,8 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     // or something so figure that out....
     
     Engine_state* engine_state = ENGINE_STATE;
-    FRAMEBUFFER_WIDTH = 300;
-    FRAMEBUFFER_HEIGHT = 300;
+    FRAMEBUFFER_WIDTH = 860;
+    FRAMEBUFFER_HEIGHT = 420;
 
     FRAMEBUFFER_BASE = temp_alloc(u8, FRAMEBUFFER_BYTESIZE);
     ZBUFFER = temp_alloc(r32, FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT);
@@ -35,13 +35,13 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     result->resize = true;
     result->window_offs_x = 0;
     result->window_offs_y = 0;
-    result->window_width = 300;
-    result->window_height = 300;
+    result->window_width = 1920;
+    result->window_height = 1080;
     result->cursor_x = FRAMEBUFFER_WIDTH / 2;
     result->cursor_y = FRAMEBUFFER_HEIGHT / 2;
     result->change_display = true;
-    result->fullscreen = false;
-    result->exclusive_fullscreen = true;
+    result->fullscreen = true;
+    result->exclusive_fullscreen = false;
     // @todo how do I get into the normal mode with cursor?
     
     zbuffer_reset();
