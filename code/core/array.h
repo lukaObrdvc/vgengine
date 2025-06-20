@@ -5,6 +5,8 @@
 // so that you waste too much memory, and giving arrays too small of a capacity so you
 // fire too many assertions which causes friction during development...
 
+// @todo put platform.h depends into array.cpp
+
 #define ARRAY_DEFAULT_CAPACITY 2048 // 2 KB
 
 

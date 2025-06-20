@@ -10,6 +10,11 @@
 
 struct Engine_state
 {
+    // @todo use flags eventually instead of bool for efficiency
+    b32 running;
+    b32 fullscreen;
+    b32 exclusive_fullscreen;
+    
     Input input;
     Framebuffer framebuffer;
     r32* zbuffer;

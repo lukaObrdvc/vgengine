@@ -11,11 +11,12 @@ void init_memory()
     arena_make(PERMANENT_ARENA, 20 * MB);
     arena_make(TEMPORARY_ARENA, 2 * GB);
     arena_make(SCRATCH_ARENA, SCRATCH_POOL_SIZE * SCRATCH_CAPACITY);
-    
+
+    // @todo do I also place this in init_engine_state?
     Engine_state* engine_state = arena_push<Engine_state>(PERMANENT_ARENA);
     // @todo push this once once per frame instead, that way you don't waste space as well
-    engine_state->framebuffer.base = arena_push<u8>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * to_unsigned(BYTPP));
-    engine_state->zbuffer = arena_push<r32>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE);
+    // engine_state->framebuffer.base = arena_push<u8>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE * to_unsigned(BYTPP));
+    // engine_state->zbuffer = arena_push<r32>(PERMANENT_ARENA, MAX_FRAMEBUFFER_SIZE);
     
     for (int i = 0; i < SCRATCH_POOL_SIZE; i++)
     {
@@ -37,34 +38,34 @@ void init_engine_state()
 {
     Engine_state* engine_state = ENGINE_STATE;
     Camera* camera = MAIN_CAMERA;
+    Input* input = INPUT;
+    Arena* permanent_arena = PERMANENT_ARENA;
 
-    // @todo do I place these pushes elsewhere?
-    u64* keys_base = arena_push<u64>(PERMANENT_ARENA, dword_count_for_bit_count(NUM_KEYS));
-    u64* keys_pressed_base = arena_push<u64>(PERMANENT_ARENA, dword_count_for_bit_count(NUM_KEYS));
-    u64* keys_released_base = arena_push<u64>(PERMANENT_ARENA, dword_count_for_bit_count(NUM_KEYS));
-    INPUT->keys = bit_array_make(keys_base, NUM_KEYS);
-    INPUT->keys_pressed = bit_array_make(keys_pressed_base, NUM_KEYS);
-    INPUT->keys_released = bit_array_make(keys_released_base, NUM_KEYS);
+    engine_state->running = true;
     
-    INPUT->mkeys = unset_all_flags();
-    INPUT->mkeys_pressed = unset_all_flags();
-    INPUT->mkeys_released = unset_all_flags();
-    INPUT->moved_mouse = false;
-    INPUT->cursor_x = 0;
-    INPUT->cursor_y = 0;
+    u64* keys_base = arena_push<u64>(permanent_arena, dword_count_for_bit_count(NUM_KEYS));
+    u64* keys_pressed_base = arena_push<u64>(permanent_arena, dword_count_for_bit_count(NUM_KEYS));
+    u64* keys_released_base = arena_push<u64>(permanent_arena, dword_count_for_bit_count(NUM_KEYS));
+    input->keys = bit_array_make(keys_base, NUM_KEYS);
+    input->keys_pressed = bit_array_make(keys_pressed_base, NUM_KEYS);
+    input->keys_released = bit_array_make(keys_released_base, NUM_KEYS);
+    
+    input->mkeys = unset_all_flags();
+    input->mkeys_pressed = unset_all_flags();
+    input->mkeys_released = unset_all_flags();
+    input->moved_mouse = false;
+    input->cursor_x = 0;
+    input->cursor_y = 0;
     
     engine_state->tested_once = 0;
 
-    engine_state->framebuffer.width = 1280.0f;
-    engine_state->framebuffer.height = 720.0f;
-
-    // @doc this guarantees Y is up when accessing these buffers
-    engine_state->framebuffer.base += FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH;
-    engine_state->zbuffer += FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - 1);
+    engine_state->framebuffer.width = 1280;
+    engine_state->framebuffer.height = 720;
 
     camera->position = vec_make(0.0f, 0.0f, 0.0f);
     camera->orientation = quaternion_identity();
-    camera->z_near = 5; // @todo are these goodio?
+    // @todo figure out proper z values and what they actually mean and so on...
+    camera->z_near = 5;
     camera->z_far = 500;
     camera->fov = 120;
 
@@ -72,22 +73,23 @@ void init_engine_state()
     engine_state->normalization_counter = 1;
     engine_state->aspect_ratio = FRAMEBUFFER_WIDTH / (r32)FRAMEBUFFER_HEIGHT;
 
-    // @todo rename to better
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
     engine_state->spin_angle = 0;
     engine_state->cube_scaling_factor = 1.0f;
     engine_state->cube_scale_up = true;
-    
-    zbuffer_reset();
 }
 
-extern "C" void platform_init_engine(Platform_init_out* out)
+extern "C" void platform_init_engine(Platform_init_result* out)
 {
     init_memory();
     init_engine_state();
 
     out->input_address = INPUT;
+    out->window_width = 1280; // + 16
+    out->window_height = 720; // +39
+    out->window_offs_x = 50;
+    out->window_offs_y = 50;
 }
 
 #if USE_DLL

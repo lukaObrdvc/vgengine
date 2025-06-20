@@ -1,12 +1,54 @@
-extern "C" Engine_frame_result update_and_render()
+extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result* result)
 {
-    // turns y coordinate from y is down to y is up (ll corner is origin)
-    INPUT->cursor_y = FRAMEBUFFER_HEIGHT - INPUT->cursor_y; // do I abstract this through a function call?
+    // exclusive fullscreen: window dims and framebuffer dims equal
+    // borderless fullscreen: window dims native, framebuffer dims separate
 
-    Engine_frame_result result;
-    result.show_cursor = false;
+    // you don't have to exactly set window dims not native for exclusive
+    // I guess, what happens is when you go exclusive fullscreen
+    // windows will set the default resolution for the monitor
+    // to the dimensions of the window
+
+    // platform stretches framebuffer onto window
+
+    // @todo okay, fullscreen/windowed stuff works, except for
+    // input/camera thing it seems because of the cursor centering
+    // or something so figure that out....
     
     Engine_state* engine_state = ENGINE_STATE;
+    FRAMEBUFFER_WIDTH = 300;
+    FRAMEBUFFER_HEIGHT = 300;
+
+    FRAMEBUFFER_BASE = temp_alloc(u8, FRAMEBUFFER_BYTESIZE);
+    ZBUFFER = temp_alloc(r32, FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT);
+    // @doc this guarantees Y is up when accessing these buffers
+    FRAMEBUFFER_BASE += FRAMEBUFFER_BYTESIZE - FRAMEBUFFER_PITCH;
+    ZBUFFER += FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - 1);
+    
+
+    result->cap_frame_rate = true;
+    result->target_frame_rate = 60;
+    result->show_cursor = false;
+    // this passes back the beginning of the buffer to the platform
+    result->window_buffer_base = (void*)(FRAMEBUFFER_BASE - FRAMEBUFFER_BYTESIZE + FRAMEBUFFER_PITCH);
+    result->window_buffer_width = FRAMEBUFFER_WIDTH;
+    result->window_buffer_height = FRAMEBUFFER_HEIGHT;
+    result->resize = true;
+    result->window_offs_x = 0;
+    result->window_offs_y = 0;
+    result->window_width = 300;
+    result->window_height = 300;
+    result->cursor_x = FRAMEBUFFER_WIDTH / 2;
+    result->cursor_y = FRAMEBUFFER_HEIGHT / 2;
+    result->change_display = true;
+    result->fullscreen = false;
+    result->exclusive_fullscreen = true;
+    // @todo how do I get into the normal mode with cursor?
+    
+    zbuffer_reset();
+    
+    // turns y coordinate from y is down to y is up (ll corner is origin)
+    INPUT->cursor_y = FRAMEBUFFER_HEIGHT - INPUT->cursor_y; // do I abstract this through a function call?
+    
     Vector2 cursor_difference;
     cursor_difference.x = -(CURSOR_X - FRAMEBUFFER_WIDTH/2);
     cursor_difference.y = CURSOR_Y - FRAMEBUFFER_HEIGHT/2;
@@ -29,48 +71,59 @@ extern "C" Engine_frame_result update_and_render()
 
     // @todo fix moving faster diagonally if you care...
     Vector3 camera_movement = vec_zero3();
-    if (get_key(KEY_W))
+    if (key_down(KEY_W))
     {
         camera_movement.z -= 2.0f;
     }
-    if (get_key(KEY_S))
+    if (key_down(KEY_S))
     {
         camera_movement.z += 2.0f;
     }
-    if (get_key(KEY_A))
+    if (key_down(KEY_A))
     {
         camera_movement.x -= 2.0f;
     }
-    if (get_key(KEY_D))
+    if (key_down(KEY_D))
     {
         camera_movement.x += 2.0f;
     }
-    if (get_key(KEY_Q))
+    if (key_down(KEY_Q))
     {
         camera_movement.y -= 2.0f;
     }
-    if (get_key(KEY_E))
+    if (key_down(KEY_E))
     {
         camera_movement.y += 2.0f;
     }
 
     camera_movement = quaternion_rot_vector(camera_movement, camera->orientation);
     camera->position = vec_add(camera->position, camera_movement);
-    
-    
-    Framebuffer framebuffer = engine_state->framebuffer;
-    r32* zbuffer = engine_state->zbuffer;
-    s32 bytpp = BYTPP;
-    s32 pitch = framebuffer_pitch(framebuffer.height, bytpp);
 
+    if (key_pressed(KEY_U))
+    {
+        result->resize = true;
+        FRAMEBUFFER_WIDTH = 500;
+        FRAMEBUFFER_HEIGHT = 500;
+        result->window_width = 500;
+        result->window_height = 500;
+    }
+    if (key_released(KEY_U))
+    {
+        result->resize = true;
+        FRAMEBUFFER_WIDTH = 1280;
+        FRAMEBUFFER_HEIGHT = 720;
+        result->window_width = 1280;
+        result->window_height = 720;
+    }
+    
     fill_background();
     
     Matrix4* view = view_tmatrix_for_camera();
     Matrix4* proj = perspective_tmatrix_for_camera();
     
     model_matrix_test(view, proj);
+
     
-    zbuffer_reset(zbuffer, framebuffer.width, framebuffer.height);
     temp_reset();
     engine_state->normalization_counter++;
 
@@ -79,6 +132,4 @@ extern "C" Engine_frame_result update_and_render()
     INPUT->mkeys_pressed = unset_all_flags();
     INPUT->mkeys_released = unset_all_flags();
     INPUT->moved_mouse = false;
-    
-    return result;
 }

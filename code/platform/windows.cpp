@@ -859,9 +859,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
         // capping frame rate to 60 fps
         // @todo this doesn't wait precisely for 60 fps, a little more, a little less, how to improve this and does it matter??
-        if (ms_per_frame < 16.67)
+        if (result.cap_frame_rate)
         {
-            Sleep(16.67 - ms_per_frame);
+            r64 target_ms = 1000 / (r64)result.target_frame_rate;
+            r64 ms_to_sleep = target_ms - ms_per_frame;
+            if (ms_to_sleep > 1)
+            {
+                Sleep(ms_to_sleep);
+            }
         }
             
         LARGE_INTEGER end_sleep_time_count;

@@ -3,7 +3,7 @@
 #define CURSOR_X (INPUT->cursor_x)
 #define CURSOR_Y (INPUT->cursor_y)
 
-inline b32 get_key(KEYCODE key)
+inline b32 key_down(KEYCODE key)
 {
     return bit_array_get(INPUT->keys, key);
 }
@@ -20,7 +20,7 @@ inline b32 key_released(KEYCODE key)
     return bit_array_get(INPUT->keys_released, key);
 }
 
-inline b32 get_mkey(MKEYCODE mkey)
+inline b32 mkey_down(MKEYCODE mkey)
 {
     return get_flags(INPUT->mkeys, mkey);
 }

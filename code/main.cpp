@@ -3,28 +3,24 @@
 
 // @todo:
 
-// - windows.cpp cleanup [start this next probably :) ]
-
 // - strings
 
-// - fullscreen
-// - cursors
-// - window priority
-// - resizing
+// - fullscreen cleanup
 
-// winapi stuffs:
-// - read datetime
-// - file handling
-// - fonts               (KarminaBold)
+// - (GetSystemTime, WORD=u16)
 // - perf counters?
 
 // - threads
 // - recompilation/reloading?
 
-// - audio
-// - maketh sureth dll thingy worketh ?
 
-// also line and pixel?
+// keymap
+
+// make sure dll thing works, and cleanup everything related to it
+// refactor line stuff to work
+
+// do the todo below...
+// finish the rest of the small cleanup stuff...
 
 #include "project.h"
 
@@ -41,6 +37,11 @@
 #include <stdint.h> // for integral types
 #include <math.h>   // for sqrt, sin, cos, tan  (anything else?)
 
+// @todo reorder a bunch of these includes basically, and also
+// make sure you can compile with USE_DLL; also delete some files
+// and reorder file structures? also project.h and build.bat...
+
+// @todo refactor line stuff
 
 #include "core/basic.h"
 #include "core/arena.h"
@@ -66,17 +67,15 @@
 
 #include "graphics/color.h"
 #include "graphics/mesh.h"
-#include "graphics/triangle.h" // @cleanup
-#include "graphics/camera.h" // @cleanup
-#include "graphics/clip.h" // @cleanup
-#include "graphics/framebuffer.h" // @cleanup
+#include "graphics/camera.h"
+#include "graphics/framebuffer.h" // @todo probably better to not make a framebuffer struct
 // #include "graphics/line.h"
-// #include "graphics/pixel.h"
 
 #include "input.h"
 #include "engine_state.h"
 #include "core/random.h" // move this later (needs prng_state from ENGINE_STATE)
 
+#include "graphics/software_renderer.h"
 #if !USE_DLL
 #include "platform/engine.h"
 #endif
@@ -97,7 +96,7 @@
 #include "graphics/framebuffer.cpp"
 #include "init.cpp" // @cleanup
 
-#include "platform/engine.cpp" // @cleanup
+#include "graphics/software_renderer.cpp"
 #include "test2.cpp"
 #include "update_and_render.cpp"
 #if !USE_DLL

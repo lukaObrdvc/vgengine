@@ -25,10 +25,18 @@
 #define ASSET_PATH   DATA_PATH    "assets\\"
 #define LOG_PATH     DATA_PATH    "logs\\"
 #define MESHES_PATH  ASSET_PATH   "meshes\\"
+#define FONTS_PATH   ASSET_PATH   "fonts\\"
+
+#define ACTUAL_DLL BUILD_PATH "main.dll"
+#define COPIED_DLL BUILD_PATH "main_copy.dll"
 
 #define CORE_PATH     CODE_PATH "core\\"
 #define GRAPHICS_PATH CODE_PATH "graphics\\"
 #define MATH_PATH     CODE_PATH "math\\"
 #define PLATFORM_PATH CODE_PATH "platform\\"
+
+#define MAKE_FONT_BMP 0
+#define FONT_NAME "Consolas"
+
 
 #endif
