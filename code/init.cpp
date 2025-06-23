@@ -69,6 +69,8 @@ void init_engine_state()
     engine_state->normalization_counter = 1;
     engine_state->aspect_ratio = FRAMEBUFFER_WIDTH / (r32)FRAMEBUFFER_HEIGHT;
 
+    engine_state->num_fonts = 0;
+
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
     engine_state->spin_angle = 0;
@@ -80,6 +82,7 @@ extern "C" void platform_init_engine(Platform_init_result* out)
 {
     init_memory();
     init_engine_state();
+    load_font_permanently(str("Consolas"));
 
     out->input_address = INPUT;
     out->window_width = 1280; // + 16

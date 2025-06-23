@@ -124,6 +124,23 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     
     model_matrix_test(view, proj);
 
+
+    Font* consolas = get_font(MYFONT_CONSOLAS);
+    u8* glyph = get_glyph_bmp(consolas, 'a');
+
+    s32 glyph_w = consolas->glyph_width + 2 * consolas->glyph_padding;
+    s32 glyph_h = consolas->glyph_height + 2 * consolas->glyph_padding;
+    s32 stride = FONT_BMP_ROW_COUNT * glyph_w * BYTPP;
+
+    for (s32 j = 0; j < glyph_h; j++)
+    {
+        for (s32 i = 0; i < glyph_w; i++)
+        {
+            s32 flipped_j = glyph_h - 1 - j;
+            u32 color = *(u32*)(glyph + flipped_j * stride + i * BYTPP);
+            *framebuffer_access(i + 30, j + 30) = color;
+        }
+    }    
     
     temp_reset();
     engine_state->normalization_counter++;

@@ -7,8 +7,8 @@
 #define BUILD_PATH   PROJECT_PATH "exe\\"
 #define ASSET_PATH   DATA_PATH    "assets\\"
 #define LOG_PATH     DATA_PATH    "logs\\"
-#define MESHES_PATH  ASSET_PATH   "meshes\\"
-#define FONTS_PATH   ASSET_PATH   "fonts\\"
+#define MESHE_PATH  ASSET_PATH   "meshes\\"
+#define FONT_PATH   ASSET_PATH   "fonts\\"
 
 #define ACTUAL_DLL BUILD_PATH "main.dll"
 #define COPIED_DLL BUILD_PATH "main_copy.dll"

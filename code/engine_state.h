@@ -1,6 +1,19 @@
 #ifndef ENGINE_STATE_H
 #define ENGINE_STATE_H
 
+// @todo does this respect alignment??????
+#define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA->base))
+
+#define FRAMEBUFFER_WIDTH (ENGINE_STATE->framebuffer_width)
+#define FRAMEBUFFER_HEIGHT (ENGINE_STATE->framebuffer_height)
+#define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * BYTPP) // @todo maybe calculate these once, cache them in engine_state
+#define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * BYTPP) // @todo same?
+#define FRAMEBUFFER_BASE (ENGINE_STATE->framebuffer_base)
+
+#define ZBUFFER (ENGINE_STATE->zbuffer)
+
+#define ASPECT_RATIO (ENGINE_STATE->aspect_ratio)
+
 
 // @doc mainly for permanent information and convinience so you can
 // globally access some things, instead of passing them to million
@@ -24,6 +37,9 @@ struct Engine_state
     r32 aspect_ratio;
     u8 normalization_counter;
     u32 prng_seed;
+    // @todo use Array instead?
+    Font fonts[FONTS_CAPACITY];
+    s32 num_fonts;
 
     // temporary-----------------------------
     r32 camera_angle;
@@ -37,18 +53,5 @@ struct Engine_state
     
     b32 tested_once;
 };
-
-// @todo does this respect alignment??????
-#define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA->base))
-
-#define FRAMEBUFFER_WIDTH (ENGINE_STATE->framebuffer_width)
-#define FRAMEBUFFER_HEIGHT (ENGINE_STATE->framebuffer_height)
-#define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * BYTPP) // @todo maybe calculate these once, cache them in engine_state
-#define FRAMEBUFFER_BYTESIZE (FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT * BYTPP) // @todo same?
-#define FRAMEBUFFER_BASE (ENGINE_STATE->framebuffer_base)
-
-#define ZBUFFER (ENGINE_STATE->zbuffer)
-
-#define ASPECT_RATIO (ENGINE_STATE->aspect_ratio)
 
 #endif

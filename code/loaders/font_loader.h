@@ -2,6 +2,8 @@
 #define FONT_LOADER_H
 
 #define NUM_ASCII_GLYPHS 95
+#define FIRST_ASCII 32
+#define LAST_ASCII 126
 #define FONT_METADATA_FILE_BYTESIZE 5
 #define FONT_BMP_ROW_COUNT 10
 #define FONT_BMP_COL_COUNT 10
@@ -17,6 +19,22 @@ struct Font
     s32 glyph_height;
     s32 glyph_padding;
 };
+
+struct Glyph
+{
+    u8* bmp;
+    s32 width;
+    s32 height;
+    s32 padding;
+};
+
+enum MYFONT
+{
+    MYFONT_NONE = -1,
+    MYFONT_CONSOLAS
+};
+
+// @todo decalre from .cpp ?
 
 
 // @doc we need glyph w,h,p first in order to allocate memory
@@ -58,5 +76,31 @@ inline void load_font_bmp(String name, Font* font)
     // @todo logging on fail
     READ_ENTIRE_FILE(cstr(filepath), font->bmp, font_bmp_bytesize(font));
 }
+
+// @todo now get a glyph bmp (based on char) from the font bmp, and scaling and tinting stuff,
+// and then do separation between lines, wrapping lines, truncating lines, tint background...
+
+inline s32 glyph_bytesize(Font* font)
+{
+    return (font->glyph_width + 2 * font->glyph_padding) * (font->glyph_height + 2 * font->glyph_padding) * BYTPP;
+}
+
+inline u8* get_glyph_bmp(Font* font, u8 c)
+{
+    ASSERT(c >= FIRST_ASCII && c <= LAST_ASCII);
+    
+    s32 glyph_index = c - FIRST_ASCII;
+    
+    s32 glyph_w = font->glyph_width + 2 * font->glyph_padding;
+    s32 glyph_h = font->glyph_height + 2 * font->glyph_padding;
+
+    s32 row = glyph_index / FONT_BMP_ROW_COUNT;
+    s32 col = glyph_index % FONT_BMP_COL_COUNT;
+
+    s32 stride = FONT_BMP_ROW_COUNT * glyph_w * BYTPP;
+
+    return font->bmp + FONT_BMP_HEAD_BYTESIZE + row * glyph_h * stride + col * glyph_w * BYTPP;
+}
+
 
 #endif

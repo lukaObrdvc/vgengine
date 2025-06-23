@@ -10,3 +10,10 @@ inline void load_font_permanently(String name)
     
     engine_state->num_fonts++;
 }
+
+inline Font* get_font(MYFONT f)
+{
+    ASSERT(f >= 0 && f < FONTS_CAPACITY);
+    return &ENGINE_STATE->fonts[f];
+}
+

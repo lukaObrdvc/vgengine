@@ -1,22 +1,29 @@
 // "W:\\Projects\\vgengine\\code\\"
 
 // roadmap:
+
 // - font loader
 // - profiling system
 // - logging system
 // - UI stuff
+
 // - threading
 // - SIMD
+
 // - shading
 // - texturing
+
 // - mesh loader
 // - texture loader
 // - scene loader
+
 // - audio
+
 // - console?
 // - serialization?
 // - simple editor?
 // - introspection?
+
 // - 3d animation?
 // - anti-aliasing?
 
@@ -69,6 +76,8 @@
 #include "graphics/camera.h"
 #include "graphics/framebuffer.h"
 
+#include "loaders/font_loader.h"
+
 // #include "graphics/line.h" // @todo refactor this to work now
 
 #include "input.h"
@@ -94,6 +103,9 @@
 // #include "graphics/line.cpp" // @todo refactor this to work now
 
 #include "graphics/framebuffer.cpp"
+
+#include "loaders/font_loader.cpp"
+
 #include "init.cpp"
 
 #include "graphics/software_renderer.cpp"

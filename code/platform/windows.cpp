@@ -422,7 +422,7 @@ void make_font_bmp()
 
     if (bmp_file != INVALID_HANDLE_VALUE)
     {
-        s32 bmp_size = atlas_width * atlas_height * 4;
+        s32 bmp_size = atlas_width * atlas_height * 4; // bytpp?
 
         BITMAPFILEHEADER bmp_header = {0};
         bmp_header.bfType = 0x4D42; // 'BM'         <- something better??
