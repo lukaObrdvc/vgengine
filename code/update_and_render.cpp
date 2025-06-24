@@ -132,6 +132,8 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     u8* glyph = get_glyph_bmp(consolas, 'a');
 
     r32 scale = 1.5f;
+    Color tint = color_make(0.0f, 1.0f, 0.0f, 0.3f);
+    
     
     // this is texel space
     s32 glyph_w = consolas->glyph_width + 2 * consolas->glyph_padding;
@@ -155,7 +157,9 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
             r32 v = (scaled_h - 1 - j) / scale;
             
             Color src = bilinear_sample_premultiplied(glyph, glyph_w, glyph_h, stride, u, v);
-            Color dest = u32_to_color(*framebuffer_access(i + 30, j + 30)); // this is not premultiplied actually, but it doesn't matter I think...?
+            src = color_tint(src, tint);
+            // this is not premultiplied, but it doesn't matter because you always blend ONTO it so alpha is not used ever
+            Color dest = u32_to_color(*framebuffer_access(i + 30, j + 30));
             Color blended = color_blend_premultiplied(src, dest);
             *framebuffer_access(i + 30, j + 30) = color_to_u32(blended);
         }
