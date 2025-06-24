@@ -96,6 +96,14 @@ T clamp(T n, T low, T high)
 }
 
 template<typename T>
+T clamp01(T n)
+{
+    if      (n < 0) return 0;
+    else if (n > 1) return 1;
+    else            return n;
+}
+
+template<typename T>
 void swap(T& a, T& b)
 {
     T tmp = a;

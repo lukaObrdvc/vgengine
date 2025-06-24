@@ -35,6 +35,7 @@ s32 clip_triangle(Triangle4* in_tri, Triangle4* out_triangles);
 void rasterize_triangle(Triangle* tri, Color color, b32 inv);
 void triangle_clip_to_raster_space(Triangle4* t);
 void render_mesh(Mesh mesh, Matrix4* mvp, Color* colors);
+Color bilinear_filtering(const Color& src, const Color& dest);
 
 inline b32 inside_right(Vector4 v)
 {

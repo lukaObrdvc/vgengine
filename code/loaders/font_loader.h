@@ -77,6 +77,29 @@ inline void load_font_bmp(String name, Font* font)
     READ_ENTIRE_FILE(cstr(filepath), font->bmp, font_bmp_bytesize(font));
 }
 
+inline void fix_alpha_for_font_bmp(Font* font)
+{
+    u32* bmp = (u32*)(font->bmp + FONT_BMP_HEAD_BYTESIZE);
+    for (u32 i = 0; i < font_bmp_bytesize(font) - FONT_BMP_HEAD_BYTESIZE; i++)
+    {
+        Color c = u32_to_color(bmp[i]);
+        c.a = c.r; // use grayscale instead?
+        c.r = 1.0f;
+        c.b = 1.0f;
+        c.g = 1.0f;
+        bmp[i] = color_to_u32(c);
+    }
+}
+
+inline void premul_alpha_for_font_bmp(Font* font)
+{
+    u32* bmp = (u32*)(font->bmp + FONT_BMP_HEAD_BYTESIZE);
+    for (u32 i = 0; i < font_bmp_bytesize(font) - FONT_BMP_HEAD_BYTESIZE; i++)
+    {
+        bmp[i] = color_to_u32(color_premultiply(u32_to_color(bmp[i])));
+    }
+}
+
 // @todo now get a glyph bmp (based on char) from the font bmp, and scaling and tinting stuff,
 // and then do separation between lines, wrapping lines, truncating lines, tint background...
 

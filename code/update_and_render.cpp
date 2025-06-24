@@ -125,20 +125,39 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     model_matrix_test(view, proj);
 
 
+    // @todo load/get font at specific size instead, so scaling is
+    // not garbage
+    
     Font* consolas = get_font(MYFONT_CONSOLAS);
     u8* glyph = get_glyph_bmp(consolas, 'a');
 
+    r32 scale = 1.5f;
+    
+    // this is texel space
     s32 glyph_w = consolas->glyph_width + 2 * consolas->glyph_padding;
     s32 glyph_h = consolas->glyph_height + 2 * consolas->glyph_padding;
     s32 stride = FONT_BMP_ROW_COUNT * glyph_w * BYTPP;
 
-    for (s32 j = 0; j < glyph_h; j++)
+    // this is pixel space
+    s32 scaled_w = floori(glyph_w * scale);
+    s32 scaled_h = floori(glyph_h * scale);
+
+    // drawing is done in pixel space
+    for (s32 j = 0; j < scaled_h; j++)
     {
-        for (s32 i = 0; i < glyph_w; i++)
+        for (s32 i = 0; i < scaled_w; i++)
         {
-            s32 flipped_j = glyph_h - 1 - j;
-            u32 color = *(u32*)(glyph + flipped_j * stride + i * BYTPP);
-            *framebuffer_access(i + 30, j + 30) = color;
+            // you want to sample from a texture when scale != 1, because then num_texels != num_pixels,
+            // and then you have to do texture filtering so that texels map to pixels in a good-looking way
+            
+            // texel coordinates (but not normalized in this case)
+            r32 u = i / scale;
+            r32 v = (scaled_h - 1 - j) / scale;
+            
+            Color src = bilinear_sample_premultiplied(glyph, glyph_w, glyph_h, stride, u, v);
+            Color dest = u32_to_color(*framebuffer_access(i + 30, j + 30)); // this is not premultiplied actually, but it doesn't matter I think...?
+            Color blended = color_blend_premultiplied(src, dest);
+            *framebuffer_access(i + 30, j + 30) = color_to_u32(blended);
         }
     }    
     

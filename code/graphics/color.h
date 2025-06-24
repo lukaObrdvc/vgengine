@@ -54,6 +54,7 @@ inline Color color_blend(const Color& src, const Color& dest)
 }
 
 // @doc not commutative, blends src on top of dest
+// @todo does dest require to be premultiplied?
 inline Color color_blend_premultiplied(const Color& src, const Color& dest)
 {
     Color result;

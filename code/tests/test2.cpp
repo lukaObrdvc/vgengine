@@ -6,7 +6,7 @@
 void model_matrix_test(Matrix4* view, Matrix4* proj)
 {
     Color f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
-    Color b_color = color_make(1, 1.0f, 1.0f, 1.0f);
+    Color b_color = color_make(1.0f, 1.0f, 1.0f, 1.0f);
     Color l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
     Color r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
     Color d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);

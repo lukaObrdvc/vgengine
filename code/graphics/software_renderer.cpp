@@ -372,3 +372,27 @@ void render_mesh(Mesh mesh, Matrix4* mvp, Color* colors)
 
     temp_set_size(temp_old_size);
 }
+
+// @doc stride is mainly for sampling a sub-texture within a texture (a rect in it), so
+// this way you can step to the next texel correctly
+Color bilinear_sample_premultiplied(u8* tex, s32 tex_w, s32 tex_h, s32 stride, r32 u, r32 v)
+{
+    s32 u0 = clamp(floori(u), 0, tex_w - 1);
+    s32 v0 = clamp(floori(v), 0, tex_h - 1);
+    s32 u1 = clamp(u0 + 1, 0, tex_w - 1);
+    s32 v1 = clamp(v0 + 1, 0, tex_h - 1);
+
+    r32 tu = decimal(u);
+    r32 tv = decimal(v);
+    
+    Color c00 = u32_to_color(*(u32*)(tex + v0 * stride + u0 * BYTPP));
+    Color c10 = u32_to_color(*(u32*)(tex + v0 * stride + u1 * BYTPP));
+    Color c01 = u32_to_color(*(u32*)(tex + v1 * stride + u0 * BYTPP));
+    Color c11 = u32_to_color(*(u32*)(tex + v1 * stride + u1 * BYTPP));
+
+    Color top = color_lerp(c00, c10, tu);
+    Color bottom = color_lerp(c01, c11, tu);
+    Color result = color_lerp(top, bottom, tv);
+    
+    return result;
+}
