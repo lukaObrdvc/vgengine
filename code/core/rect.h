@@ -69,7 +69,8 @@ inline Rect rect_from_top_right(Vector2 top_right, r32 width, r32 height)
 // clamp rect to viewport..
 // draw rect
 
-
+// @todo recti to rect, rect to recti
+// @todo clip rect (like to viewport and stuff..)
 
 // FUNCTIONS FOR s32
 

@@ -130,10 +130,11 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     offset = vec_add(offset, engine_state->font_offset);
     Vector2 scale = vec_make(1.2f, 1.2f);
     Color tint = color_make(0.0f, 0.0f, 0.0f, 1.0f);
-    draw_word(str("assesment of mine shizez"), font, offset, scale, tint);
-
+    Rect rect = {0.0f, 0.0f, 400.0f, 200.0f};
+    draw_string(str("assesment of mine shizez"), font, offset, scale, tint, rect);
+    
     // engine_state->font_offset.x += 1.0f;
-    // engine_state->font_offset.y -= 1.0f;
+    // engine_state->font_offset.y += 1.0f;
     
     temp_reset();
     engine_state->normalization_counter++;

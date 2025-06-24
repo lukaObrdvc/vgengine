@@ -38,7 +38,8 @@ enum MYFONT
 
 void load_font_permanently(String name);
 inline Font* get_font(MYFONT f);
-void draw_word(const String& word, Font* font, const Vector2& offset, const Vector2& scale, const Color& tint);
+void draw_string(const String& word, Font* font, const Vector2& offset, const Vector2& scale, const Color& tint, const Rect& rect);
+void draw_string_wrapped(const String& word, Font* font, const Vector2& offset, const Vector2& scale, const Color& tint, const r32& line_spacing, const Rect& rect);
 
 // @doc we need glyph w,h,p first in order to allocate memory
 // for the bitmap, so read the metadata file first
@@ -60,8 +61,7 @@ void load_font_metadata(String name, Font* font)
     release_scratch(scratch);
 }
 
-inline u32 font_bmp_bytesize(Font* font)
-{
+inline u32 font_bmp_bytesize(Font* font){
     return ((FONT_BMP_ROW_COUNT * (font->glyph_width  + 2 * font->glyph_padding)) *
             (FONT_BMP_COL_COUNT * (font->glyph_height + 2 * font->glyph_padding)) *
             BYTPP) + FONT_BMP_HEAD_BYTESIZE;
