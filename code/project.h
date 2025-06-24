@@ -18,8 +18,8 @@
 #define MATH_PATH     CODE_PATH "math\\"
 #define PLATFORM_PATH CODE_PATH "platform\\"
 
-#define MAKE_FONT_BMP 0
+#define MAKE_FONT_BMP 1
 #define FONT_NAME "Consolas"
-
+#define FONT_SIZE 16
 
 #endif

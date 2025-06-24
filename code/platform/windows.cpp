@@ -345,7 +345,7 @@ void make_font_bmp()
     s32 last_ascii = 126;
     s32 num_glyphs = last_ascii - first_ascii;
     s32 glyph_padding = 4;
-    s32 font_height = 64;
+    s32 font_height = FONT_SIZE;
 
     HDC dc = CreateCompatibleDC(0);
 
@@ -416,7 +416,11 @@ void make_font_bmp()
     // @doc overwrites file if it already exists
     // @todo maybe do without all the preprocessor stuff if you can append strings??
     // @todo use provides one instead??
-#define FONT_ATLAS_FILE_NAME FONTS_PATH FONT_NAME ".bmp"
+    
+#define HELPER(size) #size
+#define FULL_FONT_NAME(size) FONT_NAME HELPER(size)
+    
+#define FONT_ATLAS_FILE_NAME FONT_PATH FULL_FONT_NAME(FONT_SIZE) ".bmp"
     HANDLE bmp_file = CreateFileA(FONT_ATLAS_FILE_NAME, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 #undef FONT_ATLAS_FILE_NAME
 
@@ -442,9 +446,12 @@ void make_font_bmp()
 
     // I'm actually also writing the font metadata file so it has information about glyph padding, width and height,
     // what is implicit is ascii from first to last in that sequence, and that it's monospaced
-#define FONT_DATA_FILE_NAME FONTS_PATH FONT_NAME ".font"
+#define FONT_DATA_FILE_NAME FONT_PATH FULL_FONT_NAME(FONT_SIZE) ".font"
     HANDLE font_data_file = CreateFileA(FONT_DATA_FILE_NAME, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 #undef FONT_DATA_FILE_NAME
+    
+#undef FULL_FONT_NAME
+#undef HELPER
     
     if (font_data_file != INVALID_HANDLE_VALUE)
     {

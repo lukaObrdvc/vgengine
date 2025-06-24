@@ -7,9 +7,8 @@
 #define FONT_METADATA_FILE_BYTESIZE 5
 #define FONT_BMP_ROW_COUNT 10
 #define FONT_BMP_COL_COUNT 10
-// #define FONT_BMP_SLOT_COUNT 100
 #define FONT_BMP_HEAD_BYTESIZE 54
-#define FONTS_CAPACITY 1 // @todo rename to max fonts
+#define NUM_FONTS 3
 
 // @doc implicitly monospaced
 struct Font
@@ -31,10 +30,13 @@ struct Glyph
 enum MYFONT
 {
     MYFONT_NONE = -1,
-    MYFONT_CONSOLAS
+    MYFONT_CONSOLAS16,
+    MYFONT_CONSOLAS32,
+    MYFONT_CONSOLAS64
 };
 
-// @todo decalre from .cpp ?
+void load_font_permanently(String name);
+inline Font* get_font(MYFONT f);
 
 
 // @doc we need glyph w,h,p first in order to allocate memory

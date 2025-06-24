@@ -18,6 +18,8 @@
 
 // @todo maybe make a special arena for strings which is the default?
 
+// @todo integer to string, string to integer
+
 struct String
 {
     u8* base;

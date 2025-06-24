@@ -125,14 +125,15 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     model_matrix_test(view, proj);
 
 
-    // @todo load/get font at specific size instead, so scaling is
-    // not garbage
-    
-    Font* consolas = get_font(MYFONT_CONSOLAS);
+    // Font* consolas = get_font(MYFONT_CONSOLAS16);
+    // Font* consolas = get_font(MYFONT_CONSOLAS32);
+    Font* consolas = get_font(MYFONT_CONSOLAS64);
     u8* glyph = get_glyph_bmp(consolas, 'a');
 
-    r32 scale = 1.5f;
+    r32 scale = 1.0f;
     Color tint = color_make(0.0f, 1.0f, 0.0f, 0.3f);
+    s32 offs_x = 30; // should be r32?
+    s32 offs_y = 30;
     
     
     // this is texel space
@@ -154,14 +155,14 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
             
             // texel coordinates (but not normalized in this case)
             r32 u = i / scale;
-            r32 v = (scaled_h - 1 - j) / scale;
+            r32 v = (scaled_h - 1 - j) / scale; // inverts glyph vertically
             
             Color src = bilinear_sample_premultiplied(glyph, glyph_w, glyph_h, stride, u, v);
             src = color_tint(src, tint);
             // this is not premultiplied, but it doesn't matter because you always blend ONTO it so alpha is not used ever
-            Color dest = u32_to_color(*framebuffer_access(i + 30, j + 30));
+            Color dest = u32_to_color(*framebuffer_access(i + offs_x, j + offs_y));
             Color blended = color_blend_premultiplied(src, dest);
-            *framebuffer_access(i + 30, j + 30) = color_to_u32(blended);
+            *framebuffer_access(i + offs_x, j + offs_y) = color_to_u32(blended);
         }
     }    
     

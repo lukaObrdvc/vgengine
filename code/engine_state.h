@@ -38,8 +38,7 @@ struct Engine_state
     u8 normalization_counter;
     u32 prng_seed;
     // @todo use Array instead?
-    Font fonts[FONTS_CAPACITY];
-    s32 num_fonts;
+    Font fonts[NUM_FONTS];
 
     // temporary-----------------------------
     r32 camera_angle;
