@@ -44,6 +44,8 @@ void draw_string(const String& word,
         // this is pixel space
         s32 scaled_w = floori(glyph_w * scale.x);
         s32 scaled_h = floori(glyph_h * scale.y);
+
+        // horizontal spacing
         Vector2 letter_offset = vec_make(c * font->glyph_width * scale.x, 0.0f);
         letter_offset = vec_add(letter_offset, offset);
 
@@ -63,9 +65,11 @@ void draw_string(const String& word,
                     // and then you have to do texture filtering so that texels map to pixels in a good-looking way
             
                     // texel coordinates (but not normalized in this case)
-                    r32 u = i / scale.x;
-                    r32 v = (scaled_h - 1 - j) / scale.y; // inverts glyph vertically
-            
+                    // r32 u = i / scale.x;
+                    // r32 v = (scaled_h - 1 - j) / scale.y; // inverts glyph vertically
+                    r32 u = (i / scale.x) + font->glyph_padding;
+                    r32 v = ((scaled_h - 1 - j) / scale.y) + font->glyph_padding; // inverts glyph vertically
+                    
                     Color src = bilinear_sample_premultiplied(glyph, glyph_w, glyph_h, stride, u, v);
                     src = color_tint(src, tint);
                     // this is not premultiplied, but it doesn't matter because you always blend ONTO it so alpha is not used ever
@@ -98,9 +102,21 @@ void draw_string_wrapped(const String& word,
         // this is pixel space
         s32 scaled_w = floori(glyph_w * scale.x);
         s32 scaled_h = floori(glyph_h * scale.y);
-        Vector2 letter_offset = vec_make(c * font->glyph_width * scale.x, 0.0f);
+        
+        r32 horizontal_letter_spacing = font->glyph_width * scale.x;
+        r32 vertical_letter_spacing = font->glyph_height * scale.y + line_spacing;
+        
+        s32 letters_per_line = Floor(rect_width(rect) / horizontal_letter_spacing);
+        if (letters_per_line <= 0) break;
+        s32 column = c % letters_per_line;
+        s32 line = c / letters_per_line;
+        
+        // wrapping and horizontal positioning of a letter
+        Vector2 letter_offset = {0};
+        letter_offset.x += column * horizontal_letter_spacing;
+        letter_offset.y -= line * vertical_letter_spacing;
         letter_offset = vec_add(letter_offset, offset);
-
+        
         // drawing is done in pixel space
         for (s32 j = 0; j < scaled_h; j++)
         {
@@ -117,9 +133,11 @@ void draw_string_wrapped(const String& word,
                     // and then you have to do texture filtering so that texels map to pixels in a good-looking way
             
                     // texel coordinates (but not normalized in this case)
-                    r32 u = i / scale.x;
-                    r32 v = (scaled_h - 1 - j) / scale.y; // inverts glyph vertically
-            
+                    // r32 u = i / scale.x;
+                    // r32 v = (scaled_h - 1 - j) / scale.y; // inverts glyph vertically
+                    r32 u = (i / scale.x) + font->glyph_padding;
+                    r32 v = ((scaled_h - 1 - j) / scale.y) + font->glyph_padding; // inverts glyph vertically
+                    
                     Color src = bilinear_sample_premultiplied(glyph, glyph_w, glyph_h, stride, u, v);
                     src = color_tint(src, tint);
                     // this is not premultiplied, but it doesn't matter because you always blend ONTO it so alpha is not used ever

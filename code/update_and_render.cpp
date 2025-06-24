@@ -125,15 +125,19 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     model_matrix_test(view, proj);
 
 
+    String string = str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     Font* font = get_font(MYFONT_CONSOLAS16);
-    Vector2 offset = vec_make(30.0f, 30.0f);
-    offset = vec_add(offset, engine_state->font_offset);
+    Vector2 offset = vec_make(0.0f, 200.0f);
+    // offset = vec_add(offset, engine_state->font_offset);
     Vector2 scale = vec_make(1.2f, 1.2f);
+    // Vector2 scale = vec_make(0.8f, 0.8f);
     Color tint = color_make(0.0f, 0.0f, 0.0f, 1.0f);
-    Rect rect = {0.0f, 0.0f, 400.0f, 200.0f};
-    draw_string(str("assesment of mine shizez"), font, offset, scale, tint, rect);
+    Rect rect = {0.0f, 0.0f, 150.0f + engine_state->font_offset.x, 300.0f};
+    r32 line_spacing = -10.0f;
+    // draw_string(string, font, offset, scale, tint, rect);
+    draw_string_wrapped(string, font, offset, scale, tint, line_spacing, rect);
     
-    // engine_state->font_offset.x += 1.0f;
+    engine_state->font_offset.x -= 0.1f;
     // engine_state->font_offset.y += 1.0f;
     
     temp_reset();

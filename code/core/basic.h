@@ -252,8 +252,13 @@ inline b32 toggle_bool(b32 b)
     return !b;
 }
 
+inline r32 fmod(r32 n, r32 mod)
+{
+    // @todo this is naive, do better
+    return (r32)(floori(n) % floori(mod));
+}
+
 // @todo find first zero/one ??
-// @todo fmod
 // @todo fast mod
 
 // @todo figure out how best to represent angles: degrees/radians/normalized??
