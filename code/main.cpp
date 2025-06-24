@@ -104,11 +104,11 @@
 
 #include "graphics/framebuffer.cpp"
 
+#include "graphics/software_renderer.cpp"
 #include "loaders/font_loader.cpp"
 
 #include "init.cpp"
 
-#include "graphics/software_renderer.cpp"
 #include "tests/test2.cpp"
 #include "update_and_render.cpp"
 #if !USE_DLL

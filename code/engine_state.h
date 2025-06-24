@@ -48,6 +48,7 @@ struct Engine_state
     Transform cube_transform;
     r32 cube_scaling_factor;
     b32 cube_scale_up;
+    Vector2 font_offset;
     // temporary-----------------------------
     
     b32 tested_once;

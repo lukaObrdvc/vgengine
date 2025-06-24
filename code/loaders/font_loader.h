@@ -8,7 +8,7 @@
 #define FONT_BMP_ROW_COUNT 10
 #define FONT_BMP_COL_COUNT 10
 #define FONT_BMP_HEAD_BYTESIZE 54
-#define NUM_FONTS 3
+#define NUM_FONTS 4
 
 // @doc implicitly monospaced
 struct Font
@@ -30,6 +30,7 @@ struct Glyph
 enum MYFONT
 {
     MYFONT_NONE = -1,
+    MYFONT_CONSOLAS8,
     MYFONT_CONSOLAS16,
     MYFONT_CONSOLAS32,
     MYFONT_CONSOLAS64
@@ -37,7 +38,7 @@ enum MYFONT
 
 void load_font_permanently(String name);
 inline Font* get_font(MYFONT f);
-
+void draw_word(const String& word, Font* font, const Vector2& offset, const Vector2& scale, const Color& tint);
 
 // @doc we need glyph w,h,p first in order to allocate memory
 // for the bitmap, so read the metadata file first

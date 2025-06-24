@@ -81,6 +81,7 @@ extern "C" void platform_init_engine(Platform_init_result* out)
     init_memory();
     init_engine_state();
     
+    load_font_permanently(str("Consolas8"), MYFONT_CONSOLAS8);
     load_font_permanently(str("Consolas16"), MYFONT_CONSOLAS16);
     load_font_permanently(str("Consolas32"), MYFONT_CONSOLAS32);
     load_font_permanently(str("Consolas64"), MYFONT_CONSOLAS64);
