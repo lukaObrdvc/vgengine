@@ -1,8 +1,8 @@
+!data/
+!data/**
 .vs/
-exe/
 *.rdbg
 *.el#
-*.exe
 *.h~
 *.h#
 *.cpp~
@@ -10,7 +10,6 @@ exe/
 *.c#
 *.bat~
 *.el~
-*.map
 *.elc
 *.pdb
 *.exp
