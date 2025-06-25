@@ -121,10 +121,14 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     
     Matrix4* view = view_tmatrix_for_camera();
     Matrix4* proj = perspective_tmatrix_for_camera();
+
+    BEGIN_PROFILING(str("model_matrix_test"));
     
     model_matrix_test(view, proj);
 
-
+    END_PROFILING();
+    
+    
     String string = str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     Font* font = get_font(MYFONT_CONSOLAS16);
     Vector2 offset = vec_make(0.0f, 200.0f);
@@ -137,7 +141,7 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     // draw_string(string, font, offset, scale, tint, rect);
     draw_string_wrapped(string, font, offset, scale, tint, line_spacing, rect);
     
-    engine_state->font_offset.x -= 0.1f;
+    engine_state->font_offset.x -= 1.0f;
     // engine_state->font_offset.y += 1.0f;
     
     temp_reset();

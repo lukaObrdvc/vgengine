@@ -4,6 +4,7 @@
 // @todo does this respect alignment??????
 #define ENGINE_STATE ((Engine_state*)(PERMANENT_ARENA->base))
 
+// @todo place these in framebuffer.cpp?
 #define FRAMEBUFFER_WIDTH (ENGINE_STATE->framebuffer_width)
 #define FRAMEBUFFER_HEIGHT (ENGINE_STATE->framebuffer_height)
 #define FRAMEBUFFER_PITCH (FRAMEBUFFER_WIDTH * BYTPP) // @todo maybe calculate these once, cache them in engine_state
@@ -13,6 +14,7 @@
 #define ZBUFFER (ENGINE_STATE->zbuffer)
 
 #define ASPECT_RATIO (ENGINE_STATE->aspect_ratio)
+
 
 
 // @doc mainly for permanent information and convinience so you can
@@ -39,6 +41,9 @@ struct Engine_state
     u32 prng_seed;
     // @todo use Array instead?
     Font fonts[NUM_FONTS];
+    Profiler profilers[NUM_PROFILERS];
+    s32 profiler_stack[NUM_PROFILERS];
+    s32 profiler_stack_counter;
 
     // temporary-----------------------------
     r32 camera_angle;

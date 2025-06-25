@@ -2,7 +2,6 @@
 
 // roadmap:
 
-// - font loader
 // - profiling system
 // - logging system
 // - UI stuff
@@ -56,6 +55,7 @@
 #include "core/flags.h"
 #include "core/bit_array.h"
 
+
 #include "platform/platform.h"
 
 #include "core/slice.h"
@@ -63,6 +63,8 @@
 #include "core/pool.h"
 #include "core/string.h" // @todo implement a bunch of functionality for this
 #include "core/hash_table.h" // @todo rehashing
+
+#include "profiling.h"
 
 #include "math/vector.h"
 #include "math/matrix.h"
@@ -92,6 +94,8 @@
 
 #include "init.h"
 
+#include "profiling.cpp" // @todo rename to profiler.cpp/.h
+
 #include "core/sort.cpp"
 #include "input.cpp"
 #include "core/arena.cpp"
@@ -105,7 +109,7 @@
 #include "graphics/framebuffer.cpp"
 
 #include "graphics/software_renderer.cpp"
-#include "loaders/font_loader.cpp"
+#include "loaders/font_loader.cpp" // @todo rename this to font.cpp and font.h instead... probably..
 
 #include "init.cpp"
 

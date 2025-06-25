@@ -18,8 +18,8 @@ inline Font* get_font(MYFONT f)
 }
 
 
-// because it's monospaced or something, some letters are not
-// really looking like they're centered or something else is going on
+// @todo because it's monospaced or something, some letters are not
+// really looking like they're centered or something else is going on??
 
 
 void draw_string(const String& word,
@@ -65,8 +65,6 @@ void draw_string(const String& word,
                     // and then you have to do texture filtering so that texels map to pixels in a good-looking way
             
                     // texel coordinates (but not normalized in this case)
-                    // r32 u = i / scale.x;
-                    // r32 v = (scaled_h - 1 - j) / scale.y; // inverts glyph vertically
                     r32 u = (i / scale.x) + font->glyph_padding;
                     r32 v = ((scaled_h - 1 - j) / scale.y) + font->glyph_padding; // inverts glyph vertically
                     
@@ -133,8 +131,6 @@ void draw_string_wrapped(const String& word,
                     // and then you have to do texture filtering so that texels map to pixels in a good-looking way
             
                     // texel coordinates (but not normalized in this case)
-                    // r32 u = i / scale.x;
-                    // r32 v = (scaled_h - 1 - j) / scale.y; // inverts glyph vertically
                     r32 u = (i / scale.x) + font->glyph_padding;
                     r32 v = ((scaled_h - 1 - j) / scale.y) + font->glyph_padding; // inverts glyph vertically
                     

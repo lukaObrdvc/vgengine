@@ -103,9 +103,6 @@ inline void premul_alpha_for_font_bmp(Font* font)
     }
 }
 
-// @todo now get a glyph bmp (based on char) from the font bmp, and scaling and tinting stuff,
-// and then do separation between lines, wrapping lines, truncating lines, tint background...
-
 inline s32 glyph_bytesize(Font* font)
 {
     return (font->glyph_width + 2 * font->glyph_padding) * (font->glyph_height + 2 * font->glyph_padding) * BYTPP;
