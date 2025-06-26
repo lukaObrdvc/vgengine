@@ -61,3 +61,92 @@ String to_string(r64 n, s32 decimals, Arena* arena = TEMPORARY_ARENA)
     String s = copy_str((const char*)buffer);
     return s;
 }
+
+// @doc allocates on temp arena implicitly
+String concat(s32 count, ...)
+{
+    ASSERT(count >= 2);
+
+    va_list strings;
+    va_start(strings, count);
+
+    Scratch* scratch = get_scratch();
+    String** buffer = scratch_push<String*>(scratch, count);
+
+    for (s32 i = 0; i < count; i++)
+    {
+        buffer[i] = va_arg(strings, String*);
+    }
+
+    s32 total_len = 0;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        total_len += buffer[i]->length;
+    }
+
+    ASSERT(total_len != 0);
+
+    String result;
+    result.base = arena_push<u8>(TEMPORARY_ARENA, total_len + 1); // +1 for null termination
+    result.length = total_len;
+    result.base[result.length] = '\0';
+
+    s32 offset = 0;
+    for (s32 i = 0; i < count; i++)
+    {
+        memcpy(result.base + offset, buffer[i]->base, buffer[i]->length);
+        offset += buffer[i]->length;
+    }
+    
+    release_scratch(scratch);
+    
+    va_end(strings);
+
+    return result;
+}
+
+// @doc allocates on temp arena implicitly
+String concat(u32 count, ...)
+{
+    ASSERT(count >= 2);
+
+    va_list strings;
+    va_start(strings, count);
+
+    Scratch* scratch = get_scratch();
+    const char** buffer = scratch_push<const char*>(scratch, count);
+
+    for (u32 i = 0; i < count; i++)
+    {
+        buffer[i] = va_arg(strings, const char*);
+    }
+
+    s32 total_len = 0;
+
+    for (u32 i = 0; i < count; i++)
+    {
+        total_len += len_of_c_string(buffer[i]);
+    }
+
+    ASSERT(total_len != 0);
+
+    String result;
+    result.base = arena_push<u8>(TEMPORARY_ARENA, total_len + 1); // +1 for null termination
+    result.length = total_len;
+    result.base[result.length] = '\0';
+
+    s32 offset = 0;
+    for (u32 i = 0; i < count; i++)
+    {
+        s32 len = len_of_c_string(buffer[i]);
+        memcpy(result.base + offset, (u8*)buffer[i], len);
+        offset += len;
+    }
+    
+    release_scratch(scratch);
+    
+    va_end(strings);
+
+    return result;
+}

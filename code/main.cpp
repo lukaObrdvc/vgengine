@@ -2,10 +2,8 @@
 
 // roadmap:
 
-// - UI
-
 // - threading
-// - SIMD
+// - UI
 
 // - shading
 // - texturing
@@ -16,13 +14,13 @@
 
 // - audio
 
-// - console?
 // - serialization?
-// - simple editor?
-// - introspection?
+// - console?
 
 // - 3d animation?
 // - anti-aliasing?
+// - simple editor? (need raycasting) (but also maybe things like creating, deleting entities, undo/redo)
+// - SIMD?
 
 
 // need from WinAPI:

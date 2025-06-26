@@ -129,17 +129,13 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     END_PROFILING();
 
     // @todo '\n' should actually mean new line
-    // also variadic concat, string_to_int, string_to_float
+    // string_to_int, string_to_float
 
     Profiler* p = &PROFILERS[0];
-    String string = p->name;
-    string = concat(string, str(" "));
-    string = concat(string, to_string(p->cycle_diff / (r64)1000000, 4));
-    string = concat(string, str("MC"));
-    string = concat(string, str(" "));
-    string = concat(string, to_string(p->time_diff, 2));
-    string = concat(string, str("ms"));
-    string = concat(string, str(" "));
+    // String string = concat(8, p->name, str(" "), to_string(p->cycle_diff / (r64)1000000, 4),
+                           // str("MC"), str(" "), to_string(p->time_diff, 2), str("ms"), str(" "));
+    String string = concat((u32)8, cstr(p->name), " ", cstr(to_string(p->cycle_diff / (r64)1000000, 4)),
+                           "MC", " ", cstr(to_string(p->time_diff, 2)), "ms", " ");
     Font* font = get_font(MYFONT_CONSOLAS16);
     Vector2 offset = vec_make(0.0f, 200.0f);
     // offset = vec_add(offset, engine_state->font_offset);

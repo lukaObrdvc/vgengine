@@ -30,6 +30,8 @@ String to_string(s32 n, Arena* arena);
 String to_string(u64 n, Arena* arena);
 String to_string(r32 n, s32 decimals, Arena* arena);
 String to_string(r64 n, s32 decimals, Arena* arena);
+String concat(s32 count, ...); // for String
+String concat(u32 count, ...); // for const char*
 
 inline s32 len_of_c_string(const char* s)
 {
@@ -87,7 +89,6 @@ inline b32 string_compare(const char* a, const char* b)
     return memcmp((u8*)a, (u8*)b, a_len);
 }
 
-// @todo make these variadic
 inline String concat(const String& s1, const String& s2, Arena* arena = TEMPORARY_ARENA)
 {
     String result;
@@ -97,7 +98,6 @@ inline String concat(const String& s1, const String& s2, Arena* arena = TEMPORAR
     memcpy(result.base + s1.length, s2.base, s2.length + 1);
     return result;
 }
-
 inline String concat(const char* s1, const char* s2, Arena* arena = TEMPORARY_ARENA)
 {
     s32 s1_len = len_of_c_string(s1);
@@ -109,5 +109,6 @@ inline String concat(const char* s1, const char* s2, Arena* arena = TEMPORARY_AR
     memcpy(result.base + s1_len, (u8*)s2, s2_len + 1);
     return result;
 }
+
 
 #endif
