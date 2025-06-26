@@ -290,6 +290,25 @@ inline r64 read_time_counter()
     return count.QuadPart * 1000 / (r64) freq.QuadPart;
 }
 
+inline u64 read_cycle_counter()
+{
+    return __rdtsc();
+}
+
+inline void get_time(Time* time)
+{
+    SYSTEMTIME systime;
+    GetSystemTime(&systime);
+    time->year        = (s32)systime.wYear;
+    time->month       = (s32)systime.wMonth;
+    time->weekday     = (s32)systime.wDayOfWeek;
+    time->day         = (s32)systime.wDay;
+    time->hour        = (s32)systime.wHour;
+    time->minute      = (s32)systime.wMinute;
+    time->second      = (s32)systime.wSecond;
+    time->millisecond = (s32)systime.wMilliseconds;
+}
+
 
 #if MAKE_FONT_BMP
 void make_font_bmp()
@@ -625,6 +644,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     PLATFORM_API.delete_directory = delete_directory;
     PLATFORM_API.directory_exists = directory_exists;
     PLATFORM_API.read_time_counter = read_time_counter;
+    PLATFORM_API.read_cycle_counter = read_cycle_counter;
+    PLATFORM_API.get_time = get_time;
 #endif
 
     // @todo do I also pass platform_api here so I initialize there instead?

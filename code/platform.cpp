@@ -15,6 +15,7 @@
 #include "core/scratch.h"
 #include "core/flags.h"
 #include "core/bit_array.h"
+#include "core/time.h"
 
 #include "input.h"
 #include "update_and_render.h"

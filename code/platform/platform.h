@@ -19,6 +19,8 @@ typedef b32 (*Create_directory) (const u8*);
 typedef b32 (*Delete_directory) (const u8*);
 typedef b32 (*Directory_exists) (const u8*);
 typedef r64 (*Read_time_counter) ();
+typedef u64 (*Read_cycle_counter) ();
+typedef void (*Get_time) (Time*);
 
 #else
 
@@ -35,7 +37,8 @@ inline b32 create_directory(const u8* dirname);
 inline b32 delete_directory(const u8* dirname);
 inline b32 directory_exists(const u8* dirname);
 inline r64 read_time_counter();
-
+inline u64 read_cycle_counter();
+inline void get_time(Time* time);
 
 #endif
 
@@ -55,6 +58,8 @@ struct Platform_api
     Delete_directory delete_directory;
     Directory_exists directory_exists;
     Read_time_counter read_time_counter;
+    Read_cycle_counter read_cycle_counter;
+    Get_time get_time;
 #endif
     u64 total_program_memory;
     u64 allocation_step; // @cleanup don't need this anymore
@@ -101,6 +106,8 @@ global_variable Globals* globals;
 #define DELETE_DIRECTORY(dirname) PLATFORM_API.delete_directory((dirname))
 #define DIRECTORY_EXISTS(dirname) PLATFORM_API.directory_exists((dirname))
 #define READ_TIME_COUNTER() PLATFORM_API.read_time_counter()
+#define READ_CYCLE_COUNTER() PLATFORM_API.read_cycle_counter()
+#define GET_TIME(time) PLATFORM_API.get_time((time))
 
 #else
 
@@ -117,6 +124,8 @@ global_variable Globals* globals;
 #define DELETE_DIRECTORY(dirname) delete_directory((dirname))
 #define DIRECTORY_EXISTS(dirname) directory_exists((dirname))
 #define READ_TIME_COUNTER() read_time_counter()
+#define READ_CYCLE_COUNTER() read_cycle_counter()
+#define GET_TIME(time) get_time((time))
 
 #endif
 

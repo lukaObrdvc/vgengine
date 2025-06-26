@@ -42,13 +42,6 @@ s32 pop_profiler_index();
 void profiler_push(s32 index);
 void profiler_pop();
 
-inline u64 read_cycle_counter()
-{
-    // this is compiler dependant, because this is an intrinsic
-
-    // this should be in like megacycles
-    return __rdtsc();
-}
 
 inline u64 profiler_avg_cycles(Profiler* p)
 {

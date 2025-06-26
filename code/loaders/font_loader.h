@@ -19,14 +19,6 @@ struct Font
     s32 glyph_padding;
 };
 
-struct Glyph
-{
-    u8* bmp;
-    s32 width;
-    s32 height;
-    s32 padding;
-};
-
 enum MYFONT
 {
     MYFONT_NONE = -1,

@@ -25,8 +25,10 @@
 
 // need from WinAPI:
 // - threads
-// - recompilation/reloading?
 // - (GetSystemTime, WORD=u16)
+
+// - recompilation/reloading?
+
 
 // @todo rename exe files to vgengine.exe
 
@@ -52,6 +54,7 @@
 #include "core/sort.h"
 #include "core/flags.h"
 #include "core/bit_array.h"
+#include "core/time.h"
 
 
 #include "platform/platform.h"

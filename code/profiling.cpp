@@ -43,7 +43,7 @@ void profiler_push(s32 index)
 {
     Profiler* profiler = &PROFILERS[index];
     
-    profiler->cycle_start = read_cycle_counter();
+    profiler->cycle_start = READ_CYCLE_COUNTER();
     profiler->time_start = READ_TIME_COUNTER();
     
     push_profiler_index(index);
@@ -54,8 +54,8 @@ void profiler_pop()
     s32 index = pop_profiler_index();
     Profiler* profiler = &PROFILERS[index];
 
-    profiler->cycle_diff = read_cycle_counter() - profiler->cycle_start;
-    profiler->time_diff = read_time_counter() - profiler->time_start;
+    profiler->cycle_diff = READ_CYCLE_COUNTER() - profiler->cycle_start;
+    profiler->time_diff = READ_TIME_COUNTER() - profiler->time_start;
     profiler->min_cycles = Min(profiler->cycle_diff, profiler->min_cycles);
     profiler->max_cycles = Max(profiler->cycle_diff, profiler->max_cycles);
     profiler->min_time = Min(profiler->time_diff, profiler->min_time);
