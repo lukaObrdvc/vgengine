@@ -128,14 +128,13 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
 
     END_PROFILING();
 
-    // @todo '\n' should actually mean new line
-    // string_to_int, string_to_float
+    // @todo string_to_int, string_to_float
 
     Profiler* p = &PROFILERS[0];
-    // String string = concat(8, p->name, str(" "), to_string(p->cycle_diff / (r64)1000000, 4),
-                           // str("MC"), str(" "), to_string(p->time_diff, 2), str("ms"), str(" "));
-    String string = concat((u32)8, cstr(p->name), " ", cstr(to_string(p->cycle_diff / (r64)1000000, 4)),
-                           "MC", " ", cstr(to_string(p->time_diff, 2)), "ms", " ");
+    String string = concat(7, p->name, str("\n"), to_string(p->cycle_diff / (r64)1000000, 4),
+                           str("MC"), str("\n"), to_string(p->time_diff, 2), str("ms"));
+    // String string = concat((u32)8, cstr(p->name), " ", cstr(to_string(p->cycle_diff / (r64)1000000, 4)),
+                           // "MC", " ", cstr(to_string(p->time_diff, 2)), "ms", " ");
     Font* font = get_font(MYFONT_CONSOLAS16);
     Vector2 offset = vec_make(0.0f, 200.0f);
     // offset = vec_add(offset, engine_state->font_offset);
@@ -143,10 +142,10 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     // Vector2 scale = vec_make(0.8f, 0.8f);
     Color tint = color_make(0.0f, 0.0f, 0.0f, 1.0f);
     Rect rect = {0.0f, 0.0f, 150.0f + engine_state->font_offset.x, 300.0f};
-    r32 line_spacing = -10.0f;
+    r32 line_spacing = -4.0f;
     // draw_string(string, font, offset, scale, tint, rect);
     // draw_string_wrapped(string, font, offset, scale, tint, line_spacing, rect);
-    draw_string(string, font, offset, scale, tint);
+    draw_string(string, font, offset, scale, tint, line_spacing);
     
     engine_state->font_offset.x -= 1.0f;
     // engine_state->font_offset.y += 1.0f;

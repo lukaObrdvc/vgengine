@@ -27,13 +27,24 @@ void draw_string(const String& word,
                  const Vector2& offset,
                  const Vector2& scale,
                  const Color& tint,
+                 const r32& line_spacing,
                  const Rect& rect = {0.0f, 0.0f, (r32)FRAMEBUFFER_WIDTH, (r32)FRAMEBUFFER_HEIGHT})
 {
     // @todo obviously there is aliasing because you're flooring the
     // pixel coordinates and offsets (and rect to clip on?)
+
+    s32 line = 0;
+    s32 column = 0;
     
     for (s32 c = 0; c < word.length; c++)
     {
+        if (word.base[c] == '\n')
+        {
+            line++;
+            column = 0;
+            continue;
+        }
+        
         u8* glyph = get_glyph_bmp(font, word.base[c]);
     
         // this is texel space
@@ -44,10 +55,19 @@ void draw_string(const String& word,
         // this is pixel space
         s32 scaled_w = floori(glyph_w * scale.x);
         s32 scaled_h = floori(glyph_h * scale.y);
+        
+        r32 horizontal_letter_spacing = font->glyph_width * scale.x;
+        r32 vertical_letter_spacing = font->glyph_height * scale.y + line_spacing;
+        
+        s32 letters_per_line = Floor(rect_width(rect) / horizontal_letter_spacing);
+        if (letters_per_line <= 0) break;
 
-        // horizontal spacing
-        Vector2 letter_offset = vec_make(c * font->glyph_width * scale.x, 0.0f);
+        Vector2 letter_offset = {0};
+        letter_offset.x += column * horizontal_letter_spacing;
+        letter_offset.y -= line * vertical_letter_spacing;
         letter_offset = vec_add(letter_offset, offset);
+
+        column++;
 
         // drawing is done in pixel space
         for (s32 j = 0; j < scaled_h; j++)
@@ -88,8 +108,18 @@ void draw_string_wrapped(const String& word,
                          const r32& line_spacing,
                          const Rect& rect = {0.0f, 0.0f, (r32)FRAMEBUFFER_WIDTH, (r32)FRAMEBUFFER_HEIGHT})
 {
+    s32 line = 0;
+    s32 column = 0;
+    
     for (s32 c = 0; c < word.length; c++)
     {
+        if (word.base[c] == '\n')
+        {
+            line++;
+            column = 0;
+            continue;
+        }
+        
         u8* glyph = get_glyph_bmp(font, word.base[c]);
     
         // this is texel space
@@ -106,14 +136,20 @@ void draw_string_wrapped(const String& word,
         
         s32 letters_per_line = Floor(rect_width(rect) / horizontal_letter_spacing);
         if (letters_per_line <= 0) break;
-        s32 column = c % letters_per_line;
-        s32 line = c / letters_per_line;
+
+        if (column >= letters_per_line)
+        {
+            line++;
+            column = 0;
+        }
         
         // wrapping and horizontal positioning of a letter
         Vector2 letter_offset = {0};
         letter_offset.x += column * horizontal_letter_spacing;
         letter_offset.y -= line * vertical_letter_spacing;
         letter_offset = vec_add(letter_offset, offset);
+
+        column++;
         
         // drawing is done in pixel space
         for (s32 j = 0; j < scaled_h; j++)
