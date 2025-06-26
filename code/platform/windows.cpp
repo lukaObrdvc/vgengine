@@ -35,7 +35,7 @@ HMODULE load_dll()
 void unload_dll(HMODULE dll)
 {
     FreeLibrary(dll);
-    //DeleteFile(COPIED_DLL);
+    // DeleteFile(COPIED_DLL);
     engine_api.platform_init_engine = platform_init_engine_stub;
     engine_api.platform_init_memory_base = platform_init_memory_base_stub;
     engine_api.update_and_render = update_and_render_stub;
@@ -51,22 +51,23 @@ global_variable Input* input;
 // @todo init the rest to 0?
 void init_keymap()
 {
-    keymap[VK_LEFT] = 1;
-    keymap[VK_UP] = 2;
-    keymap[VK_RIGHT] = 3;
-    keymap[VK_DOWN] = 4;
-    keymap['W'] = 5;
-    keymap['S'] = 6;
-    keymap['A'] = 7;
-    keymap['D'] = 8;
-    keymap['Q'] = 9;
-    keymap['E'] = 10;
-    keymap['I'] = 11;
-    keymap['K'] = 12;
-    keymap['J'] = 13;
-    keymap['L'] = 14;
-    keymap['U'] = 15;
-    keymap['O'] = 16;
+    keymap[VK_LEFT]  = KEY_LEFT;
+    keymap[VK_UP]    = KEY_UP;
+    keymap[VK_RIGHT] = KEY_RIGHT;
+    keymap[VK_DOWN]  = KEY_DOWN;
+    
+    keymap['W'] = KEY_W;
+    keymap['S'] = KEY_S;
+    keymap['A'] = KEY_A;
+    keymap['D'] = KEY_D;
+    keymap['Q'] = KEY_Q;
+    keymap['E'] = KEY_E;
+    keymap['I'] = KEY_I;
+    keymap['K'] = KEY_K;
+    keymap['J'] = KEY_J;
+    keymap['L'] = KEY_L;
+    keymap['U'] = KEY_U;
+    keymap['O'] = KEY_O;
 }
 
 // @todo maybe we should never assert with these functions, but it's
@@ -299,6 +300,7 @@ inline void get_time(Time* time)
 {
     SYSTEMTIME systime;
     GetSystemTime(&systime);
+    
     time->year        = (s32)systime.wYear;
     time->month       = (s32)systime.wMonth;
     time->weekday     = (s32)systime.wDayOfWeek;
@@ -308,6 +310,67 @@ inline void get_time(Time* time)
     time->second      = (s32)systime.wSecond;
     time->millisecond = (s32)systime.wMilliseconds;
 }
+
+// @doc this is just a wrapper around my own Thread_procedure
+// which is then passed to CreateThread because windows expects this
+// function signature
+DWORD WINAPI thread_entry(LPVOID param)
+{
+    Thread_entry_arguments* arg = (Thread_entry_arguments*)param;
+    arg->procedure(arg->data);
+    free(arg);
+    return 0;
+}
+
+// @todo can pass an optional delay argument for when the thread starts
+inline Thread start_thread(Thread_procedure proc, void* data)
+{
+    Thread result;
+    
+    // we need to allocate somewhere (not on the stack) so that this memory is
+    // valid even later when the actual thread starts and calls it's procedure,
+    // maybe you can replace with your arena allocator instead
+    Thread_entry_arguments* args = (Thread_entry_arguments*) malloc(sizeof(Thread_entry_arguments));
+    args->procedure = proc;
+    args->data = data;
+    
+    HANDLE handle = CreateThread(0, 0, thread_entry, args, 0, (DWORD*)&result.id);
+
+    result.platform_handle = handle;
+
+    return result;
+}
+
+inline void close_thread(Thread* t)
+{
+    ASSERT(t->platform_handle != 0);
+
+    CloseHandle((HANDLE)t->platform_handle);
+
+    t->platform_handle = 0;
+}
+
+inline void wait_for_thread(Thread* t)
+{
+    ASSERT(t->platform_handle != 0);
+    
+    WaitForSingleObject((HANDLE)t->platform_handle, INFINITE);
+    CloseHandle((HANDLE)t->platform_handle);
+    
+    t->platform_handle = 0;
+}
+
+inline void sleep_current_thread(u32 ms)
+{
+    Sleep(ms);
+}
+
+
+
+// @todo GetCurrentThreadId (instead of keeping my own id) ?
+// @todo yield, basically Sleep(0)
+
+
 
 
 #if MAKE_FONT_BMP

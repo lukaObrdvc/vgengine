@@ -17,6 +17,8 @@
 #include "core/bit_array.h"
 #include "core/time.h"
 
+#include "thread.h"
+
 #include "input.h"
 #include "update_and_render.h"
 #include "platform/platform.h"
@@ -24,6 +26,8 @@
 #include "platform/engine.h"
 
 #endif
+
+// entry point to program depending on the platform
 
 #if WINDOWS
 #include "platform/windows.cpp"

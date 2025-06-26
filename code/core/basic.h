@@ -49,7 +49,7 @@ typedef s64 b64;
 #define TB 1099511627776ULL // 1024*1024*1024*1024
 
 
-#define global_variable
+#define global_variable // @todo rename to GLOBAL
 
 
 #if DEVELOPER

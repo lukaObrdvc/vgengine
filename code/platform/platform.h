@@ -3,6 +3,7 @@
 
 #define INITIAL_COMMIT_SIZE_BY_PLATFORM (u64)5368709120 // 5 GB
 
+// @todo should all of these be declared inline?
 
 #if USE_DLL
 
@@ -21,6 +22,10 @@ typedef b32 (*Directory_exists) (const u8*);
 typedef r64 (*Read_time_counter) ();
 typedef u64 (*Read_cycle_counter) ();
 typedef void (*Get_time) (Time*);
+typedef Thread (*Start_thread) (Thread_procedure, void*);
+typedef void (*Close_thread) (Thread*);
+typedef void (*Wait_for_thread) (Thread*);
+typedef void (*Sleep_current_thread) (u32);
 
 #else
 
@@ -39,6 +44,10 @@ inline b32 directory_exists(const u8* dirname);
 inline r64 read_time_counter();
 inline u64 read_cycle_counter();
 inline void get_time(Time* time);
+inline Thread start_thread(Thread_procedure proc, void* data);
+inline void close_thread(Thread* t);
+inline void wait_for_thread(Thread* t);
+inline void sleep_current_thread(u32 ms);
 
 #endif
 
@@ -60,6 +69,10 @@ struct Platform_api
     Read_time_counter read_time_counter;
     Read_cycle_counter read_cycle_counter;
     Get_time get_time;
+    Start_thread start_thread;
+    Close_thread close_thread;
+    Wait_for_thread wait_for_thread;
+    Sleep_current_thread sleep_current_thread;
 #endif
     u64 total_program_memory;
     u64 allocation_step; // @cleanup don't need this anymore
@@ -108,6 +121,10 @@ global_variable Globals* globals;
 #define READ_TIME_COUNTER() PLATFORM_API.read_time_counter()
 #define READ_CYCLE_COUNTER() PLATFORM_API.read_cycle_counter()
 #define GET_TIME(time) PLATFORM_API.get_time((time))
+#define START_THREAD(f, d) PLATFORM_API.start_thread((f), (d))
+#define CLOSE_THREAD(t) PLATFORM_API.close_thread((t))
+#define WAIT_FOR_THREAD(t) PLATFORM_API.wait_for_thread((t))
+#define SLEEP_CURRENT_THREAD(ms) PLATFORM_API.sleep_current_thread((ms))
 
 #else
 
@@ -126,6 +143,10 @@ global_variable Globals* globals;
 #define READ_TIME_COUNTER() read_time_counter()
 #define READ_CYCLE_COUNTER() read_cycle_counter()
 #define GET_TIME(time) get_time((time))
+#define START_THREAD(f, d) start_thread((f), (d))
+#define CLOSE_THREAD(t) close_thread((t))
+#define WAIT_FOR_THREAD(t) wait_for_thread((t))
+#define SLEEP_CURRENT_THREAD(ms) sleep_current_thread((ms))
 
 #endif
 

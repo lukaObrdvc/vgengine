@@ -23,11 +23,8 @@
 // - SIMD?
 
 
-// need from WinAPI:
-// - threads
-// - (GetSystemTime, WORD=u16)
 
-// - recompilation/reloading?
+// - recompilation/reloading? (from WinAPI)
 
 
 // @todo rename exe files to vgengine.exe
@@ -56,13 +53,14 @@
 #include "core/bit_array.h"
 #include "core/time.h"
 
+#include "thread.h"
 
 #include "platform/platform.h"
 
 #include "core/slice.h"
 #include "core/array.h"
 #include "core/pool.h"
-#include "core/string.h" // @todo implement a bunch of functionality for this
+#include "core/string.h"
 #include "core/hash_table.h" // @todo rehashing
 
 #include "profiling.h"
@@ -118,5 +116,5 @@
 #include "tests/test2.cpp"
 #include "update_and_render.cpp"
 #if !USE_DLL
-#include "platform.cpp"
+#include "platform.cpp" // entry point of the program
 #endif
