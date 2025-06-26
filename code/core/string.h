@@ -32,6 +32,8 @@ String to_string(r32 n, s32 decimals, Arena* arena);
 String to_string(r64 n, s32 decimals, Arena* arena);
 String concat(s32 count, ...); // for String
 String concat(u32 count, ...); // for const char*
+s32 string_to_s32(String str);
+r32 string_to_r32(String str);
 
 inline s32 len_of_c_string(const char* s)
 {
@@ -52,6 +54,11 @@ inline String str(const char* s)
 inline const u8* cstr(String s)
 {
     return s.base;
+}
+
+inline String empty_str()
+{
+    return str("");
 }
 
 inline String copy_str(const char* s, Arena* arena = TEMPORARY_ARENA)
@@ -110,5 +117,6 @@ inline String concat(const char* s1, const char* s2, Arena* arena = TEMPORARY_AR
     return result;
 }
 
+// @todo string_slice
 
 #endif

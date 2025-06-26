@@ -278,10 +278,19 @@ inline b32 is_alpha(u8 c)
     return c >= '0' && c <= '9';
 }
 
+inline s32 to_alpha(u8 c)
+{
+    ASSERT(is_alpha(c));
+    
+    return c - '0';
+}
+
 inline s32 num_digits(s32 n)
 {
     n = abs(n);
     s32 result = 0;
+
+    if (n == 0) return 1;
     
     while (n > 0)
     {
@@ -296,6 +305,8 @@ inline s32 num_digits(s64 n)
 {
     n = abs(n);
     s32 result = 0;
+
+    if (n == 0) return 1;
     
     while (n > 0)
     {
@@ -309,6 +320,8 @@ inline s32 num_digits(s64 n)
 inline s32 num_digits(u64 n)
 {
     s32 result = 0;
+
+    if (n == 0) return 1;
     
     while (n > 0)
     {
@@ -322,6 +335,8 @@ inline s32 num_digits(u64 n)
 inline s32 num_digits(r32 n)
 {
     s32 result = 0;
+
+    if (float_compare(n, 0.0f)) return 1;
     
     n = abs(n);
     s32 ni = floori(n);
@@ -338,6 +353,8 @@ inline s32 num_digits(r32 n)
 inline s32 num_digits(r64 n)
 {
     s32 result = 0;
+
+    if (float_compare(n, 0.0)) return 1;
     
     n = abs(n);
     s64 ni = floori(n);

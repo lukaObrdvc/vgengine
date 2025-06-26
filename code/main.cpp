@@ -28,6 +28,8 @@
 // - recompilation/reloading?
 // - (GetSystemTime, WORD=u16)
 
+// @todo rename exe files to vgengine.exe
+
 
 #if !USE_DLL
 

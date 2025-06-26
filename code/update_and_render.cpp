@@ -128,11 +128,13 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
 
     END_PROFILING();
 
-    // @todo string_to_int, string_to_float
-
+    String int_str = str("-.2315");
+    r32 inti = string_to_r32(int_str);
+    int_str = to_string(inti, 5);
+    
     Profiler* p = &PROFILERS[0];
-    String string = concat(7, p->name, str("\n"), to_string(p->cycle_diff / (r64)1000000, 4),
-                           str("MC"), str("\n"), to_string(p->time_diff, 2), str("ms"));
+    String string = concat(9, p->name, str("\n"), to_string(p->cycle_diff / (r64)1000000, 4),
+                           str("MC"), str("\n"), to_string(p->time_diff, 2), str("ms"), str("\n"), int_str);
     // String string = concat((u32)8, cstr(p->name), " ", cstr(to_string(p->cycle_diff / (r64)1000000, 4)),
                            // "MC", " ", cstr(to_string(p->time_diff, 2)), "ms", " ");
     Font* font = get_font(MYFONT_CONSOLAS16);
