@@ -407,6 +407,30 @@ s32 num_decimal_digits(r64 f)
     return (last_non_zero >= first_decimal) ? (last_non_zero - first_decimal + 1) : 0;    
 }
 
+inline r32 round_decimals(r32 n, s32 decimals)
+{
+    if (decimals > 17) decimals = 17; // avoid overflow on pow10
+
+    u64 pow = pow10(decimals);
+    n *= pow;
+    n = Round(n);
+    n /= pow;
+
+    return n;
+}
+
+inline r64 round_decimals(r64 n, s32 decimals)
+{
+    if (decimals > 17) decimals = 17; // avoid overflow on pow10
+
+    u64 pow = pow10(decimals);
+    n *= pow;
+    n = Round(n);
+    n /= pow;
+
+    return n;
+}
+
 
 
 // @todo find first zero/one ??

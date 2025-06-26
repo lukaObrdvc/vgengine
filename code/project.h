@@ -12,7 +12,7 @@
 #define FONT_PATH  ASSET_PATH   "fonts\\"
 
 #define ACTUAL_DLL BUILD_PATH "main.dll"
-#define COPIED_DLL BUILD_PATH "main_copy.dll"
+#define COPIED_DLL BUILD_PATH "main_copy.dll" // because windows locks the file for writing when it's loaded
 
 #define CORE_PATH     CODE_PATH "core\\"
 #define GRAPHICS_PATH CODE_PATH "graphics\\"

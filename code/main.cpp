@@ -2,9 +2,7 @@
 
 // roadmap:
 
-// - profiling system
-// - logging system
-// - UI stuff
+// - UI
 
 // - threading
 // - SIMD

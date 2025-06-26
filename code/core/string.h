@@ -28,8 +28,8 @@ struct String
 
 String to_string(s32 n, Arena* arena);
 String to_string(u64 n, Arena* arena);
-String to_string(r32 n, Arena* arena);
-String to_string(r64 n, Arena* arena);
+String to_string(r32 n, s32 decimals, Arena* arena);
+String to_string(r64 n, s32 decimals, Arena* arena);
 
 inline s32 len_of_c_string(const char* s)
 {
@@ -57,7 +57,7 @@ inline String copy_str(const char* s, Arena* arena = TEMPORARY_ARENA)
     String result;
     result.length = len_of_c_string(s);
     result.base = arena_push<u8>(arena, result.length + 1); // +1 for null termination
-    memcpy((u8*)s, result.base, result.length + 1);
+    memcpy(result.base, (u8*)s, result.length + 1);
     return result;
 }
 
@@ -66,7 +66,7 @@ inline String copy_str(String s, Arena* arena = TEMPORARY_ARENA)
     String result;
     result.length = s.length;
     result.base = arena_push<u8>(arena, result.length + 1); // +1 for null termination
-    memcpy(s.base, result.base, result.length + 1);
+    memcpy(result.base, s.base, result.length + 1);
     return result;
 }
 
