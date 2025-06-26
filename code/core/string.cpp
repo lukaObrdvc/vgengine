@@ -110,6 +110,7 @@ String to_string(r32 n, Arena* arena = TEMPORARY_ARENA)
 String to_string(r64 n, Arena* arena = TEMPORARY_ARENA)
 {
     String result;
+    result.length = 0;
 
     b32 is_negative = n < 0;
     n = abs(n);
@@ -119,7 +120,10 @@ String to_string(r64 n, Arena* arena = TEMPORARY_ARENA)
     s32 ndigits = num_digits(int_part);
     s32 ndecimals = num_decimal_digits(n);
     
-    s64 decimal_part = roundi(decimal(n) * pow10(ndecimals));
+    // this is to avoid overflowing on pow10
+    if (ndecimals > 17) ndecimals = 17;
+
+    u64 decimal_part = (u64)((n - (u64)n) * pow10(ndecimals) + 0.5f);
 
     if (int_part == 0 && decimal_part == 0)
     {
@@ -129,8 +133,9 @@ String to_string(r64 n, Arena* arena = TEMPORARY_ARENA)
         result.base[1] = '\0';
         return result;
     }
-    
+
     result.length += ndigits;
+    if (int_part == 0) result.length++; // because we want to draw the 0 regardless
     if (ndecimals != 0) result.length += ndecimals + 1; // +1 for '.'
     
     if (is_negative) result.length++;

@@ -128,9 +128,19 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
 
     END_PROFILING();
 
-    // draw this profiler values, but need int_to_string, or like sprintf or something (I mean I also need float to string)
+    // @todo '\n' should actually mean new line
+    // @todo round floats to decimal
+    // @todo convert cycles to megacycles
 
-    String string = str("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    Profiler* p = &PROFILERS[0];
+    String string = p->name;
+    string = concat(string, str(" "));
+    string = concat(string, to_string(p->cycle_diff));
+    string = concat(string, str("cycles"));
+    string = concat(string, str(" "));
+    string = concat(string, to_string(p->time_diff));
+    string = concat(string, str("ms"));
+    string = concat(string, str(" "));
     Font* font = get_font(MYFONT_CONSOLAS16);
     Vector2 offset = vec_make(0.0f, 200.0f);
     // offset = vec_add(offset, engine_state->font_offset);
@@ -140,7 +150,8 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     Rect rect = {0.0f, 0.0f, 150.0f + engine_state->font_offset.x, 300.0f};
     r32 line_spacing = -10.0f;
     // draw_string(string, font, offset, scale, tint, rect);
-    draw_string_wrapped(string, font, offset, scale, tint, line_spacing, rect);
+    // draw_string_wrapped(string, font, offset, scale, tint, line_spacing, rect);
+    draw_string(string, font, offset, scale, tint);
     
     engine_state->font_offset.x -= 1.0f;
     // engine_state->font_offset.y += 1.0f;

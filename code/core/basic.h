@@ -124,9 +124,11 @@ T pow2(T n)
 }
 
 template<typename T>
-T pow10(T n)
+u64 pow10(T n)
 {
-    T result = 1;
+    ASSERT(n <= 17); // otherwise it overflows
+    
+    u64 result = 1;
     
     for (s32 i = 0; i < n; i++)
     {

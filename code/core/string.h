@@ -87,6 +87,7 @@ inline b32 string_compare(const char* a, const char* b)
     return memcmp((u8*)a, (u8*)b, a_len);
 }
 
+// @todo make these variadic
 inline String concat(const String& s1, const String& s2, Arena* arena = TEMPORARY_ARENA)
 {
     String result;

@@ -100,6 +100,7 @@
 #include "input.cpp"
 #include "core/arena.cpp"
 #include "core/scratch.cpp"
+#include "core/string.cpp"
 
 #include "math/matrix.cpp"
 #include "math/quaternion.cpp"
