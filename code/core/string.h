@@ -26,6 +26,11 @@ struct String
     s32 length;
 };
 
+String to_string(s32 n, Arena* arena);
+String to_string(u64 n, Arena* arena);
+String to_string(r32 n, Arena* arena);
+String to_string(r64 n, Arena* arena);
+
 inline s32 len_of_c_string(const char* s)
 {
     s32 len = 0;
@@ -103,6 +108,5 @@ inline String concat(const char* s1, const char* s2, Arena* arena = TEMPORARY_AR
     memcpy(result.base + s1_len, (u8*)s2, s2_len + 1);
     return result;
 }
-
 
 #endif

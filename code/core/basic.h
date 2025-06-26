@@ -124,6 +124,19 @@ T pow2(T n)
 }
 
 template<typename T>
+T pow10(T n)
+{
+    T result = 1;
+    
+    for (s32 i = 0; i < n; i++)
+    {
+        result *= 10;
+    }
+
+    return result;
+}
+
+template<typename T>
 b32 is_pow2(T n)
 {
     return ~(n & (n - 1)); // ! instead of ! ?
@@ -258,10 +271,148 @@ inline r32 fmod(r32 n, r32 mod)
     return (r32)(floori(n) % floori(mod));
 }
 
+inline b32 is_alpha(u8 c)
+{
+    return c >= '0' && c <= '9';
+}
+
+inline s32 num_digits(s32 n)
+{
+    n = abs(n);
+    s32 result = 0;
+    
+    while (n > 0)
+    {
+        n /= 10;
+        result++;
+    }
+    
+    return result;
+}
+
+inline s32 num_digits(s64 n)
+{
+    n = abs(n);
+    s32 result = 0;
+    
+    while (n > 0)
+    {
+        n /= 10;
+        result++;
+    }
+    
+    return result;
+}
+
+inline s32 num_digits(u64 n)
+{
+    s32 result = 0;
+    
+    while (n > 0)
+    {
+        n /= 10;
+        result++;
+    }
+    
+    return result;
+}
+
+inline s32 num_digits(r32 n)
+{
+    s32 result = 0;
+    
+    n = abs(n);
+    s32 ni = floori(n);
+    
+    while (ni > 0)
+    {
+        ni /= 10;
+        result++;
+    }
+    
+    return result;
+}
+
+inline s32 num_digits(r64 n)
+{
+    s32 result = 0;
+    
+    n = abs(n);
+    s64 ni = floori(n);
+    
+    while (ni > 0)
+    {
+        ni /= 10;
+        result++;
+    }
+    
+    return result;
+}
+
+s32 num_decimal_digits(r32 f)
+{
+    u8 buffer[64];
+    snprintf((char*)buffer, sizeof(buffer), "%.20f", f);
+    
+    s32 first_decimal = -1;
+    for (s32 i = 0; buffer[i] != '\0'; i++)
+    {
+        if (buffer[i] == '.')
+        {
+            first_decimal = i + 1;
+            break;
+        }
+    }
+
+    if (first_decimal == -1 || buffer[first_decimal] == '\0') return 0;
+    
+    s32 last_non_zero = -1;
+
+    for (s32 i = first_decimal; buffer[i] != '\0'; i++)
+    {
+        if (buffer[i] != '0') last_non_zero = i;
+    }
+    
+    if (last_non_zero == -1) return 0;
+    return (last_non_zero >= first_decimal) ? (last_non_zero - first_decimal + 1) : 0;    
+}
+
+s32 num_decimal_digits(r64 f)
+{
+    u8 buffer[128];
+    snprintf((char*)buffer, sizeof(buffer), "%.20f", f);
+    
+    s32 first_decimal = -1;
+    for (s32 i = 0; buffer[i] != '\0'; i++)
+    {
+        if (buffer[i] == '.')
+        {
+            first_decimal = i + 1;
+            break;
+        }
+    }
+
+    if (first_decimal == -1 || buffer[first_decimal] == '\0') return 0;
+    
+    s32 last_non_zero = -1;
+
+    for (s32 i = first_decimal; buffer[i] != '\0'; i++)
+    {
+        if (buffer[i] != '0') last_non_zero = i;
+    }
+    
+    if (last_non_zero == -1) return 0;
+    return (last_non_zero >= first_decimal) ? (last_non_zero - first_decimal + 1) : 0;    
+}
+
+
+
 // @todo find first zero/one ??
 // @todo fast mod
 
 // @todo figure out how best to represent angles: degrees/radians/normalized??
 // @todo moduo(cardinal angle...)/normalize degree and rad..?
+
+// @todo log10 (I think it exists in math.h)
 
 #endif
