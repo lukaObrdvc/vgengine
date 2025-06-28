@@ -3,7 +3,7 @@ setlocal
 
 set OPTIMIZATIONS=0
 set DEVELOPER=1
-set USE_DLL=1
+set USE_DLL=0
 
 if "%DEVELOPER%"=="0" set USE_DLL=0
 

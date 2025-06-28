@@ -69,11 +69,20 @@ void init_engine_state()
     engine_state->normalization_counter = 1;
     engine_state->aspect_ratio = FRAMEBUFFER_WIDTH / (r32)FRAMEBUFFER_HEIGHT;
 
+    engine_state->threads = arena_push<Thread>(PERMANENT_ARENA, NUM_WORKERS);
+    engine_state->index_to_thread_id = arena_push<s32>(PERMANENT_ARENA, NUM_WORKERS);
+    for (s32 i = 0; i < NUM_WORKERS; i++)
+    {
+        engine_state->threads[i] = START_THREAD(worker_proc, &engine_state->index_to_thread_id[i], 0);
+    }
+
     engine_state->camera_angle = 0;
     engine_state->line_angle = 0;
     engine_state->spin_angle = 0;
     engine_state->cube_scaling_factor = 1.0f;
     engine_state->cube_scale_up = true;
+
+    
 }
 
 extern "C" void platform_init_engine(Platform_init_result* out)

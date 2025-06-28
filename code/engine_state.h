@@ -15,6 +15,9 @@
 
 #define ASPECT_RATIO (ENGINE_STATE->aspect_ratio)
 
+#define THREADS (ENGINE_STATE->threads)
+#define JOB_QUEUE (&ENGINE_STATE->job_queue)
+
 
 
 // @doc mainly for permanent information and convinience so you can
@@ -39,11 +42,13 @@ struct Engine_state
     r32 aspect_ratio;
     u8 normalization_counter;
     u32 prng_seed;
-    // @todo use Array instead?
-    Font fonts[NUM_FONTS];
+    Font fonts[NUM_FONTS]; // @todo use Array instead?
     Profiler profilers[NUM_PROFILERS];
     s32 profiler_stack[NUM_PROFILERS];
     s32 profiler_stack_counter;
+    Thread* threads;
+    Job_queue job_queue;
+    s32* index_to_thread_id;
 
     // temporary-----------------------------
     r32 camera_angle;

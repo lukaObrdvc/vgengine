@@ -322,8 +322,7 @@ DWORD WINAPI thread_entry(LPVOID param)
     return 0;
 }
 
-// @todo can pass an optional delay argument for when the thread starts
-inline Thread start_thread(Thread_procedure proc, void* data)
+inline Thread start_thread(Thread_procedure proc, s32* thread_id_address, void* data = 0)
 {
     Thread result;
     
@@ -334,7 +333,7 @@ inline Thread start_thread(Thread_procedure proc, void* data)
     args->procedure = proc;
     args->data = data;
     
-    HANDLE handle = CreateThread(0, 0, thread_entry, args, 0, (DWORD*)&result.id);
+    HANDLE handle = CreateThread(0, 0, thread_entry, args, 0, (DWORD*)thread_id_address);
 
     result.platform_handle = handle;
 
@@ -365,11 +364,45 @@ inline void sleep_current_thread(u32 ms)
     Sleep(ms);
 }
 
+inline void yield()
+{
+    Sleep(0);
+}
 
+inline void hint_spin_loop()
+{
+    _mm_pause();
+}
 
-// @todo GetCurrentThreadId (instead of keeping my own id) ?
-// @todo yield, basically Sleep(0)
+inline s32 atomic_fetch_and_increment(volatile s32* p)
+{
+    return _InterlockedIncrement((volatile long*)p) - 1;
+}
 
+inline s32 atomic_fetch_and_decrement(volatile s32* p)
+{
+    return _InterlockedExchangeAdd((volatile long*)p, -1); // decrements actual value and returns old one
+}
+
+inline s32 atomic_compare_and_swap(volatile s32* p, s32 curr_value, s32 new_value)
+{
+    return _InterlockedCompareExchange((volatile long*)p, new_value, curr_value); // compare with curr_value and then set it to new_value if equals
+}
+
+inline s32 atomic_load(volatile s32* p)
+{
+    return _InterlockedOr((volatile long*)p, 0);
+}
+
+inline s32 get_thread_id(Thread t)
+{
+    return (s32)GetThreadId((HANDLE)t.platform_handle);
+}
+
+inline s32 get_current_thread_id()
+{
+    return (s32)GetCurrentThreadId();
+}
 
 
 
@@ -681,6 +714,13 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     SYSTEM_INFO system_info;
     GetSystemInfo(&system_info);
+
+    // RIP if not x64 processor (64-bit)
+    WORD arch = system_info.wProcessorArchitecture;
+    ASSERT(arch == PROCESSOR_ARCHITECTURE_AMD64);
+    
+    DWORD num_logical_cores = system_info.dwNumberOfProcessors;
+    
     // VirtualAlloc aligns reserves and commits in chunks of this
     u64 allocation_step = (u64) Max(system_info.dwPageSize, system_info.dwAllocationGranularity);
     
@@ -694,6 +734,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     
     PLATFORM_API.total_program_memory = total_program_memory;
     PLATFORM_API.allocation_step = allocation_step;
+    PLATFORM_API.num_logical_cores = num_logical_cores;
 #if USE_DLL
     PLATFORM_API.get_file_size = get_file_size;
     PLATFORM_API.read_entire_file = read_entire_file;
@@ -709,6 +750,18 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     PLATFORM_API.read_time_counter = read_time_counter;
     PLATFORM_API.read_cycle_counter = read_cycle_counter;
     PLATFORM_API.get_time = get_time;
+    PLATFORM_API.start_thread = start_thread;
+    PLATFORM_API.close_thread = close_thread;
+    PLATFORM_API.wait_for_thread = wait_for_thread;
+    PLATFORM_API.sleep_current_thread = sleep_current_thread;
+    PLATFORM_API.yield = yield;
+    PLATFORM_API.hint_spin_loop = hint_spin_loop;
+    PLATFORM_API.get_thread_id = get_thread_id;
+    PLATFORM_API.get_current_thread_id = get_current_thread_id;
+    PLATFORM_API.atomic_fetch_and_increment = atomic_fetch_and_increment;
+    PLATFORM_API.atomic_fetch_and_decrement = atomic_fetch_and_decrement;
+    PLATFORM_API.atomic_compare_and_swap = atomic_compare_and_swap;
+    PLATFORM_API.atomic_load = atomic_load;
 #endif
 
     // @todo do I also pass platform_api here so I initialize there instead?

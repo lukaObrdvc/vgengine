@@ -47,7 +47,8 @@
 
 #include "core/basic.h"
 #include "core/arena.h"
-#include "core/scratch.h"
+// @todo make a scratch (pool) per thread...
+#include "core/scratch.h" // @todo refactor to use single scratch instead of a pool? (and then you don't even need to use a scratch actually, just use an arena...!!)
 #include "core/sort.h"
 #include "core/flags.h"
 #include "core/bit_array.h"
@@ -100,6 +101,8 @@
 #include "core/arena.cpp"
 #include "core/scratch.cpp"
 #include "core/string.cpp"
+
+#include "thread.cpp"
 
 #include "math/matrix.cpp"
 #include "math/quaternion.cpp"

@@ -156,6 +156,13 @@ T div2(T n, T exponent)
     return n >> exponent;
 }
 
+template <typename T>
+T fast_mod(T n, T by)
+{
+    ASSERT(is_pow2(by));
+    return n & (by - 1);
+}
+
 template<typename T>
 T align_up(T n, T multiple_of)
 {

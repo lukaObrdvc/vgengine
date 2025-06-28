@@ -22,10 +22,18 @@ typedef b32 (*Directory_exists) (const u8*);
 typedef r64 (*Read_time_counter) ();
 typedef u64 (*Read_cycle_counter) ();
 typedef void (*Get_time) (Time*);
-typedef Thread (*Start_thread) (Thread_procedure, void*);
+typedef Thread (*Start_thread) (Thread_procedure, s32*, void*);
 typedef void (*Close_thread) (Thread*);
 typedef void (*Wait_for_thread) (Thread*);
 typedef void (*Sleep_current_thread) (u32);
+typedef void (*Yield) ();
+typedef void (*Hint_spin_loop) ();
+typedef s32 (*Get_thread_id) (Thread);
+typedef s32 (*Get_current_thread_id) ();
+typedef s32 (*Atomic_fetch_and_increment) (volatile s32*);
+typedef s32 (*Atomic_fetch_and_decrement) (volatile s32*);
+typedef s32 (*Atomic_compare_and_swap) (volatile s32*, s32, s32);
+typedef s32 (*Atomic_load) (volatile s32*);
 
 #else
 
@@ -44,10 +52,18 @@ inline b32 directory_exists(const u8* dirname);
 inline r64 read_time_counter();
 inline u64 read_cycle_counter();
 inline void get_time(Time* time);
-inline Thread start_thread(Thread_procedure proc, void* data);
+inline Thread start_thread(Thread_procedure proc, s32* thread_index_address, void* data);
 inline void close_thread(Thread* t);
 inline void wait_for_thread(Thread* t);
 inline void sleep_current_thread(u32 ms);
+inline void yield();
+inline void hint_spin_loop();
+inline s32 get_thread_id(Thread t);
+inline s32 get_current_thread_id();
+inline s32 atomic_fetch_and_increment(volatile s32* p);
+inline s32 atomic_fetch_and_decrement(volatile s32* p);
+inline s32 atomic_compare_and_swap(volatile s32* p, s32 current_value, s32 new_value);
+inline s32 atomic_load(volatile s32* p);
 
 #endif
 
@@ -73,9 +89,18 @@ struct Platform_api
     Close_thread close_thread;
     Wait_for_thread wait_for_thread;
     Sleep_current_thread sleep_current_thread;
+    Yield yield;
+    Hint_spin_loop hint_spin_loop;
+    Get_thread_id get_thread_id;
+    Get_current_thread_id get_current_thread_id;
+    Atomic_fetch_and_increment atomic_fetch_and_increment;
+    Atomic_fetch_and_decrement atomic_fetch_and_decrement;
+    Atomic_compare_and_swap atomic_compare_and_swap;
+    Atomic_load atomic_load;
 #endif
     u64 total_program_memory;
     u64 allocation_step; // @cleanup don't need this anymore
+    s32 num_logical_cores;
 };
 
 struct Globals
@@ -102,6 +127,7 @@ global_variable Globals* globals;
 #define PLATFORM_API globals->platform_api
 #define TOTAL_PROGRAM_MEMORY PLATFORM_API.total_program_memory
 #define ALLOCATION_STEP PLATFORM_API.allocation_step
+#define NUM_CORES PLATFORM_API.num_logical_cores
 
 
 #if USE_DLL
@@ -121,10 +147,18 @@ global_variable Globals* globals;
 #define READ_TIME_COUNTER() PLATFORM_API.read_time_counter()
 #define READ_CYCLE_COUNTER() PLATFORM_API.read_cycle_counter()
 #define GET_TIME(time) PLATFORM_API.get_time((time))
-#define START_THREAD(f, d) PLATFORM_API.start_thread((f), (d))
+#define START_THREAD(f, i, d) PLATFORM_API.start_thread((f), (i), (d))
 #define CLOSE_THREAD(t) PLATFORM_API.close_thread((t))
 #define WAIT_FOR_THREAD(t) PLATFORM_API.wait_for_thread((t))
 #define SLEEP_CURRENT_THREAD(ms) PLATFORM_API.sleep_current_thread((ms))
+#define YIELD() PLATFORM_API.yield()
+#define HINT_SPIN_LOOP() PLATFORM_API.hint_spin_loop()
+#define GET_THREAD_ID(t) PLATFORM_API.get_thread_id((t))
+#define GET_CURRENT_THREAD_ID() PLATFORM_API.get_current_thread_id()
+#define ATOMIC_FETCH_AND_INCREMENT(p) PLATFORM_API.atomic_fetch_and_increment((p))
+#define ATOMIC_FETCH_AND_DECREMENT(p) PLATFORM_API.atomic_fetch_and_decrement((p))
+#define ATOMIC_COMPARE_AND_SWAP(p, v, nv) PLATFORM_API.atomic_compare_and_swap((p), (v), (nv))
+#define ATOMIC_LOAD(p) PLATFORM_API.atomic_load((p))
 
 #else
 
@@ -143,10 +177,18 @@ global_variable Globals* globals;
 #define READ_TIME_COUNTER() read_time_counter()
 #define READ_CYCLE_COUNTER() read_cycle_counter()
 #define GET_TIME(time) get_time((time))
-#define START_THREAD(f, d) start_thread((f), (d))
+#define START_THREAD(f, i, d) start_thread((f), (i), (d))
 #define CLOSE_THREAD(t) close_thread((t))
 #define WAIT_FOR_THREAD(t) wait_for_thread((t))
 #define SLEEP_CURRENT_THREAD(ms) sleep_current_thread((ms))
+#define YIELD() yield()
+#define HINT_SPIN_LOOP() hint_spin_loop()
+#define GET_THREAD_ID(t) get_thread_id((t))
+#define GET_CURRENT_THREAD_ID() get_current_thread_id()
+#define ATOMIC_FETCH_AND_INCREMENT(p) atomic_fetch_and_increment((p))
+#define ATOMIC_FETCH_AND_DECREMENT(p) atomic_fetch_and_decrement((p))
+#define ATOMIC_COMPARE_AND_SWAP(p, v, nv) atomic_compare_and_swap((p), (v), (nv))
+#define ATOMIC_LOAD(p) atomic_load((p))
 
 #endif
 
