@@ -25,9 +25,9 @@ inline Font* get_font(MYFONT f)
 void draw_string(const String& word,
                  Font* font,
                  const Vector2& offset,
-                 const Vector2& scale,
-                 const Color& tint,
                  const r32& line_spacing,
+                 const Vector2& scale = vec_make(1.0f, 1.0f),
+                 const Color& tint = color_make(1.0f, 1.0f, 1.0f, 1.0f),
                  const Rect& rect = {0.0f, 0.0f, (r32)FRAMEBUFFER_WIDTH, (r32)FRAMEBUFFER_HEIGHT})
 {
     // @todo obviously there is aliasing because you're flooring the
@@ -103,9 +103,9 @@ void draw_string(const String& word,
 void draw_string_wrapped(const String& word,
                          Font* font,
                          const Vector2& offset,
-                         const Vector2& scale,
-                         const Color& tint,
                          const r32& line_spacing,
+                         const Vector2& scale = vec_make(1.0f, 1.0f),
+                         const Color& tint = color_make(1.0f, 1.0f, 1.0f, 1.0f),
                          const Rect& rect = {0.0f, 0.0f, (r32)FRAMEBUFFER_WIDTH, (r32)FRAMEBUFFER_HEIGHT})
 {
     s32 line = 0;

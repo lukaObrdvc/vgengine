@@ -30,8 +30,8 @@ enum MYFONT
 
 void load_font_permanently(String name);
 inline Font* get_font(MYFONT f);
-void draw_string(const String& word, Font* font, const Vector2& offset, const Vector2& scale, const Color& tint, const Rect& rect);
-void draw_string_wrapped(const String& word, Font* font, const Vector2& offset, const Vector2& scale, const Color& tint, const r32& line_spacing, const Rect& rect);
+void draw_string(const String& word, Font* font, const Vector2& offset, const r32& line_spacing, const Vector2& scale, const Color& tint, const Rect& rect);
+void draw_string_wrapped(const String& word, Font* font, const Vector2& offset, const r32& line_spacing, const Vector2& scale, const Color& tint, const Rect& rect);
 
 // @doc we need glyph w,h,p first in order to allocate memory
 // for the bitmap, so read the metadata file first

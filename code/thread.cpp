@@ -40,6 +40,13 @@ void submit_job(Job job)
         s32 old_write = ATOMIC_COMPARE_AND_SWAP(&queue->write, write, new_write);
         if (old_write == write) // if comparison was true, and so swapping occured
         {
+            // @FAIL
+            // if there are multiple producers, two may get here, then the second
+            // will write the job into the next slot, and increment available jobs
+            // while the first hasn't even written into the first slot, so a consumer
+            // will see there are available jobs, and read the next slot which doesn't
+            // have an actual job there
+            
             queue->jobs[write] = job;
             ATOMIC_FETCH_AND_INCREMENT(&queue->available_jobs);
             break;
@@ -47,11 +54,13 @@ void submit_job(Job job)
     }
 }
 
+
+
 // this is what all the threads will run all the time
 void worker_proc(void* data = 0)
 {
     Job_queue* queue = JOB_QUEUE;
-
+    
     while (true)
     {
         while (ATOMIC_LOAD(&queue->available_jobs) == 0)
@@ -79,6 +88,15 @@ void worker_proc(void* data = 0)
             s32 old_read = ATOMIC_COMPARE_AND_SWAP(&queue->read, read, new_read);
             if (old_read == read) // if comparison was true, and so swapping occured
             {
+                // @FAIL
+                // if one thread passes here, and then another one comes here as well,
+                // before the first one finishes and only 1 job is available, you're f-ed
+
+                // @FAIL
+                // consumers can increase the read before actually doing the job,
+                // and in the meantime producers can increase the write and overwrite
+                // those slots with new jobs
+                
                 Job job = queue->jobs[read];
                 job.proc(job.data);
                 ATOMIC_FETCH_AND_DECREMENT(&queue->available_jobs);

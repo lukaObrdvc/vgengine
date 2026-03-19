@@ -1,7 +1,7 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
-#define PROJECT_PATH "W:\\Projects\\vgengine\\"
+#define PROJECT_PATH "W:\\vgengine\\"
 
 #define DATA_PATH  PROJECT_PATH "data\\"
 #define CODE_PATH  PROJECT_PATH "code\\"

@@ -41,6 +41,7 @@ struct Engine_state
     Camera main_camera;
     r32 aspect_ratio;
     u8 normalization_counter;
+    u64 frame_counter; // obivously will overflow at some point
     u32 prng_seed;
     Font fonts[NUM_FONTS]; // @todo use Array instead?
     Profiler profilers[NUM_PROFILERS];

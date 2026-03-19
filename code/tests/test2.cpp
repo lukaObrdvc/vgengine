@@ -2,10 +2,170 @@
 #define TEST_ONLY_ONCE ENGINE_STATE->tested_once = true
 
 
+struct Job_context
+{
+    s32* chunk;
+    s32 chunk_size;
+    s32 begin_index;
+};
+struct Job_context2
+{
+    s32* chunk;
+    s32 chunk_size;
+    s32* sum;
+};
+
+JOB(job_init_arr)
+{
+    Job_context* d = (Job_context*) data;
+    
+    for (s32 i = 0; i < d->chunk_size; i++)
+    {
+        d->chunk[i] = i + d->begin_index;
+    }
+}
+
+JOB(job_sum_arr)
+{
+    Job_context2* d = (Job_context2*) data;
+
+    s32 result = 0;
+    for (s32 i = 0; i < d->chunk_size; i++)
+    {
+        result += d->chunk[i];
+    }
+    *(d->sum) = result;
+}
+
+void threading_test()
+{
+#define ARR_SIZE 10000
+
+    BEGIN_PROFILING(str("without_threading"));
+    s32 arr[ARR_SIZE];
+    
+    for (s32 i = 0; i < ARR_SIZE; i++)
+    {
+        arr[i] = i;
+    }
+
+    s32 sum = 0;
+
+    for (s32 i = 0; i < ARR_SIZE; i++)
+    {
+        sum += arr[i];
+    }
+    END_PROFILING();
+
+    BEGIN_PROFILING(str("with_threading"));
+    s32 arr2[ARR_SIZE];
+    s32* sums = temp_alloc(s32, NUM_WORKERS);
+    // for (s32 i = 0; i < NUM_WORKERS; i++) sums[i] = 0;
+    memset(sums, NUM_WORKERS * sizeof(s32));
+
+    s32 chunk_size = ARR_SIZE / NUM_WORKERS;
+    s32 last_chunk_size = chunk_size + ARR_SIZE % NUM_WORKERS;
+
+    for (s32 i = 0; i < NUM_WORKERS; i++)
+    {
+        Job_context* data = temp_alloc(Job_context);
+        data->chunk = arr2 + i * chunk_size;
+        data->chunk_size = i == NUM_WORKERS - 1 ? last_chunk_size : chunk_size;
+        data->begin_index = i * chunk_size;
+
+        Job job;
+        job.proc = job_init_arr;
+        job.data = data;
+        submit_job(job);
+    }
+    
+    wait_for_all_jobs();
+    
+    ASSERT(memcmp(arr, arr2, (u32)(ARR_SIZE * sizeof(s32))));
+    
+    for (s32 i = 0; i < NUM_WORKERS; i++)
+    {
+        Job_context2* data = temp_alloc(Job_context2);
+        data->chunk = arr2 + i * chunk_size;
+        data->chunk_size = i == NUM_WORKERS - 1 ? last_chunk_size : chunk_size;
+        data->sum = &sums[i];
+        
+        Job job;
+        job.proc = job_sum_arr;
+        job.data = data;
+        submit_job(job);
+    }
+    
+    wait_for_all_jobs();
+
+    // remove this part later  ---------------
+#define SUM(n) (((n))*((n)+1)/2)
+    
+    s32 dbg_table[7];
+    dbg_table[0] = SUM(1427);
+    dbg_table[1] = SUM(2855) - SUM(1427);
+    dbg_table[2] = SUM(4283) - SUM(2855);
+    dbg_table[3] = SUM(5711) - SUM(4283);
+    dbg_table[4] = SUM(7139) - SUM(5711);
+    dbg_table[5] = SUM(8567) - SUM(7139);
+    dbg_table[6] = SUM(9999) - SUM(8567);
+#undef SUM
+    
+    s32 sum2 = 0;
+    for (s32 i = 0; i < NUM_WORKERS; i++)
+    {
+        ASSERT(sums[i] == dbg_table[i]);
+        sum2 += sums[i];
+    }
+    END_PROFILING();
+
+#if DEVELOPER
+    Profiler* p = 0;
+
+    for (s32 i = 0; i < NUM_PROFILERS; i++)
+    {
+        Profiler* prof = &PROFILERS[i];
+        
+        if (string_compare(str("without_threading"), prof->name))
+        {
+            p = prof;
+            break;
+        }
+    }
+
+    // should sum to 50005000-1 (does not overflow on s32)
+    
+    String string = concat(4, to_string(sum), str("\n"), to_string(profiler_avg_time(p), 2), str("ms"));
+    Font* font = get_font(MYFONT_CONSOLAS16);
+    Vector2 offset = vec_make(0.0f, 200.0f);
+    draw_string(string, font, offset, -4.0f);
+
+    Profiler* p2 = 0;
+
+    for (s32 i = 0; i < NUM_PROFILERS; i++)
+    {
+        Profiler* prof = &PROFILERS[i];
+        
+        if (string_compare(str("with_threading"), prof->name))
+        {
+            p2 = prof;
+            break;
+        }
+    }
+    
+    String string2 = concat(4, to_string(sum2), str("\n"), to_string(profiler_avg_time(p2), 2), str("ms"));
+    Font* font2 = get_font(MYFONT_CONSOLAS16);
+    Vector2 offset2 = vec_make(100.0f, 200.0f);
+    draw_string(string2, font2, offset2, -4.0f);
+#endif
+
+#undef ARR_SIZE
+}
+
 
 void model_matrix_test(Matrix4* view, Matrix4* proj)
 {
-    Color f_color = color_make(0.0f, 0.0f, 0.0f, 1.0f);
+    Color f_color = color_make(0.5f, 0.0f, 0.5f, 1.0f);
     Color b_color = color_make(1.0f, 1.0f, 1.0f, 1.0f);
     Color l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
     Color r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
@@ -56,7 +216,66 @@ void model_matrix_test(Matrix4* view, Matrix4* proj)
 
     Matrix4* mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
     
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
     
+    cube_transform->position.x += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.z += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);    
+    render_mesh(cube_mesh, mvp, colors);
+    
+    cube_transform->position.x -= 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x -= 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x -= 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.z += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.z += 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+
+    cube_transform->position.x -= 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+    
+    cube_transform->position.x -= 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
+    render_mesh(cube_mesh, mvp, colors);
+    
+    cube_transform->position.x -= 25;
+    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
     render_mesh(cube_mesh, mvp, colors);
     
 
@@ -442,13 +661,13 @@ void model_matrix_test(Matrix4* view, Matrix4* proj)
 // #undef ChangeAngle
 // }
 
-void none_test(void)
+void none_test()
 {
     TEST_ONLY_ONCE;
 }
 
 #define _TEST CURRENTLY_TESTING()
-void test(void)
+void test()
 {
     if (!ENGINE_STATE->tested_once)
     {

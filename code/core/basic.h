@@ -17,6 +17,8 @@ typedef double r64;
 typedef s32 b32;
 typedef s64 b64;
 
+constexpr 
+
 #define MIN_U    0U
 #define MAX_U8   255U
 #define MAX_U16  65535U
@@ -49,7 +51,7 @@ typedef s64 b64;
 #define TB 1099511627776ULL // 1024*1024*1024*1024
 
 
-#define global_variable // @todo rename to GLOBAL
+#define GLOBAL
 
 
 #if DEVELOPER

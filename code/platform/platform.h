@@ -121,14 +121,48 @@ struct Globals
 #endif
 };
 
-global_variable Globals* globals;
-
+GLOBAL Globals* globals;
 
 #define PLATFORM_API globals->platform_api
 #define TOTAL_PROGRAM_MEMORY PLATFORM_API.total_program_memory
 #define ALLOCATION_STEP PLATFORM_API.allocation_step
 #define NUM_CORES PLATFORM_API.num_logical_cores
 
+// #if USE_DLL
+// #define CALL(foo) PLATFORM_API.foo
+// #else
+// #define CALL(foo) foo
+// #endif
+
+// #define GET_FILE_SIZE(filename, size)                     CALL(get_file_size((filename), (size)))
+// #define READ_ENTIRE_FILE(path, buff, buff_size)           CALL(read_entire_file((path), (buff), (buff_size)))
+// #define WRITE_ENTIRE_FILE(path, buff, buff_size)          CALL(write_entire_file((path), (buff), (buff_size)))
+// #define WRITE_ENTIRE_EXISTING_FILE(path, buff, buff_size) CALL(write_entire_existing_file((path), (buff), (buff_size)))
+// #define COPY_FILE(src, dest)                              CALL(copy_file((src), (dest)))
+// #define COPY_AND_MAYBE_OVERWRITE_FILE(src, dest)          CALL(copy_and_maybe_overwrite_file((src), (dest)))
+// #define MOVE_FILE(src, dest)                              CALL(move_file((src), (dest)))
+// #define MOVE_AND_MAYBE_OVERWRITE_FILE(src, dest)          CALL(move_and_maybe_overwrite_file((src), (dest)))
+// #define DELETE_FILE(filename)                             CALL(delete_file((filename)))
+// #define CREATE_DIRECTORY(dirname)                         CALL(create_directory((dirname)))
+// #define DELETE_DIRECTORY(dirname)                         CALL(delete_directory((dirname)))
+// #define DIRECTORY_EXISTS(dirname)                         CALL(directory_exists((dirname)))
+// #define READ_TIME_COUNTER()                               CALL(read_time_counter())
+// #define READ_CYCLE_COUNTER()                              CALL(read_cycle_counter())
+// #define GET_TIME(time)                                    CALL(get_time((time)))
+// #define START_THREAD(f, i, d)                             CALL(start_thread((f), (i), (d)))
+// #define CLOSE_THREAD(t)                                   CALL(close_thread((t)))
+// #define WAIT_FOR_THREAD(t)                                CALL(wait_for_thread((t)))
+// #define SLEEP_CURRENT_THREAD(ms)                          CALL(sleep_current_thread((ms)))
+// #define YIELD()                                           CALL(yield())
+// #define HINT_SPIN_LOOP()                                  CALL(hint_spin_loop())
+// #define GET_THREAD_ID(t)                                  CALL(get_thread_id((t)))
+// #define GET_CURRENT_THREAD_ID()                           CALL(get_current_thread_id())
+// #define ATOMIC_FETCH_AND_INCREMENT(p)                     CALL(atomic_fetch_and_increment((p)))
+// #define ATOMIC_FETCH_AND_DECREMENT(p)                     CALL(atomic_fetch_and_decrement((p)))
+// #define ATOMIC_COMPARE_AND_SWAP(p, v, nv)                 CALL(atomic_compare_and_swap((p), (v), (nv)))
+// #define ATOMIC_LOAD(p)                                    CALL(atomic_load((p)))
+
+// #undef CALL
 
 #if USE_DLL
 

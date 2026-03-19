@@ -28,7 +28,7 @@ struct Engine_api
     Update_and_render update_and_render;
 };
 
-global_variable Engine_api engine_api = {
+GLOBAL Engine_api engine_api = {
     .platform_init_engine = platform_init_engine_stub,
     .platform_init_memory_base = platform_init_memory_base_stub,
     .update_and_render = update_and_render_stub,

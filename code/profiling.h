@@ -42,6 +42,11 @@ s32 pop_profiler_index();
 void profiler_push(s32 index);
 void profiler_pop();
 
+// @todo you should stop accumulating in count and totals when you're about to
+// overflow those
+
+// @todo implement get_profiler(name)
+
 
 inline u64 profiler_avg_cycles(Profiler* p)
 {
@@ -56,18 +61,24 @@ inline r64 profiler_avg_time(Profiler* p)
 }
 
 #if DEVELOPER
+
+// these two are just helper macros for indirection so you can actually
+// concatenate __LINE__
+#define PROFILING_HELPER1(a, b) a##b
+#define PROFILING_HELPER2(a, b) PROFILING_HELPER1(a, b)
+
 // static variable is initialized once, so register_profiler is called
 // once, and you store these indices in scopes so they are unique per
 // profiler
 #define BEGIN_PROFILING(name) \
-    static s32 profiler_index_##__LINE__ = register_profiler(name); \
-    profiler_push(profiler_index_##__LINE__)
+    static s32 PROFILING_HELPER2(profiler_index_, __LINE__) = register_profiler(name); \
+    profiler_push(PROFILING_HELPER2(profiler_index_, __LINE__))
 
 #define END_PROFILING() profiler_pop()
 
 #else
 
-#define BEGING_PROFILING(name) ((void)0)
+#define BEGIN_PROFILING(name) ((void)0)
 #define END_PROFILING() ((void)0)
 
 #endif

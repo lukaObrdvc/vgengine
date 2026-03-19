@@ -11,7 +11,7 @@ String to_string(s32 n, Arena* arena = TEMPORARY_ARENA)
 
     if (is_negative) result.base[0] = '-';
 
-    s32 i = is_negative ? 1 : 0;
+    s32 i = 1;
 
     if (n == 0) result.base[0] = '0';
     
@@ -20,7 +20,7 @@ String to_string(s32 n, Arena* arena = TEMPORARY_ARENA)
     {
         s32 digit = n % 10;
         n /= 10;
-        result.base[result.length - 1 - i] = '0' + digit;
+        result.base[result.length - i] = '0' + digit;
         i++;
     }
 
@@ -37,12 +37,12 @@ String to_string(u64 n, Arena* arena = TEMPORARY_ARENA)
 
     if (n == 0) result.base[0] = '0';
     
-    s32 i = 0;
+    s32 i = 1;
     while (n > 0)
     {
         s32 digit = n % 10;
         n /= 10;
-        result.base[result.length - 1 - i] = '0' + digit;
+        result.base[result.length - i] = '0' + digit;
         i++;
     }
     

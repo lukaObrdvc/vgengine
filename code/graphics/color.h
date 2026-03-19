@@ -7,7 +7,6 @@ struct Color
     r32 r, g, b, a;
 };
 
-// @todo rename this to color_make, once you replace the old color_make that you currently have
 inline Color color_make(r32 r, r32 g, r32 b, r32 a = 1.0f)
 {
     return {r, g, b, a};
@@ -110,7 +109,7 @@ inline Color u32_to_color(u32 color)
     return result;
 }
 
-      // @doc if you want alpha of tint color to be present, then premultiply it
+// @doc if you want alpha of tint color to be present, then premultiply it
 inline Color color_tint(Color c, Color tint)
 {
     c.r *= tint.r;
@@ -118,11 +117,6 @@ inline Color color_tint(Color c, Color tint)
     c.b *= tint.b;
     c.a *= tint.a;
     return color_clamp(c);
-}
-
-inline Color color_tint_lerp(Color c, Color tint, r32 t)
-{
-    return color_lerp(c, color_tint(c, tint), t);
 }
 
 inline Color color_brightness(const Color& c, r32 factor)

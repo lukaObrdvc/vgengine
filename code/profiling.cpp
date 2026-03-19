@@ -8,6 +8,7 @@ s32 register_profiler(String name)
         }
     }
 
+    // @todo can maybe track current number of profilers instead?
     for (s32 i = 0; i < NUM_PROFILERS; i++)
     {
         if (!PROFILERS[i].name.base)

@@ -15,7 +15,7 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     Engine_state* engine_state = ENGINE_STATE;
     FRAMEBUFFER_WIDTH = 860;
     FRAMEBUFFER_HEIGHT = 420;
-
+    
     FRAMEBUFFER_BASE = temp_alloc(u8, FRAMEBUFFER_BYTESIZE);
     ZBUFFER = temp_alloc(r32, FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT);
     // @doc this guarantees Y is up when accessing these buffers
@@ -134,6 +134,8 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     
     Time time;
     GET_TIME(&time);
+
+    // threading_test();
     
     Profiler* p = &PROFILERS[0];
     String string = concat(11, p->name, str("\n"), to_string(p->cycle_diff / (r64)1000000, 4),
@@ -142,7 +144,7 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     // String string = concat((u32)8, cstr(p->name), " ", cstr(to_string(p->cycle_diff / (r64)1000000, 4)),
                            // "MC", " ", cstr(to_string(p->time_diff, 2)), "ms", " ");
     Font* font = get_font(MYFONT_CONSOLAS16);
-    Vector2 offset = vec_make(0.0f, 200.0f);
+    Vector2 offset = vec_make(5.0f, 390.0f);
     // offset = vec_add(offset, engine_state->font_offset);
     Vector2 scale = vec_make(1.2f, 1.2f);
     // Vector2 scale = vec_make(0.8f, 0.8f);
@@ -151,13 +153,15 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     r32 line_spacing = -4.0f;
     // draw_string(string, font, offset, scale, tint, rect);
     // draw_string_wrapped(string, font, offset, scale, tint, line_spacing, rect);
-    draw_string(string, font, offset, scale, tint, line_spacing);
+    // draw_string(string, font, offset, line_spacing, scale, tint);
+    draw_string(string, font, offset, line_spacing);
     
     engine_state->font_offset.x -= 1.0f;
-    // engine_state->font_offset.y += 1.0f;
+    engine_state->font_offset.y += 1.0f;
     
     temp_reset();
     engine_state->normalization_counter++;
+    engine_state->frame_counter++;
 
     bit_array_unset_all(INPUT->keys_pressed);
     bit_array_unset_all(INPUT->keys_released);

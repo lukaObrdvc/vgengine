@@ -3,8 +3,8 @@
 // roadmap:
 
 // - threading
-// - UI
 
+// - UI (+console, and so on...)
 // - shading
 // - texturing
 
@@ -14,12 +14,6 @@
 
 // - audio
 
-// - serialization?
-// - console?
-
-// - 3d animation?
-// - anti-aliasing?
-// - simple editor? (need raycasting) (but also maybe things like creating, deleting entities, undo/redo)
 // - SIMD?
 
 
@@ -48,6 +42,7 @@
 #include "core/basic.h"
 #include "core/arena.h"
 // @todo make a scratch (pool) per thread...
+// @todo double buffering??
 #include "core/scratch.h" // @todo refactor to use single scratch instead of a pool? (and then you don't even need to use a scratch actually, just use an arena...!!)
 #include "core/sort.h"
 #include "core/flags.h"

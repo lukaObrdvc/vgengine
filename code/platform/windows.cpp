@@ -43,8 +43,8 @@ void unload_dll(HMODULE dll)
 #endif
 
 
-global_variable u8 keymap[256];
-global_variable Input* input;
+GLOBAL u8 keymap[256];
+GLOBAL Input* input;
 
 // because we're not sure how other platform works we use
 // this to map between VK codes and engine's KEYCODE enum
@@ -188,7 +188,7 @@ inline b32 copy_file(const u8* src, const u8* dest)
         if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) return false;
 
         ASSERT(false);
-        return false;        
+        return false;
     }
     return true;
 }
@@ -711,7 +711,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     FILETIME dll_filetime_prev = find_data.ftLastWriteTime;
     FILETIME dll_filetime_curr;
 #endif
-
+    
     SYSTEM_INFO system_info;
     GetSystemInfo(&system_info);
 
@@ -779,7 +779,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     HWND window = CreateWindow(window_struct.lpszClassName,
                                "VGENGINE",
-                               // in this it will disable resizing of window by dragging it's border
+                               // this will disable resizing of window by dragging it's border
                                WS_VISIBLE | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
                                // WS_VISIBLE | WS_OVERLAPPEDWINDOW,
                                init.window_offs_x,
@@ -843,6 +843,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                 running = false; // @todo make this better
                 break;
             }
+            
             TranslateMessage(&message);
             DispatchMessage(&message);
         }

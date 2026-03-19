@@ -33,6 +33,8 @@
 typedef void (*Thread_procedure) (void*);
 typedef void (*Job_procedure) (void*);
 
+// @todo rename to d (not data) probably (so when you cast inside the
+// job you can call the variable data instead)
 #define THREAD_ENTRY(name) void (name)(void* data = 0)
 #define JOB(name) void (name)(void* data = 0)
 
@@ -57,9 +59,9 @@ struct Job
 struct Job_queue
 {
     Job jobs[NUM_JOBS];
-    s32 write;
-    s32 read;
-    s32 available_jobs;
+    volatile s32 write; // alignas(64)
+    volatile s32 read;
+    volatile s32 available_jobs;
 };
 
 void submit_job(Job job);

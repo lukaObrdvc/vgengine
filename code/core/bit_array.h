@@ -1,6 +1,8 @@
 #ifndef BIT_ARRAY_H
 #define BIT_ARRAY_H
 
+// @todo rename from dword to u64
+
 // for bit packing it's different, it has nothing to do with flags
 // you just make masks per chunk in bit number and an offset by
 // which to shift it down... you do this when an use arises...

@@ -5,7 +5,8 @@ void fill_background()
     {
         for (s32 x = 0; x < FRAMEBUFFER_WIDTH; x++)
         {
-            *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)125 << 16) | ((u32)0 << 8) | ((u32)125);
+            // *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)125 << 16) | ((u32)0 << 8) | ((u32)125);
+            *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)0 << 16) | ((u32)0 << 8) | ((u32)0);
         }
     }
 }
@@ -305,7 +306,6 @@ void rasterize_triangle(Triangle* tri, Color color, b32 inv)
                 // perspective-correct interpolation
                 r32 z = 1 / (w0 / p0.z + w1 / p1.z + w2/ p2.z);
                 r32* zbuffer_point = zbuffer_access(i, j);
-
                 
                 u32 r = (u32)(w0 * 255);
                 u32 g = (u32)(w1 * 255);
@@ -373,6 +373,8 @@ void render_mesh(Mesh mesh, Matrix4* mvp, Color* colors)
     temp_set_size(temp_old_size);
 }
 
+
+
 // @doc stride is mainly for sampling a sub-texture within a texture (a rect in it), so
 // this way you can step to the next texel correctly
 Color bilinear_sample_premultiplied(u8* tex, s32 tex_w, s32 tex_h, s32 stride, r32 u, r32 v)
@@ -390,7 +392,7 @@ Color bilinear_sample_premultiplied(u8* tex, s32 tex_w, s32 tex_h, s32 stride, r
     Color c01 = u32_to_color(*(u32*)(tex + v1 * stride + u0 * BYTPP));
     Color c11 = u32_to_color(*(u32*)(tex + v1 * stride + u1 * BYTPP));
 
-    Color top = color_lerp(c00, c10, tu);
+    Color top    = color_lerp(c00, c10, tu);
     Color bottom = color_lerp(c01, c11, tu);
     Color result = color_lerp(top, bottom, tv);
     
