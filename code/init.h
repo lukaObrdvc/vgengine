@@ -19,5 +19,7 @@ extern "C" void platform_init_engine(Platform_init_result*);
 #if USE_DLL
 extern "C" void platform_init_memory_base(Globals* memory_base);
 #endif
+extern "C" void shut_down_all_threads();
+extern "C" void start_up_all_threads();
 
 #endif

@@ -61,7 +61,8 @@ struct Job_queue
     Job jobs[NUM_JOBS];
     volatile s32 write; // alignas(64)
     volatile s32 read;
-    volatile s32 available_jobs;
+    volatile s32 published_write;
+    volatile s32 unfinished_jobs;
 };
 
 void submit_job(Job job);

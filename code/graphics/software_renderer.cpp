@@ -1,14 +1,72 @@
 // @todo pass color instead of hardcoding a color, and have a default parametera
-void fill_background()
+
+struct Job_Fill_Background_Data
 {
+    Color from;
+    Color to;
+    s32 start_y;
+    s32 end_y;
+};
+
+JOB(job_fill_background)
+{
+    Job_Fill_Background_Data* job_data = (Job_Fill_Background_Data*)data;
+
+    for (s32 y = job_data->start_y; y < job_data->end_y; y++)
+    {
+        for (s32 x = 0; x < FRAMEBUFFER_WIDTH; x++)
+        {
+            r32 t = y / (r32) FRAMEBUFFER_HEIGHT;
+            Color lerped_clr = color_lerp(job_data->from, job_data->to, t);
+            *framebuffer_access(x, y) = color_to_u32(lerped_clr);
+        }
+    }
+}
+
+void fill_background_sequentially()
+{
+    Color clr = color_make(0.1f, 0.3f, 0.75f, 1.0f);
+    Color white = color_make(0.8f, 0.8f, 0.8f, 1.0f);
+    
     for (s32 y = 0; y < FRAMEBUFFER_HEIGHT; y++)
     {
         for (s32 x = 0; x < FRAMEBUFFER_WIDTH; x++)
         {
-            // *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)125 << 16) | ((u32)0 << 8) | ((u32)125);
-            *framebuffer_access(x, y) = ((u32)255 << 24) | ((u32)0 << 16) | ((u32)0 << 8) | ((u32)0);
+            r32 t =  y / (r32) FRAMEBUFFER_HEIGHT;
+            Color lerped_clr = color_lerp(white, clr, t);
+            *framebuffer_access(x, y) = color_to_u32(lerped_clr);
         }
     }
+}
+
+void fill_background_parallel()
+{
+    Color clr = color_make(0.1f, 0.3f, 0.75f, 1.0f);
+    Color white = color_make(0.8f, 0.8f, 0.8f, 1.0f);
+
+    s32 chunk = FRAMEBUFFER_HEIGHT / NUM_CORES;
+    
+    for (int i = 0; i < NUM_CORES; i++)
+    {
+        s32 start_y = chunk * i;
+        s32 end_y = start_y + chunk;
+
+        if (i == NUM_CORES - 1) end_y = FRAMEBUFFER_HEIGHT;
+
+        Job_Fill_Background_Data* data = temp_alloc(Job_Fill_Background_Data);
+        data->from = white;
+        data->to = clr;
+        data->start_y = start_y;
+        data->end_y = end_y;
+
+        Job job;
+        job.proc = job_fill_background;
+        job.data = data;
+
+        submit_job(job);
+    }
+
+    wait_for_all_jobs();
 }
 
 s32 triangulate_fan(Vector4* vertices, s32 count, Triangle4* out)

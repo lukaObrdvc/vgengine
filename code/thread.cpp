@@ -46,9 +46,19 @@ void submit_job(Job job)
             // while the first hasn't even written into the first slot, so a consumer
             // will see there are available jobs, and read the next slot which doesn't
             // have an actual job there
+            ATOMIC_FETCH_AND_INCREMENT(&queue->unfinished_jobs);
             
             queue->jobs[write] = job;
-            ATOMIC_FETCH_AND_INCREMENT(&queue->available_jobs);
+
+            MEMORY_BARRIER();
+
+            while (ATOMIC_COMPARE_AND_SWAP(&queue->published_write, write, new_write) != write)
+            {
+                HINT_SPIN_LOOP();
+                YIELD();
+                continue;
+            }
+            
             break;
         }
     }
@@ -63,45 +73,43 @@ void worker_proc(void* data = 0)
     
     while (true)
     {
-        while (ATOMIC_LOAD(&queue->available_jobs) == 0)
+        s32 read  = ATOMIC_LOAD(&queue->read);
+        s32 write = ATOMIC_LOAD(&queue->published_write);
+
+        // no jobs so go back to loop and wait for one
+        if (read == write)
         {
             HINT_SPIN_LOOP();
             YIELD();
+            continue;
         }
 
-        while (true)
+        s32 new_read = fast_mod(read + 1, NUM_JOBS);
+
+        // if more than 1 thread passes this point, then only one will
+        // atomically set the value of read to the new value, and then every
+        // other thread will compare that value with their own local read
+        // variable value and see that it's not the same, and will fail
+        // the if statement, which ensures each thread does a different job
+
+        s32 old_read = ATOMIC_COMPARE_AND_SWAP(&queue->read, read, new_read);
+        if (old_read == read) // if comparison was true, and so swapping occured
         {
-            s32 read  = ATOMIC_LOAD(&queue->read);
-            s32 write = ATOMIC_LOAD(&queue->write);
+            // @FAIL
+            // if one thread passes here, and then another one comes here as well,
+            // before the first one finishes and only 1 job is available, you're f-ed
 
-            // no jobs so go back to loop and wait for one
-            if (read == write) break;
+            // @FAIL
+            // consumers can increase the read before actually doing the job,
+            // and in the meantime producers can increase the write and overwrite
+            // those slots with new jobs
 
-            s32 new_read = fast_mod(read + 1, NUM_JOBS);
-
-            // if more than 1 thread passes this point, then only one will
-            // atomically set the value of read to the new value, and then every
-            // other thread will compare that value with their own local read
-            // variable value and see that it's not the same, and will fail
-            // the if statement, which ensures each thread does a different job
-
-            s32 old_read = ATOMIC_COMPARE_AND_SWAP(&queue->read, read, new_read);
-            if (old_read == read) // if comparison was true, and so swapping occured
-            {
-                // @FAIL
-                // if one thread passes here, and then another one comes here as well,
-                // before the first one finishes and only 1 job is available, you're f-ed
-
-                // @FAIL
-                // consumers can increase the read before actually doing the job,
-                // and in the meantime producers can increase the write and overwrite
-                // those slots with new jobs
-                
-                Job job = queue->jobs[read];
-                job.proc(job.data);
-                ATOMIC_FETCH_AND_DECREMENT(&queue->available_jobs);
-                break;
-            }
+            
+            MEMORY_BARRIER();
+            
+            Job job = queue->jobs[read];
+            job.proc(job.data);
+            ATOMIC_FETCH_AND_DECREMENT(&queue->unfinished_jobs);
         }
     }
 }
@@ -110,7 +118,7 @@ inline void wait_for_all_jobs()
 {
     Job_queue* queue = JOB_QUEUE;
     
-    while (ATOMIC_LOAD(&queue->available_jobs) > 0)
+    while (ATOMIC_LOAD(&queue->unfinished_jobs) > 0)
     {
         HINT_SPIN_LOOP();
         YIELD();

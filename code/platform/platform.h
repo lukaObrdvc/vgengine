@@ -34,6 +34,7 @@ typedef s32 (*Atomic_fetch_and_increment) (volatile s32*);
 typedef s32 (*Atomic_fetch_and_decrement) (volatile s32*);
 typedef s32 (*Atomic_compare_and_swap) (volatile s32*, s32, s32);
 typedef s32 (*Atomic_load) (volatile s32*);
+typedef void (*Memory_barrier) ();
 
 #else
 
@@ -64,6 +65,7 @@ inline s32 atomic_fetch_and_increment(volatile s32* p);
 inline s32 atomic_fetch_and_decrement(volatile s32* p);
 inline s32 atomic_compare_and_swap(volatile s32* p, s32 current_value, s32 new_value);
 inline s32 atomic_load(volatile s32* p);
+inline void memory_barrier();
 
 #endif
 
@@ -97,6 +99,7 @@ struct Platform_api
     Atomic_fetch_and_decrement atomic_fetch_and_decrement;
     Atomic_compare_and_swap atomic_compare_and_swap;
     Atomic_load atomic_load;
+    Memory_barrier memory_barrier;
 #endif
     u64 total_program_memory;
     u64 allocation_step; // @cleanup don't need this anymore
@@ -193,6 +196,7 @@ GLOBAL Globals* globals;
 #define ATOMIC_FETCH_AND_DECREMENT(p) PLATFORM_API.atomic_fetch_and_decrement((p))
 #define ATOMIC_COMPARE_AND_SWAP(p, v, nv) PLATFORM_API.atomic_compare_and_swap((p), (v), (nv))
 #define ATOMIC_LOAD(p) PLATFORM_API.atomic_load((p))
+#define MEMORY_BARRIER() PLATFORM_API.memory_barrier()
 
 #else
 
@@ -223,6 +227,7 @@ GLOBAL Globals* globals;
 #define ATOMIC_FETCH_AND_DECREMENT(p) atomic_fetch_and_decrement((p))
 #define ATOMIC_COMPARE_AND_SWAP(p, v, nv) atomic_compare_and_swap((p), (v), (nv))
 #define ATOMIC_LOAD(p) atomic_load((p))
+#define MEMORY_BARRIER() memory_barrier()
 
 #endif
 

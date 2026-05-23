@@ -168,136 +168,183 @@ void model_matrix_test(Matrix4* view, Matrix4* proj)
     Color f_color = color_make(0.5f, 0.0f, 0.5f, 1.0f);
     Color b_color = color_make(1.0f, 1.0f, 1.0f, 1.0f);
     Color l_color = color_make(1.0f, 0.0f, 0.0f, 1.0f);
-    Color r_color = color_make(0.0f, 1.0f, 0.0f, 1.0f);
+    Color r_color = color_make(0.0f, 0.5f, 0.5f, 1.0f);
     Color d_color = color_make(0.0f, 0.0f, 1.0f, 1.0f);
     Color u_color = color_make(0.5f, 0.5f, 0.0f, 1.0f);
     
-    Color colors[12] = {
+    Color cube_colors[12] = {
         f_color, f_color,
         b_color, b_color,
         l_color, l_color,
         r_color, r_color,
         d_color, d_color,
-        u_color, u_color};
+        u_color, u_color
+    };
 
-    r32 a = 10.0f; // half of cube dimension
+    Color pyramid_colors[6] = {
+        b_color,
+        b_color,
+        l_color,
+        r_color,
+        d_color,
+        f_color
+    };
+
+    Color plane_colors[2] = {
+        color_make(0.0f, 0.5f, 0.0f, 1.0f),
+        color_make(0.0f, 0.5f, 0.0f, 1.0f)
+    };
     
-    Vector3 s_vertices[8] = {
+    r32 a = 10.0f;
+    
+    Vector3 cube_vertices[8] = {
         vec_make(-a, -a, -a) , vec_make(-a, a, -a) ,
         vec_make(a, a, -a)   , vec_make(a, -a, -a) ,
         vec_make(-a, -a, a)  , vec_make(-a, a, a)  ,
         vec_make(a, a, a)    , vec_make(a, -a, a)
     };
-    u16 s_indices[36] = {
+    u16 cube_indices[36] = {
         3, 1, 0,   2, 1, 3,   4, 5, 7,   7, 5, 6,
         0, 5, 4,   1, 5, 0,   7, 6, 3,   3, 6, 2,
         7, 0, 4,   3, 0, 7,   2, 5, 1,   6, 5, 2
     };
 
+    Vector3 pyramid_vertices[5] = {
+        vec_make(-a, -a, -a),
+        vec_make( a, -a, -a),
+        vec_make( a, -a,  a),
+        vec_make(-a, -a,  a),
+        vec_make( 0.0f,  a,  0.0f)
+    };
+    u16 pyramid_indices[18] = {
+        0, 1, 2,
+        0, 2, 3,
+
+        0, 4, 1,
+        1, 4, 2,
+        2, 4, 3,
+        3, 4, 0
+    };
+
+    Vector3 plane_vertices[4] = {
+        vec_make(-50.0f, 0.0f, -50.0f),
+        vec_make( 50.0f, 0.0f, -50.0f),
+        vec_make( 50.0f, 0.0f,  50.0f),
+        vec_make(-50.0f, 0.0f,  50.0f),
+    };
+    u16 plane_indices[6] = {
+        0,1,2,
+        0,2,3
+    };
+
     Mesh cube_mesh;
-    cube_mesh.vertices = s_vertices;
-    cube_mesh.indices = s_indices;
+    cube_mesh.vertices = cube_vertices;
+    cube_mesh.indices = cube_indices;
     cube_mesh.num_vertices = 8;
     cube_mesh.num_indices = 36;
+    
+    Mesh pyramid_mesh;
+    pyramid_mesh.vertices = pyramid_vertices;
+    pyramid_mesh.indices = pyramid_indices;
+    pyramid_mesh.num_vertices = 5;
+    pyramid_mesh.num_indices = 18;
+    
+    Mesh plane_mesh;
+    plane_mesh.vertices = plane_vertices;
+    plane_mesh.indices = plane_indices;
+    plane_mesh.num_vertices = 4;
+    plane_mesh.num_indices = 6;
 
-    Transform* cube_transform = temp_alloc(Transform);
+    Transform* plane = temp_alloc(Transform);
+    Transform* cube1 = temp_alloc(Transform);
+    Transform* cube2 = temp_alloc(Transform);
+    Transform* cube3 = temp_alloc(Transform);
+    Transform* cube4 = temp_alloc(Transform);
+    Transform* pyramid1 = temp_alloc(Transform);
+    Transform* pyramid2 = temp_alloc(Transform);
+    Transform* pyramid3 = temp_alloc(Transform);
+
+    Vector3 center = vec_make(0.0f, -50.0f, -250.0f);
+    Vector3 cube_offset = vec_make(0.0f, -25.0f, -250.0f);
+    r32 spin_angle = ENGINE_STATE->spin_angle;
+
+    plane->position = center;
+    plane->orientation = quaternion_identity();
+    plane->scale = vec_make(1.5f, 1.5f, 1.5f);
+
+    cube1->position = cube_offset;
+    cube2->position = cube_offset;
+    cube3->position = cube_offset;
+    cube4->position = cube_offset;
     
-    r32 orbit_angle = ENGINE_STATE->spin_angle;
-    Vector3 orbit = vec_make(0.0f, 0.0f, -180.0f);
-    Quaternion orbit_rot = quaternion_from_axis(vec_up(), orbit_angle);
-    orbit = quaternion_rot_vector(orbit, orbit_rot);
-    cube_transform->position = orbit;
+    Vector3 orbit_point = vec_make(50.0f, 0.0f, 0.0f);
+    Quaternion orbit1 = quaternion_from_axis(vec_up(), -spin_angle);
+    Quaternion orbit2 = quaternion_from_axis(vec_up(), spin_angle * 2);
     
-    Quaternion spin_rot = quaternion_from_axis(vec_up(), -orbit_angle);
-    cube_transform->orientation = spin_rot;
+    pyramid1->position = vec_add(cube_offset, quaternion_rot_vector(orbit_point, orbit1));
+    pyramid2->position = vec_add(cube_offset, quaternion_rot_vector(orbit_point, orbit2));
+    pyramid3->position = vec_add(cube_offset, quaternion_rot_vector(orbit_point, quaternion_inverse_angle(orbit2)));
     
+    Quaternion spin1 = quaternion_from_axis(vec_up(), -spin_angle);
+    Quaternion spin2 = quaternion_from_axis(vec_right(), -spin_angle);
+
+    cube1->orientation = quaternion_chain(spin1, spin2);
+    cube2->orientation = quaternion_chain(quaternion_inverse_angle(spin1), spin2);
+    cube3->orientation = quaternion_chain(spin1, quaternion_inverse_angle(spin2));
+    cube4->orientation = quaternion_chain(quaternion_inverse_angle(spin1), quaternion_inverse_angle(spin2));
+
+    pyramid1->orientation = quaternion_from_axis(vec_up(), spin_angle);
+    pyramid2->orientation = quaternion_from_axis(vec_up(), spin_angle);
+    pyramid3->orientation = quaternion_from_axis(vec_up(), -spin_angle);
+
     r32 scaling_factor = ENGINE_STATE->cube_scaling_factor;
-    cube_transform->scale = vec_make(scaling_factor, scaling_factor, scaling_factor);
-
-    Matrix4* mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
     
-    render_mesh(cube_mesh, mvp, colors);
+    cube1->scale    = vec_make(1.0f, 1.0f, 1.0f);
+    cube2->scale    = vec_make(1.0f, 1.0f, 1.0f);
+    cube3->scale    = vec_make(1.0f, 1.0f, 1.0f);
+    cube4->scale    = vec_make(1.0f, 1.0f, 1.0f);
+    pyramid1->scale = vec_make(1.0f, 1.0f, 1.0f);
+    pyramid2->scale = vec_make(scaling_factor, scaling_factor, scaling_factor);
+    pyramid3->scale = vec_make(1.0f, 1.0f, 1.0f);
 
-    cube_transform->position.x += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-
-    cube_transform->position.x += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
+    Matrix4* plane_mvp = mvp_tmatrix_for_transform(plane, view, proj);
+    Matrix4* cube1_mvp = mvp_tmatrix_for_transform(cube1, view, proj);
+    Matrix4* cube2_mvp = mvp_tmatrix_for_transform(cube2, view, proj);
+    Matrix4* cube3_mvp = mvp_tmatrix_for_transform(cube3, view, proj);
+    Matrix4* cube4_mvp = mvp_tmatrix_for_transform(cube4, view, proj);
+    Matrix4* pyramid1_mvp = mvp_tmatrix_for_transform(pyramid1, view, proj);
+    Matrix4* pyramid2_mvp = mvp_tmatrix_for_transform(pyramid2, view, proj);
+    Matrix4* pyramid3_mvp = mvp_tmatrix_for_transform(pyramid3, view, proj);
     
-    cube_transform->position.x += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
+    render_mesh(cube_mesh, cube1_mvp, cube_colors);
+    render_mesh(cube_mesh, cube2_mvp, cube_colors);
+    render_mesh(cube_mesh, cube3_mvp, cube_colors);
+    render_mesh(cube_mesh, cube4_mvp, cube_colors);
+    render_mesh(pyramid_mesh, pyramid1_mvp, pyramid_colors);
+    render_mesh(pyramid_mesh, pyramid2_mvp, pyramid_colors);
+    render_mesh(pyramid_mesh, pyramid3_mvp, pyramid_colors);
+    render_mesh(plane_mesh, plane_mvp, plane_colors);
 
-    cube_transform->position.z += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);    
-    render_mesh(cube_mesh, mvp, colors);
-    
-    cube_transform->position.x -= 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
+    // ENGINE_STATE->spin_angle += PI / 128;
+    ENGINE_STATE->spin_angle += PI / 64;
 
-    cube_transform->position.x -= 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
+    if (ENGINE_STATE->cube_scaling_factor >= 1.5f)
+    {
+        ENGINE_STATE->cube_scale_up = false;
+    }
+    if (ENGINE_STATE->cube_scaling_factor <= 0.5f)
+    {
+        ENGINE_STATE->cube_scale_up = true;
+    }
 
-    cube_transform->position.x -= 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-
-    cube_transform->position.z += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-
-    cube_transform->position.x += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-
-    cube_transform->position.x += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-
-    cube_transform->position.x += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-
-    cube_transform->position.z += 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-
-    cube_transform->position.x -= 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-    
-    cube_transform->position.x -= 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-    
-    cube_transform->position.x -= 25;
-    mvp = mvp_tmatrix_for_transform(cube_transform, view, proj);
-    render_mesh(cube_mesh, mvp, colors);
-    
-
-    // ENGINE_STATE->spin_angle += PI / KB;
-
-    // if (ENGINE_STATE->cube_scaling_factor >= 1.8f)
-    // {
-    //     ENGINE_STATE->cube_scale_up = false;
-    // }
-    // if (ENGINE_STATE->cube_scaling_factor <= 0.2f)
-    // {
-    //     ENGINE_STATE->cube_scale_up = true;
-    // }
-
-    // if (ENGINE_STATE->cube_scale_up)
-    // {
-    //     ENGINE_STATE->cube_scaling_factor += 0.01f;
-    // }
-    // else
-    // {
-    //     ENGINE_STATE->cube_scaling_factor -= 0.01f;
-    // }
+    if (ENGINE_STATE->cube_scale_up)
+    {
+        ENGINE_STATE->cube_scaling_factor += 0.05f;
+    }
+    else
+    {
+        ENGINE_STATE->cube_scaling_factor -= 0.05f;
+    }
 }
 
 // void final_giga_test()

@@ -17,16 +17,22 @@ HMODULE load_dll()
         engine_api.platform_init_engine = (Platform_init_engine) GetProcAddress(dll, "platform_init_engine");
         engine_api.platform_init_memory_base = (Platform_init_memory_base) GetProcAddress(dll, "platform_init_memory_base");
         engine_api.update_and_render = (Update_and_render) GetProcAddress(dll, "update_and_render");
+        engine_api.shut_down_all_threads = (Shut_down_all_threads) GetProcAddress(dll, "shut_down_all_threads");
+        engine_api.start_up_all_threads = (Start_up_all_threads) GetProcAddress(dll, "start_up_all_threads");
         
         if (!engine_api.platform_init_engine) engine_api.platform_init_engine = platform_init_engine_stub;
         if (!engine_api.platform_init_memory_base) engine_api.platform_init_memory_base = platform_init_memory_base_stub;
         if (!engine_api.update_and_render) engine_api.update_and_render = update_and_render_stub;
+        if (!engine_api.shut_down_all_threads) engine_api.shut_down_all_threads = shut_down_all_threads_stub;
+        if (!engine_api.start_up_all_threads) engine_api.start_up_all_threads = start_up_all_threads_stub;
     }
     else
     {
         engine_api.platform_init_engine = platform_init_engine_stub;
         engine_api.platform_init_memory_base = platform_init_memory_base_stub;
         engine_api.update_and_render = update_and_render_stub;
+        engine_api.shut_down_all_threads = shut_down_all_threads_stub;
+        engine_api.start_up_all_threads = start_up_all_threads_stub;
     }
 
     return dll;
@@ -39,6 +45,8 @@ void unload_dll(HMODULE dll)
     engine_api.platform_init_engine = platform_init_engine_stub;
     engine_api.platform_init_memory_base = platform_init_memory_base_stub;
     engine_api.update_and_render = update_and_render_stub;
+    engine_api.shut_down_all_threads = shut_down_all_threads_stub;
+    engine_api.start_up_all_threads = start_up_all_threads_stub;
 }
 #endif
 
@@ -404,6 +412,10 @@ inline s32 get_current_thread_id()
     return (s32)GetCurrentThreadId();
 }
 
+inline void memory_barrier()
+{
+    return MemoryBarrier();
+}
 
 
 #if MAKE_FONT_BMP
@@ -698,20 +710,20 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     
     timeBeginPeriod(1);
     init_keymap();
-
-#if MAKE_FONT_BMP
+    
+    #if MAKE_FONT_BMP
     make_font_bmp();
-#endif
-
-#if USE_DLL
+    #endif
+    
+    #if USE_DLL
     HMODULE dll = load_dll();
     WIN32_FIND_DATA find_data;
     HANDLE dll_filehandle = FindFirstFile((LPCSTR)ACTUAL_DLL, &find_data);
     FindClose(dll_filehandle);
     FILETIME dll_filetime_prev = find_data.ftLastWriteTime;
     FILETIME dll_filetime_curr;
-#endif
-    
+    #endif
+
     SYSTEM_INFO system_info;
     GetSystemInfo(&system_info);
 
@@ -762,6 +774,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     PLATFORM_API.atomic_fetch_and_decrement = atomic_fetch_and_decrement;
     PLATFORM_API.atomic_compare_and_swap = atomic_compare_and_swap;
     PLATFORM_API.atomic_load = atomic_load;
+    PLATFORM_API.memory_barrier = memory_barrier;
 #endif
 
     // @todo do I also pass platform_api here so I initialize there instead?
@@ -823,12 +836,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         dll_filetime_curr = find_data.ftLastWriteTime;
         if (dll_filetime_curr.dwLowDateTime > dll_filetime_prev.dwLowDateTime)
         {
+            SHUT_DOWN_ALL_THREADS();
             unload_dll(dll);
 
             dll = load_dll();
-            dll_filetime_prev = dll_filetime_curr;
-                    
+            dll_filetime_prev = dll_filetime_curr;          
+            
             PLATFORM_INIT_MEMORY_BASE((Globals*) base_ptr);
+            START_UP_ALL_THREADS();
         }
 #endif         
         u64 begin_cycle_count = __rdtsc();
@@ -893,13 +908,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                     dm.dmBitsPerPel = 8 * 4; // BYTPP
                     dm.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
                     ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
-
                     HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
                     MONITORINFO monitor_info = {0};
                     monitor_info.cbSize = sizeof(MONITORINFO);
                     GetMonitorInfo(monitor, &monitor_info);
                     RECT monitor_rect = monitor_info.rcMonitor;
-                    
+
                     SetWindowPos(window,
                                  HWND_TOP,
                                  monitor_rect.left,
@@ -997,7 +1011,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 
         // @todo this should only happen in debug mode
-
         // @todo better caching and calculation and precision of these counters
         u64 end_cycle_count = __rdtsc();
         u64 end_time_count = read_time_counter();

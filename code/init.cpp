@@ -109,3 +109,18 @@ extern "C" void platform_init_memory_base(Globals* memory_base)
 }
 #endif
 
+extern "C" void shut_down_all_threads()
+{
+    for (int i = 0; i < NUM_WORKERS; i++)
+    {
+        CLOSE_THREAD(&ENGINE_STATE->threads[i]);
+    }
+}
+
+extern "C" void start_up_all_threads()
+{
+    for (s32 i = 0; i < NUM_WORKERS; i++)
+    {
+        ENGINE_STATE->threads[i] = START_THREAD(worker_proc, &ENGINE_STATE->index_to_thread_id[i], 0);
+    }
+}

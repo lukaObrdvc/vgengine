@@ -1,3 +1,20 @@
+struct Job_Data
+{
+    int* chunk;
+    int size;
+};
+
+JOB(testing)
+{
+    int* chunk = ((Job_Data*)data)->chunk;
+    int size = ((Job_Data*)data)->size;
+
+    for (int i = 0; i < size; i++)
+    {
+        chunk[i]++;
+    }
+}
+
 extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result* result)
 {
     // exclusive fullscreen: window dims and framebuffer dims equal
@@ -34,14 +51,14 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
     result->window_buffer_width = FRAMEBUFFER_WIDTH;
     result->window_buffer_height = FRAMEBUFFER_HEIGHT;
     result->resize = true;
-    result->window_offs_x = 0;
-    result->window_offs_y = 0;
-    result->window_width = 1920;
-    result->window_height = 1080;
+    result->window_offs_x = 300;
+    result->window_offs_y = 150;
+    result->window_width = 960;
+    result->window_height = 540;
     result->cursor_x = FRAMEBUFFER_WIDTH / 2;
     result->cursor_y = FRAMEBUFFER_HEIGHT / 2;
     result->change_display = true;
-    result->fullscreen = true;
+    result->fullscreen = false;
     result->exclusive_fullscreen = false;
     // @todo how do I get into the normal mode with cursor?
     
@@ -117,43 +134,26 @@ extern "C" void update_and_render(Platform_frame_pass* pass, Engine_frame_result
         result->window_height = 720;
     }
     
-    fill_background();
-    
     Matrix4* view = view_tmatrix_for_camera();
     Matrix4* proj = perspective_tmatrix_for_camera();
 
-    BEGIN_PROFILING(str("model_matrix_test"));
+    
+    BEGIN_PROFILING(str("demo profiling"));
+
+    fill_background_parallel();
+    // fill_background_sequentially();
     
     model_matrix_test(view, proj);
 
     END_PROFILING();
 
-    String int_str = str("-.2315");
-    r32 inti = string_to_r32(int_str);
-    int_str = to_string(inti, 5);
-    
-    Time time;
-    GET_TIME(&time);
-
-    // threading_test();
     
     Profiler* p = &PROFILERS[0];
-    String string = concat(11, p->name, str("\n"), to_string(p->cycle_diff / (r64)1000000, 4),
-                           str("MC"), str("\n"), to_string(p->time_diff, 2), str("ms"), str("\n"), int_str,
-                           str("\n"), to_string(time.minute));
-    // String string = concat((u32)8, cstr(p->name), " ", cstr(to_string(p->cycle_diff / (r64)1000000, 4)),
-                           // "MC", " ", cstr(to_string(p->time_diff, 2)), "ms", " ");
+    String string = concat(7, p->name, str("\n"), to_string(p->cycle_diff / (r64)1000000, 4),
+                           str(" MegaCycles"), str("\n"), to_string(p->time_diff, 2), str(" ms"));
     Font* font = get_font(MYFONT_CONSOLAS16);
     Vector2 offset = vec_make(5.0f, 390.0f);
-    // offset = vec_add(offset, engine_state->font_offset);
-    Vector2 scale = vec_make(1.2f, 1.2f);
-    // Vector2 scale = vec_make(0.8f, 0.8f);
-    Color tint = color_make(0.0f, 0.0f, 0.0f, 1.0f);
-    Rect rect = {0.0f, 0.0f, 150.0f + engine_state->font_offset.x, 300.0f};
-    r32 line_spacing = -4.0f;
-    // draw_string(string, font, offset, scale, tint, rect);
-    // draw_string_wrapped(string, font, offset, scale, tint, line_spacing, rect);
-    // draw_string(string, font, offset, line_spacing, scale, tint);
+    r32 line_spacing = 0.0f;
     draw_string(string, font, offset, line_spacing);
     
     engine_state->font_offset.x -= 1.0f;
